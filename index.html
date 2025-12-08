@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SFC 修行ポイント管理アプリ</title>
+
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin:0; padding:20px; background:#f4f7fb; }
+h1 { text-align:center; color:#0053a0; }
+.card { background:#fff; padding:15px; border-radius:12px; margin:15px 0; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+label { display:block; margin-top:12px; }
+input { width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid #ccc; }
+button { width:100%; padding:12px; margin-top:15px; border:0; background:#0053a0; color:white; border-radius:8px; font-size:16px; font-weight:bold; }
+.delete-btn { background:#d9534f; margin-top:0; padding:6px 10px; }
+table { width:100%; border-collapse: collapse; margin-top:10px; }
+th, td { padding:10px; border-bottom:1px solid #ddd; text-align:center; }
+progress { width:100%; height:20px; }
+</style>
+</head>
+<body>
+
+<h1>SFC 修行ポイント管理アプリ</h1>
+
+<div class="card">
+<h2>フライト入力（ポイント自動計算）</h2>
+
+<label>日付
+<input id="date" type="date">
+</label>
+
+<label>出発地
+<input id="departure" type="text" placeholder="例: 東京">
+</label>
+
+<label>到着地
+<input id="arrival" type="text" placeholder="例: 札幌">
+</label>
+
+<label>チケット価格（円）
+<input id="cost" type="number" min="0">
+</label>
+
+<label>クレジットカード倍率
+<input id="multiplier" type="number" step="0.1" min="0">
+</label>
+
+<button onclick="addFlight()">追加</button>
+<button class="delete-btn" onclick="clearAll()">全削除</button>
+</div>
+
+<div class="card">
+<h2>進捗状況</h2>
+<p>合計ポイント：<span id="totalPoints">0</span></p>
+<p>合計費用：<span id="totalCost">0</span> 円</p>
+<p>ポイント単価：<span id="pointUnit">0</span> 円/PP</p>
+<progress id="progressBar" max="50000" value="0"></progress>
+</div>
+
+<div class="card">
+<h2>フライト一覧</h2>
+<table>
+<thead>
+<tr>
+<th>日付</th>
+<th>区間</th>
+<th>金額</th>
+<th>クレカ倍率</th>
+<th>獲得ポイント</th>
+<th></th>
+</tr>
+</thead>
+<tbody id="list"></tbody>
+</table>
+</div>
+
+<script>
+let flights = JSON.parse(localStorage.getItem("flights") || "[]");
+
+function save(){ localStorage.setItem("flights", JSON.stringify(flights)); }
+
+function addFlight(){
+    const date = document.getElementById("date").value;
+    const dep = document.getElementById("departure").value;
+    const arr = document.getElementById("arrival").value;
+    const cost = Number(document.getElementById("cost").value);
+    const mult = Number(document.getElementById("multiplier").value);
+
+    if(!date || !dep || !arr || !cost || !mult){
+        alert("すべて入力してください");
+        return;
+    }
+
+    const points = cost * mult;
+
+    flights.push({date, dep, arr, cost, mult, points});
+    save();
+    render();
+    document.getElementById("date").value="";
+    document.getElementById("departure").value="";
+    document.getElementById("arrival").value="";
+    document.getElementById("cost").value="";
+    document.getElementById("multiplier").value="";
+}
+
+function deleteFlight(i){
+    flights.splice(i,1);
+    save();
+    render();
+}
+
+function clearAll(){
+    if(confirm("全て削除しますか？")){
+        flights=[];
+        save();
+        render();
+    }
+}
+
+function render(){
+    const list = document.getElementById("list");
+    list.innerHTML="";
+    let totalPoints=0, totalCost=0;
+    flights.forEach((f,i)=>{
+        totalPoints += f.points;
+        totalCost += f.cost;
+        list.innerHTML += `
+            <tr>
+                <td>${f.date}</td>
+                <td>${f.dep} → ${f.arr}</td>
+                <td>${f.cost}</td>
+                <td>${f.mult}</td>
+                <td>${f.points.toFixed(1)}</td>
+                <td><button class="delete-btn" onclick="deleteFlight(${i})">削除</button></td>
+            </tr>
+        `;
+    });
+    document.getElementById("totalPoints").textContent = totalPoints.toFixed(1);
+    document.getElementById("totalCost").textContent = totalCost.toLocaleString();
+    document.getElementById("pointUnit").textContent = totalPoints ? (totalCost/totalPoints).toFixed(1) : 0;
+    document.getElementById("progressBar").value = totalPoints;
+}
+
+render();
+</script>
+
+</body>
+</html>
