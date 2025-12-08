@@ -3,220 +3,198 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SFC PP 管理アプリ</title>
+<title>SFC PP 管理アプリ 完全版</title>
 <link rel="manifest" href="manifest.json">
 
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin:0; padding:20px; background:#f4f7fb; }
-h1 { text-align:center; color:#0053a0; }
+h1 { text-align:center; color:#0053a0; margin-bottom:10px; }
 .card { background:#fff; padding:15px; border-radius:12px; margin:15px 0; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
 label { display:block; margin-top:12px; }
 input, select { width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid #ccc; }
 button { width:100%; padding:12px; margin-top:15px; border:0; background:#0053a0; color:white; border-radius:8px; font-size:16px; font-weight:bold; }
+button.small { width:auto; padding:6px 10px; font-size:14px; margin-left:5px; }
 .delete-btn { background:#d9534f; margin-top:0; padding:6px 10px; }
-table { width:100%; border-collapse: collapse; margin-top:10px; }
-th, td { padding:10px; border-bottom:1px solid #ddd; }
+table { width:100%; border-collapse: collapse; margin-top:10px; font-size:14px; }
+th, td { padding:10px; border-bottom:1px solid #ddd; text-align:center; }
 progress { width:100%; height:20px; }
+.filter { margin-top:10px; }
+.graph-bar { height:20px; background:#0053a0; margin:2px 0; border-radius:4px; }
+.fixed-header { position:sticky; top:0; background:#f4f7fb; padding:10px; z-index:1000; }
 </style>
 </head>
 <body>
 
-<h1>SFC PP 管理アプリ</h1>
+<div class="fixed-header">
+<h1>SFC PP 管理 完全版</h1>
+<p>合計PP: <span id="totalPP">0</span> / 50,000　合計費用: <span id="totalCost">0</span>円　PP単価: <span id="ppUnit">0</span>円/PP</p>
+<progress id="progressBar" max="50000" value="0"></progress>
+</div>
 
 <!-- フライト入力カード -->
 <div class="card">
-  <h2>フライト入力（PP自動計算）</h2>
-
-  <label>日付
-    <input id="date" type="date">
-  </label>
-
-  <label>区間
-    <select id="route">
-      <option value="">選択してください</option>
-      <option value="HND-OKA" data-pp="1476" data-dep="HND" data-arr="OKA">羽田→那覇（1476PP）</option>
-      <option value="OKA-HND" data-pp="1476" data-dep="OKA" data-arr="HND">那覇→羽田（1476PP）</option>
-      <option value="HND-FUK" data-pp="850" data-dep="HND" data-arr="FUK">羽田→福岡（850PP）</option>
-      <option value="FUK-HND" data-pp="850" data-dep="FUK" data-arr="HND">福岡→羽田（850PP）</option>
-      <option value="HND-CTS" data-pp="765" data-dep="HND" data-arr="CTS">羽田→札幌（765PP）</option>
-      <option value="CTS-HND" data-pp="765" data-dep="CTS" data-arr="HND">札幌→羽田（765PP）</option>
-    </select>
-  </label>
-
-  <label>金額（円）
-    <input id="cost" type="number" min="0">
-  </label>
-
-  <button onclick="addFlight()">追加</button>
-  <button class="delete-btn" onclick="clearAll()">全削除</button>
-</div>
-
-<!-- 進捗状況カード -->
-<div class="card">
-  <h2>進捗状況</h2>
-  <p>合計PP：<span id="totalPP">0</span> / 50,000</p>
-  <p>合計費用：<span id="totalCost">0</span> 円</p>
-  <p>PP単価：<span id="ppUnit">0</span> 円/PP</p>
-  <progress id="progressBar" max="50000" value="0"></progress>
+<h2>フライト入力</h2>
+<label>日付 <input id="date" type="date"></label>
+<label>出発地 <input id="dep" type="text" placeholder="例: HND"></label>
+<label>到着地 <input id="arr" type="text" placeholder="例: OKA"></label>
+<label>PP <input id="pp" type="number" min="0" placeholder="例:1476"></label>
+<label>航空会社・便名 <input id="flightNo" type="text" placeholder="ANA 1234"></label>
+<label>予約クラス <input id="class" type="text" placeholder="Y,S,B"></label>
+<label>金額（円） <input id="cost" type="number" min="0"></label>
+<label>クレカ倍率 <input id="mult" type="number" min="0" step="0.1" value="1.0"></label>
+<label>メモ <input id="memo" type="text" placeholder="自由メモ"></label>
+<label>ステータス
+<select id="status">
+<option value="予約済">予約済</option>
+<option value="搭乗済">搭乗済</option>
+<option value="キャンセル">キャンセル</option>
+</select></label>
+<button onclick="addFlight()">追加</button>
+<button class="delete-btn" onclick="clearAll()">全削除</button>
 </div>
 
 <!-- フライト一覧カード -->
 <div class="card">
-  <h2>フライト一覧</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>日付</th>
-        <th>区間</th>
-        <th>PP</th>
-        <th>金額</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="list"></tbody>
-  </table>
-  <!-- CSV機能 -->
-  <button onclick="exportCSV()">CSV出力</button>
-  <input type="file" id="csvFileInput" accept=".csv">
-  <button onclick="importCSV()">CSV読込</button>
+<h2>フライト一覧</h2>
+
+<div class="filter">
+<label>検索/フィルター:
+<input type="text" id="search" placeholder="便名・出発地・到着地">
+<select id="statusFilter">
+<option value="">全ステータス</option>
+<option value="予約済">予約済</option>
+<option value="搭乗済">搭乗済</option>
+<option value="キャンセル">キャンセル</option>
+</select>
+<button class="small" onclick="render()">適用</button>
+</label>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>日付</th><th>出発</th><th>到着</th><th>便名</th><th>クラス</th><th>PP</th><th>金額</th><th>倍率</th><th>獲得P</th><th>ステータス</th><th>メモ</th><th></th>
+</tr>
+</thead>
+<tbody id="list"></tbody>
+</table>
+
+<div>
+<button onclick="exportCSV()">CSV出力</button>
+<input type="file" id="csvFileInput" accept=".csv">
+<button onclick="importCSV()">CSV読込</button>
+</div>
+</div>
+
+<!-- 集計グラフカード -->
+<div class="card">
+<h2>区間別集計（PP/金額）</h2>
+<div id="summary"></div>
 </div>
 
 <script>
-let flights = JSON.parse(localStorage.getItem("flights") || "[]");
+let flights = JSON.parse(localStorage.getItem("flights")||"[]");
 
 function save(){ localStorage.setItem("flights", JSON.stringify(flights)); }
 
-function addFlight() {
-  const date = document.getElementById("date").value;
-  const routeSel = document.getElementById("route");
-  const route = routeSel.value;
-  const pp = Number(routeSel.selectedOptions[0].dataset.pp);
-  const cost = Number(document.getElementById("cost").value);
-  const dep = routeSel.selectedOptions[0].dataset.dep;
-  const arr = routeSel.selectedOptions[0].dataset.arr;
-
-  if(!date || !route || !cost){
-    alert("日付・区間・金額を入力してください");
-    return;
-  }
-
-  const mult = 1; // 後でクレカ倍率など追加可能
-  const points = pp * mult;
-
-  flights.push({date, route, pp, cost, dep, arr, mult, points});
-  save();
-  render();
+function addFlight(){
+const date=document.getElementById("date").value;
+const dep=document.getElementById("dep").value.trim();
+const arr=document.getElementById("arr").value.trim();
+const pp=Number(document.getElementById("pp").value);
+const cost=Number(document.getElementById("cost").value);
+const flightNo=document.getElementById("flightNo").value;
+const cls=document.getElementById("class").value;
+const mult=Number(document.getElementById("mult").value)||1;
+const memo=document.getElementById("memo").value;
+const status=document.getElementById("status").value;
+const points=pp*mult;
+if(!date||!dep||!arr||!pp||!cost){alert("必須項目を入力してください");return;}
+flights.push({date,dep,arr,pp,cost,flightNo,class:cls,mult,points,memo,status});
+save(); render();
 }
 
-function deleteFlight(i){
-  flights.splice(i,1);
-  save();
-  render();
-}
+function deleteFlight(i){ flights.splice(i,1); save(); render(); }
 
-function clearAll(){
-  if(confirm("全て削除しますか？")){
-    flights = [];
-    save();
-    render();
-  }
-}
+function clearAll(){ if(confirm("全削除しますか？")){ flights=[]; save(); render(); } }
 
 function render(){
-  const list = document.getElementById("list");
-  list.innerHTML = "";
+const list=document.getElementById("list");
+list.innerHTML="";
+let totalPP=0,totalCost=0;
+const search=document.getElementById("search").value.toLowerCase();
+const statusFilter=document.getElementById("statusFilter").value;
 
-  let totalPP = 0, totalCost = 0;
+flights.forEach((f,i)=>{
+if(search&&( !f.flightNo.toLowerCase().includes(search) && !f.dep.toLowerCase().includes(search) && !f.arr.toLowerCase().includes(search) )) return;
+if(statusFilter && f.status!==statusFilter) return;
+totalPP+=f.pp;
+totalCost+=f.cost;
+list.innerHTML+=`<tr>
+<td>${f.date}</td><td>${f.dep}</td><td>${f.arr}</td><td>${f.flightNo}</td><td>${f.class}</td>
+<td>${f.pp}</td><td>${f.cost}</td><td>${f.mult}</td><td>${f.points.toFixed(1)}</td>
+<td>${f.status}</td><td>${f.memo}</td>
+<td><button class="delete-btn" onclick="deleteFlight(${i})">削除</button></td>
+</tr>`;
+});
+document.getElementById("totalPP").textContent=totalPP;
+document.getElementById("totalCost").textContent=totalCost.toLocaleString();
+document.getElementById("ppUnit").textContent=totalPP?(totalCost/totalPP).toFixed(1):0;
+document.getElementById("progressBar").value=totalPP;
 
-  flights.forEach((f,i)=>{
-    totalPP += f.pp;
-    totalCost += f.cost;
-    list.innerHTML += `
-      <tr>
-        <td>${f.date}</td>
-        <td>${f.route}</td>
-        <td>${f.pp}</td>
-        <td>${f.cost}</td>
-        <td><button class="delete-btn" onclick="deleteFlight(${i})">削除</button></td>
-      </tr>
-    `;
-  });
-
-  document.getElementById("totalPP").textContent = totalPP;
-  document.getElementById("totalCost").textContent = totalCost.toLocaleString();
-  document.getElementById("ppUnit").textContent = totalPP ? (totalCost/totalPP).toFixed(1) : 0;
-  document.getElementById("progressBar").value = totalPP;
+renderSummary();
 }
 
-render();
+// 集計グラフ表示
+function renderSummary(){
+const summary=document.getElementById("summary");
+summary.innerHTML="";
+const map={};
+flights.forEach(f=>{
+const key=f.dep+"→"+f.arr;
+if(!map[key]) map[key]={pp:0,cost:0};
+map[key].pp+=f.pp; map[key].cost+=f.cost;
+});
+for(const k in map){
+const bar=document.createElement("div");
+bar.className="graph-bar";
+bar.style.width=Math.min(map[k].pp/500*100,100)+"%";
+bar.title=`PP:${map[k].pp} 金額:${map[k].cost}円`;
+bar.textContent=`${k} PP:${map[k].pp} 金額:${map[k].cost}円`;
+summary.appendChild(bar);
+}
+}
 
 // CSV出力
-function exportCSV() {
-  if(flights.length === 0){
-    alert("フライトデータがありません");
-    return;
-  }
-  const header = ["日付","出発地","到着地","金額","クレカ倍率","獲得ポイント"];
-  const rows = flights.map(f => [f.date, f.dep, f.arr, f.cost, f.mult, f.points.toFixed(1)]);
-  let csvContent = header.join(",") + "\n";
-  rows.forEach(r => { csvContent += r.join(",") + "\n"; });
-
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  const url = URL.createObjectURL(blob);
-  link.setAttribute("href", url);
-  link.setAttribute("download", "flights.csv");
-  link.style.display = "none";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+function exportCSV(){
+if(flights.length===0){alert("データなし"); return;}
+const header=["日付","出発","到着","便名","クラス","PP","金額","倍率","獲得P","ステータス","メモ"];
+const rows=flights.map(f=>[f.date,f.dep,f.arr,f.flightNo,f.class,f.pp,f.cost,f.mult,f.points.toFixed(1),f.status,f.memo]);
+let csvContent=header.join(",")+"\n"; rows.forEach(r=>{csvContent+=r.join(",")+"\n";});
+const blob=new Blob([csvContent],{type:"text/csv;charset=utf-8;"}); const link=document.createElement("a");
+link.setAttribute("href", URL.createObjectURL(blob));
+link.setAttribute("download","flights.csv");
+link.style.display="none"; document.body.appendChild(link); link.click(); document.body.removeChild(link);
 }
 
 // CSV読み込み
-function importCSV() {
-  const input = document.getElementById("csvFileInput");
-  if (!input.files.length) { alert("CSVファイルを選択してください"); return; }
-
-  const file = input.files[0];
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const text = e.target.result;
-    const lines = text.split("\n").map(line => line.trim()).filter(line => line);
-    if (lines.length < 2) return;
-
-    const newFlights = [];
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(",");
-      if (cols.length < 6) continue;
-      const flight = {
-        date: cols[0],
-        dep: cols[1],
-        arr: cols[2],
-        cost: Number(cols[3]),
-        mult: Number(cols[4]),
-        points: Number(cols[5]),
-        route: cols[1]+"-"+cols[2]
-      };
-      newFlights.push(flight);
-    }
-
-    if (newFlights.length) {
-      flights = newFlights;
-      save();
-      render();
-      alert("CSV読み込み完了");
-    } else {
-      alert("有効なデータがありません");
-    }
-  };
-  reader.readAsText(file, "UTF-8");
+function importCSV(){
+const input=document.getElementById("csvFileInput"); if(!input.files.length){alert("CSVを選択"); return;}
+const file=input.files[0]; const reader=new FileReader();
+reader.onload=function(e){
+const text=e.target.result; const lines=text.split("\n").map(l=>l.trim()).filter(l=>l); if(lines.length<2)return;
+const newFlights=[]; for(let i=1;i<lines.length;i++){
+const cols=lines[i].split(","); if(cols.length<11) continue;
+newFlights.push({date:cols[0],dep:cols[1],arr:cols[2],flightNo:cols[3],class:cols[4],pp:Number(cols[5]),cost:Number(cols[6]),mult:Number(cols[7]),points:Number(cols[8]),status:cols[9],memo:cols[10]});
+}
+if(newFlights.length){ flights=newFlights; save(); render(); alert("CSV読込完了"); } else {alert("有効データなし");}
+}; reader.readAsText(file,"UTF-8");
 }
 
-// PWA Service Worker
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("service-worker.js");
-}
+// PWA対応
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-worker.js"); }
+
+render();
 </script>
 
 </body>
