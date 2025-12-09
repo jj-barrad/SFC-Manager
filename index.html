@@ -3,30 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SFC PP 管理アプリ（実用安定版）</title>
+<title>SFC PP 管理アプリ（フレキシブル完全版）</title>
+
 <style>
 body { font-family:-apple-system,BlinkMacSystemFont,sans-serif; background:#f4f7fb; margin:0; padding:16px; }
 h1 { text-align:center; color:#0053a0; }
 .card { background:#fff; padding:14px; border-radius:12px; margin-bottom:14px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-label { display:block; margin-top:8px; font-weight:600; }
-input,select,button { width:100%; padding:8px; margin-top:4px; border-radius:8px; border:1px solid #ccc; }
+input,select,button { width:100%; padding:8px; margin-top:6px; border-radius:8px; border:1px solid #ccc; }
 .row { display:flex; gap:8px; }
 .row > * { flex:1; }
-button { background:#0053a0; color:white; font-weight:700; }
+button { background:#0053a0; color:#fff; font-weight:700; }
 button.small { width:auto; padding:6px 10px; }
 button.delete { background:#c9302c; }
 table { width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; }
 th,td { padding:6px; border-bottom:1px solid #ddd; text-align:center; }
 .warn { color:#b06a00; font-weight:700; }
 .good { color:#0a7b3d; font-weight:700; }
-.bar { height:16px; background:#0053a0; border-radius:6px; color:#fff; padding-left:6px; }
+.bar { height:16px; background:#0053a0; border-radius:6px; color:#fff; padding-left:6px; margin-top:4px; }
 </style>
 </head>
+
 <body>
 
 <h1>SFC PP 管理アプリ</h1>
 
-<!-- ================== SUMMARY ================== -->
+<!-- ===== SUMMARY ===== -->
 <div class="card">
 <strong>合計PP:</strong> <span id="totalPP">0</span> / 50,000　
 <strong>費用:</strong> <span id="totalCost">0</span>円　
@@ -34,17 +35,17 @@ th,td { padding:6px; border-bottom:1px solid #ddd; text-align:center; }
 <progress id="progress" max="50000" value="0" style="width:100%;margin-top:8px"></progress>
 </div>
 
-<!-- ================== PLAN MODE ================== -->
+<!-- ===== PLAN MODE ===== -->
 <div class="card">
-<h2>旅行計画（ざっくり確認）</h2>
+<h2>旅行計画（自由入力OK）</h2>
 
 <div class="row">
 <select id="preset">
-<option value="">プリセット</option>
+<option value="">プリセット選択</option>
 <option value="HND-OKA">HND → OKA</option>
-<option value="HND-HNL">HND → HNL</option>
 <option value="HND-CTS">HND → CTS</option>
 <option value="HND-FUK">HND → FUK</option>
+<option value="HND-HNL">HND → HNL</option>
 </select>
 <select id="planClass">
 <option value="S">S（75%）</option>
@@ -54,19 +55,25 @@ th,td { padding:6px; border-bottom:1px solid #ddd; text-align:center; }
 </select>
 </div>
 
-<div class="row" style="margin-top:6px">
-<input id="planCost" type="number" placeholder="想定往復金額">
+<div class="row">
+<input id="planDep" placeholder="出発（自由入力）">
+<input id="planArr" placeholder="到着（自由入力）">
+</div>
+
+<div class="row">
+<input id="planCost" type="number" placeholder="想定金額（往復など）">
 <select id="planTrip">
 <option value="2">往復</option>
 <option value="1">片道</option>
 </select>
 </div>
 
-<button style="margin-top:8px" onclick="addPlan()">計画を追加</button>
+<button onclick="estimatePlan()">想定PPを計算</button>
 <div id="planPreview" style="margin-top:8px"></div>
+<button onclick="savePlan()" style="margin-top:6px">この計画を保存</button>
 </div>
 
-<!-- ================== ROUTE MILES ================== -->
+<!-- ===== ROUTE MILES ===== -->
 <div class="card">
 <h2>路線マイル管理（ANA公式）</h2>
 <table>
@@ -79,33 +86,26 @@ th,td { padding:6px; border-bottom:1px solid #ddd; text-align:center; }
 <input id="rArr" placeholder="OKA">
 <input id="rMiles" type="number" placeholder="984">
 </div>
-<button style="margin-top:6px" onclick="addRoute()">追加／更新</button>
+<button onclick="addRoute()">追加／更新</button>
 </div>
 
-<!-- ================== FLIGHT INPUT ================== -->
+<!-- ===== FLIGHT INPUT ===== -->
 <div class="card">
 <h2>確定入力（予約後）</h2>
-<label>日付<input id="date" type="date"></label>
-
+<input id="date" type="date">
 <div class="row">
 <input id="dep" placeholder="出発">
 <input id="arr" placeholder="到着">
 </div>
-
 <div class="row">
 <input id="flightNo" placeholder="便名">
-<input id="cls" placeholder="クラス">
-</div>
-
-<div class="row">
 <input id="pp" type="number" placeholder="PP">
+</div>
 <input id="cost" type="number" placeholder="金額">
+<button onclick="addFlight()">追加</button>
 </div>
 
-<button style="margin-top:8px" onclick="addFlight()">追加</button>
-</div>
-
-<!-- ================== LIST ================== -->
+<!-- ===== LIST ===== -->
 <div class="card">
 <h2>フライト一覧</h2>
 <table>
@@ -114,105 +114,125 @@ th,td { padding:6px; border-bottom:1px solid #ddd; text-align:center; }
 </table>
 </div>
 
-<!-- ================== SUMMARY BY ROUTE ================== -->
+<!-- ===== SUMMARY BY ROUTE ===== -->
 <div class="card">
-<h2>区間別集計</h2>
+<h2>区間別PP</h2>
 <div id="summary"></div>
 </div>
 
 <script>
-/* ---------- 固定設定 ---------- */
 const CARD_RATE = 1.25;
 const CLASS_RATE = {Y:1.0, M:0.75, S:0.75, L:0.5};
 
-/* ---------- Route Miles（更新①） ---------- */
 let routeMiles = JSON.parse(localStorage.getItem("routeMiles")) || {
-  "HND-OKA":984,"HND-HNL":3850,"HND-CTS":510,"HND-FUK":567
+  "HND-OKA":984,"HND-CTS":510,"HND-FUK":567,"HND-HNL":3850
 };
+let flights = JSON.parse(localStorage.getItem("flights") || "[]");
+let plans = JSON.parse(localStorage.getItem("plans") || "[]");
 
+/* ===== ROUTES ===== */
 function saveRoutes(){ localStorage.setItem("routeMiles",JSON.stringify(routeMiles)); }
 
 function renderRoutes(){
-  const t=document.getElementById("routeTable"); t.innerHTML="";
+  routeTable.innerHTML="";
   Object.entries(routeMiles).forEach(([k,v])=>{
     const [d,a]=k.split("-");
-    t.innerHTML+=`<tr><td>${d}</td><td>${a}</td><td>${v}</td>
-    <td><button class="small delete" onclick="delRoute('${k}')">削除</button></td></tr>`;
+    routeTable.innerHTML+=`
+      <tr>
+        <td>${d}</td><td>${a}</td><td>${v}</td>
+        <td><button class="small delete" onclick="delRoute('${k}')">削除</button></td>
+      </tr>`;
   });
 }
-
 function addRoute(){
-  const d=rDep.value.trim(), a=rArr.value.trim(), m=Number(rMiles.value);
-  if(!d||!a||!m) return alert("入力不完全");
-  routeMiles[`${d}-${a}`]=m; saveRoutes(); renderRoutes();
+  if(!rDep.value||!rArr.value||!rMiles.value) return alert("未入力あり");
+  routeMiles[`${rDep.value}-${rArr.value}`]=Number(rMiles.value);
+  saveRoutes(); renderRoutes();
 }
 function delRoute(k){ delete routeMiles[k]; saveRoutes(); renderRoutes(); }
 
-/* ---------- Data ---------- */
-let flights=JSON.parse(localStorage.getItem("flights")||"[]");
-let plans=JSON.parse(localStorage.getItem("plans")||"[]");
+/* ===== PLAN ===== */
+function getPlanRoute(){
+  if(preset.value){
+    const [d,a]=preset.value.split("-");
+    return {d,a};
+  }
+  if(planDep.value && planArr.value){
+    return {d:planDep.value, a:planArr.value};
+  }
+  return null;
+}
 
-/* ---------- Plan Mode（更新②③） ---------- */
 function getMiles(d,a){
-  return routeMiles[`${d}-${a}`]||routeMiles[`${a}-${d}`]||null;
+  return routeMiles[`${d}-${a}`] || routeMiles[`${a}-${d}`] || null;
 }
 
-preset.onchange=()=>{
-  if(!preset.value) return;
-  const [d,a]=preset.value.split("-");
-  const m=getMiles(d,a);
-  if(!m){ planPreview.innerHTML="<span class='warn'>未登録路線</span>"; return; }
-  const rate=CLASS_RATE[planClass.value];
-  const pp=Math.round(m*rate*CARD_RATE*planTrip.value);
-  const unit=planCost.value? (planCost.value/pp).toFixed(1):"-";
-  planPreview.innerHTML=`想定PP: <b>${pp}</b> / 単価: <b>${unit}</b>`;
+function estimatePlan(){
+  const r=getPlanRoute();
+  if(!r) return planPreview.innerHTML="<span class='warn'>路線を入力または選択してください</span>";
+
+  const miles=getMiles(r.d,r.a);
+  if(!miles){
+    planPreview.innerHTML="<span class='warn'>未登録路線です（下で追加すれば即対応）</span>";
+    return;
+  }
+  const pp=Math.round(miles*CLASS_RATE[planClass.value]*CARD_RATE*planTrip.value);
+  const unit=planCost.value?(planCost.value/pp).toFixed(1):"-";
+  planPreview.innerHTML=`想定PP：<b>${pp}</b> ／ PP単価：<b>${unit}</b>`;
 }
 
-function addPlan(){
-  if(!preset.value) return alert("路線選択");
-  const [d,a]=preset.value.split("-");
-  const m=getMiles(d,a); if(!m) return;
-  const rate=CLASS_RATE[planClass.value];
-  const pp=Math.round(m*rate*CARD_RATE*planTrip.value);
-  plans.push({d,a,pp,cost:Number(planCost.value)||0});
+function savePlan(){
+  const r=getPlanRoute();
+  if(!r) return;
+  const miles=getMiles(r.d,r.a); if(!miles) return;
+  const pp=Math.round(miles*CLASS_RATE[planClass.value]*CARD_RATE*planTrip.value);
+  plans.push({route:`${r.d}-${r.a}`,pp,cost:planCost.value||0});
   localStorage.setItem("plans",JSON.stringify(plans));
-  alert("計画追加");
+  alert("計画を保存しました");
 }
 
-/* ---------- Flight ---------- */
+/* ===== FLIGHT ===== */
 function addFlight(){
-  const f={date:date.value,dep:dep.value,arr:arr.value,
-    flightNo:flightNo.value,pp:Number(pp.value),cost:Number(cost.value)};
-  flights.push(f); localStorage.setItem("flights",JSON.stringify(flights)); render();
+  flights.push({
+    date:date.value,dep:dep.value,arr:arr.value,
+    flightNo:flightNo.value,pp:Number(pp.value),cost:Number(cost.value)
+  });
+  localStorage.setItem("flights",JSON.stringify(flights));
+  render();
 }
 
-/* ---------- Render ---------- */
+/* ===== RENDER ===== */
 function render(){
-  const l=document.getElementById("list"); l.innerHTML="";
+  list.innerHTML="";
   let tpp=0,tc=0;
+  const sum={};
+
   flights.forEach((f,i)=>{
     tpp+=f.pp; tc+=f.cost;
-    l.innerHTML+=`<tr><td>${f.date}</td><td>${f.dep}→${f.arr}</td>
-    <td>${f.flightNo}</td><td>${f.pp}</td><td>${f.cost}</td>
-    <td><button class="small delete" onclick="delFlight(${i})">×</button></td></tr>`;
+    list.innerHTML+=`
+    <tr>
+      <td>${f.date}</td><td>${f.dep}→${f.arr}</td>
+      <td>${f.flightNo}</td><td>${f.pp}</td><td>${f.cost}</td>
+      <td><button class="small delete" onclick="delFlight(${i})">×</button></td>
+    </tr>`;
+    const k=f.dep+"→"+f.arr;
+    sum[k]=(sum[k]||0)+f.pp;
   });
-  totalPP.textContent=tpp; totalCost.textContent=tc;
+
+  totalPP.textContent=tpp;
+  totalCost.textContent=tc;
   ppUnit.textContent=tpp?(tc/tpp).toFixed(1):0;
   progress.value=tpp;
 
-  const sum={}; summary.innerHTML="";
-  flights.forEach(f=>{
-    const k=f.dep+"→"+f.arr;
-    if(!sum[k]) sum[k]={pp:0};
-    sum[k].pp+=f.pp;
-  });
+  summary.innerHTML="";
   Object.entries(sum).forEach(([k,v])=>{
-    summary.innerHTML+=`<div>${k}<div class="bar" style="width:${v.pp/500}px">${v.pp}</div></div>`;
+    summary.innerHTML+=`<div>${k}<div class="bar" style="width:${v/500}px">${v} PP</div></div>`;
   });
 }
 function delFlight(i){ flights.splice(i,1); localStorage.setItem("flights",JSON.stringify(flights)); render(); }
 
-renderRoutes(); render();
+renderRoutes();
+render();
 </script>
 
 </body>
