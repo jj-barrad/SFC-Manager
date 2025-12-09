@@ -1,422 +1,219 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SFC PP 管理アプリ（進化版）</title>
-<link rel="manifest" href="manifest.json" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SFC PP 管理アプリ（実用安定版）</title>
 <style>
-  body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;margin:0;padding:16px;background:#f5f8fb}
-  h1{color:#004c99;text-align:center;margin:0 0 12px}
-  .card{background:#fff;padding:12px;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,0.08);margin-bottom:12px}
-  label{display:block;margin:8px 0 4px;font-weight:600}
-  input,select,button{width:100%;padding:8px;border-radius:8px;border:1px solid #d0d7df;box-sizing:border-box}
-  .row{display:flex;gap:8px}
-  .row > *{flex:1}
-  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
-  th,td{padding:8px;border-bottom:1px solid #eee;text-align:center}
-  .small{width:auto;padding:6px 10px}
-  .delete-btn{background:#d9534f;color:#fff;border:0;padding:6px 10px;border-radius:8px}
-  .positive{color:green;font-weight:700}
-  .warn{color:#b06a00;font-weight:700}
-  .bad{color:#b00020;font-weight:700}
-  .graph-bar{height:18px;background:#0053a0;border-radius:6px;margin:6px 0;color:#fff;padding-left:6px;line-height:18px}
-  .flex{display:flex;gap:8px;align-items:center}
-  .pill{background:#eef6ff;padding:6px 8px;border-radius:999px;font-weight:700;color:#0053a0}
-  .muted{color:#666;font-size:13px}
-  .highlight{background:#fff8e6}
-  .badge{display:inline-block;padding:4px 8px;border-radius:8px;background:#f0f4f8;font-weight:700;color:#004c99}
-  .danger-bg{background:#fff0f0}
-  .ok-bg{background:#f0fff6}
+body { font-family:-apple-system,BlinkMacSystemFont,sans-serif; background:#f4f7fb; margin:0; padding:16px; }
+h1 { text-align:center; color:#0053a0; }
+.card { background:#fff; padding:14px; border-radius:12px; margin-bottom:14px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+label { display:block; margin-top:8px; font-weight:600; }
+input,select,button { width:100%; padding:8px; margin-top:4px; border-radius:8px; border:1px solid #ccc; }
+.row { display:flex; gap:8px; }
+.row > * { flex:1; }
+button { background:#0053a0; color:white; font-weight:700; }
+button.small { width:auto; padding:6px 10px; }
+button.delete { background:#c9302c; }
+table { width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; }
+th,td { padding:6px; border-bottom:1px solid #ddd; text-align:center; }
+.warn { color:#b06a00; font-weight:700; }
+.good { color:#0a7b3d; font-weight:700; }
+.bar { height:16px; background:#0053a0; border-radius:6px; color:#fff; padding-left:6px; }
 </style>
 </head>
 <body>
 
-<h1>SFC PP 管理（計画→確定→実績）</h1>
+<h1>SFC PP 管理アプリ</h1>
 
+<!-- ================== SUMMARY ================== -->
 <div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <div>
-      <span class="pill">合計PP: <span id="totalPP">0</span></span>
-      <span style="margin-left:8px" class="pill">合計費用: <span id="totalCost">0</span>円</span>
-      <span style="margin-left:8px" class="pill">PP単価: <span id="ppUnit">0</span>円</span>
-    </div>
-    <div>
-      <button class="small" onclick="render()">更新</button>
-      <button class="small" onclick="exportCSV()">CSV出力</button>
-    </div>
-  </div>
-  <progress id="progressBar" max="50000" value="0" style="width:100%;margin-top:10px;height:14px"></progress>
+<strong>合計PP:</strong> <span id="totalPP">0</span> / 50,000　
+<strong>費用:</strong> <span id="totalCost">0</span>円　
+<strong>PP単価:</strong> <span id="ppUnit">0</span>
+<progress id="progress" max="50000" value="0" style="width:100%;margin-top:8px"></progress>
 </div>
 
-<!-- 計画モード -->
+<!-- ================== PLAN MODE ================== -->
 <div class="card">
-  <h2>旅行計画モード（ざっくり確認）</h2>
-  <div class="row">
-    <select id="presetRoute" onchange="applyPreset()">
-      <option value="">— プリセット選択 —</option>
-      <option value="HND-OKA">HND → OKA（羽田↔那覇）</option>
-      <option value="HND-HNL">HND → HNL（羽田↔ホノルル）</option>
-      <option value="HND-CTS">HND → CTS（羽田↔新千歳）</option>
-      <option value="HND-FUK">HND → FUK（羽田↔福岡）</option>
-    </select>
-    <select id="planClass">
-      <option value="Y">Y（フル運賃）</option>
-      <option value="M">M（75%想定）</option>
-      <option value="S">S（75%）</option>
-      <option value="L">L（50%）</option>
-      <option value="B">B（100%）</option>
-    </select>
-  </div>
-  <div class="row" style="margin-top:8px">
-    <input id="planCost" placeholder="想定往復金額（例: 28000）" />
-    <select id="planRound">
-      <option value="round">往復</option>
-      <option value="oneway">片道</option>
-    </select>
-  </div>
+<h2>旅行計画（ざっくり確認）</h2>
 
-  <div style="display:flex;gap:8px;margin-top:8px">
-    <button onclick="addPlan()" style="flex:1">計画を追加</button>
-    <button onclick="estimateNow()" style="flex:1" class="small">即時見積り</button>
-  </div>
-
-  <p class="muted" style="margin-top:8px">
-    ※ 想定PPはANAの区間基本マイル×積算率×(往復2)×クレカ倍率(デフォルト1.25)で算出（概算、実績とは異なる場合あり）。
-  </p>
-
-  <div id="planPreview" style="margin-top:8px"></div>
+<div class="row">
+<select id="preset">
+<option value="">プリセット</option>
+<option value="HND-OKA">HND → OKA</option>
+<option value="HND-HNL">HND → HNL</option>
+<option value="HND-CTS">HND → CTS</option>
+<option value="HND-FUK">HND → FUK</option>
+</select>
+<select id="planClass">
+<option value="S">S（75%）</option>
+<option value="M">M（75%）</option>
+<option value="Y">Y（100%）</option>
+<option value="L">L（50%）</option>
+</select>
 </div>
 
-<!-- 計画一覧 -->
-<div class="card">
-  <h2>計画一覧（編集 → 1クリックで予約に変換）</h2>
-  <table>
-    <thead>
-      <tr><th>#</th><th>区間</th><th>クラス</th><th>想定PP</th><th>想定費用</th><th>判定</th><th></th></tr>
-    </thead>
-    <tbody id="planList"></tbody>
-  </table>
+<div class="row" style="margin-top:6px">
+<input id="planCost" type="number" placeholder="想定往復金額">
+<select id="planTrip">
+<option value="2">往復</option>
+<option value="1">片道</option>
+</select>
 </div>
 
-<!-- 予約／確定入力（既存） -->
-<div class="card">
-  <h2>フライト確定入力（予約後）</h2>
-  <label>日付 <input id="date" type="date"></label>
-  <div class="row">
-    <input id="dep" placeholder="出発（例 HND）" />
-    <input id="arr" placeholder="到着（例 OKA）" />
-  </div>
-  <div class="row">
-    <input id="flightNo" placeholder="便名（例 ANA123）" />
-    <input id="class" placeholder="予約クラス（例 S）" />
-  </div>
-  <div class="row">
-    <input id="pp" placeholder="PP（例 2950）" type="number"/>
-    <input id="cost" placeholder="金額（円）" type="number"/>
-  </div>
-  <div class="row" style="margin-top:8px">
-    <input id="memo" placeholder="メモ" />
-    <select id="status">
-      <option value="予約済">予約済</option>
-      <option value="搭乗済">搭乗済</option>
-      <option value="キャンセル">キャンセル</option>
-    </select>
-  </div>
-  <div style="display:flex;gap:8px;margin-top:8px">
-    <button onclick="addFlight()" style="flex:1">追加</button>
-    <button class="delete-btn" onclick="clearAll()" style="flex:1">全削除</button>
-  </div>
+<button style="margin-top:8px" onclick="addPlan()">計画を追加</button>
+<div id="planPreview" style="margin-top:8px"></div>
 </div>
 
-<!-- フライト一覧 -->
+<!-- ================== ROUTE MILES ================== -->
 <div class="card">
-  <h2>フライト一覧（実績管理）</h2>
-  <div class="filter">
-    <input id="search" placeholder="便名・出発・到着で検索" oninput="render()" />
-    <select id="statusFilter" onchange="render()">
-      <option value="">全ステータス</option>
-      <option value="予約済">予約済</option>
-      <option value="搭乗済">搭乗済</option>
-      <option value="キャンセル">キャンセル</option>
-    </select>
-  </div>
-  <table>
-    <thead><tr><th>日付</th><th>出発→到着</th><th>便名</th><th>クラス</th><th>PP</th><th>金額</th><th>獲得P</th><th>状態</th><th>差分</th><th></th></tr></thead>
-    <tbody id="list"></tbody>
-  </table>
+<h2>路線マイル管理（ANA公式）</h2>
+<table>
+<thead><tr><th>出発</th><th>到着</th><th>マイル</th><th></th></tr></thead>
+<tbody id="routeTable"></tbody>
+</table>
+
+<div class="row">
+<input id="rDep" placeholder="HND">
+<input id="rArr" placeholder="OKA">
+<input id="rMiles" type="number" placeholder="984">
+</div>
+<button style="margin-top:6px" onclick="addRoute()">追加／更新</button>
 </div>
 
+<!-- ================== FLIGHT INPUT ================== -->
 <div class="card">
-  <h2>区間別集計（PP/金額）</h2>
-  <div id="summary"></div>
+<h2>確定入力（予約後）</h2>
+<label>日付<input id="date" type="date"></label>
+
+<div class="row">
+<input id="dep" placeholder="出発">
+<input id="arr" placeholder="到着">
+</div>
+
+<div class="row">
+<input id="flightNo" placeholder="便名">
+<input id="cls" placeholder="クラス">
+</div>
+
+<div class="row">
+<input id="pp" type="number" placeholder="PP">
+<input id="cost" type="number" placeholder="金額">
+</div>
+
+<button style="margin-top:8px" onclick="addFlight()">追加</button>
+</div>
+
+<!-- ================== LIST ================== -->
+<div class="card">
+<h2>フライト一覧</h2>
+<table>
+<thead><tr><th>日付</th><th>区間</th><th>便</th><th>PP</th><th>金額</th><th></th></tr></thead>
+<tbody id="list"></tbody>
+</table>
+</div>
+
+<!-- ================== SUMMARY BY ROUTE ================== -->
+<div class="card">
+<h2>区間別集計</h2>
+<div id="summary"></div>
 </div>
 
 <script>
-/* ----------------
-   公式ベースの固定データ（任意で拡張）
-   実装は「計画用概算」を目的とするため、必要最小限を保持
-   ---------------- */
-const ROUTE_MILES = {
-  "HND-OKA": 984,
-  "HND-HNL": 3850,
-  "HND-CTS": 510,
-  "HND-FUK": 567,
-  // 汎用: 入力で見つからない場合は近似値（ユーザーが直接編集推奨）
+/* ---------- 固定設定 ---------- */
+const CARD_RATE = 1.25;
+const CLASS_RATE = {Y:1.0, M:0.75, S:0.75, L:0.5};
+
+/* ---------- Route Miles（更新①） ---------- */
+let routeMiles = JSON.parse(localStorage.getItem("routeMiles")) || {
+  "HND-OKA":984,"HND-HNL":3850,"HND-CTS":510,"HND-FUK":567
 };
-const CLASS_RATE = {
-  "Y": 1.0, "B": 1.0, "M": 0.75, "S":0.75, "L":0.5
-};
-const DEFAULT_CARD_MULT = 1.25; // ANAゴールドの搭乗P+25%
 
-let flights = JSON.parse(localStorage.getItem("flights")||"[]");
-let plans = JSON.parse(localStorage.getItem("plans")||"[]");
+function saveRoutes(){ localStorage.setItem("routeMiles",JSON.stringify(routeMiles)); }
 
-function save(){
-  localStorage.setItem("flights", JSON.stringify(flights));
-  localStorage.setItem("plans", JSON.stringify(plans));
+function renderRoutes(){
+  const t=document.getElementById("routeTable"); t.innerHTML="";
+  Object.entries(routeMiles).forEach(([k,v])=>{
+    const [d,a]=k.split("-");
+    t.innerHTML+=`<tr><td>${d}</td><td>${a}</td><td>${v}</td>
+    <td><button class="small delete" onclick="delRoute('${k}')">削除</button></td></tr>`;
+  });
 }
 
-/* ---------- 計画モード機能 ---------- */
-function applyPreset(){
-  const v=document.getElementById("presetRoute").value;
-  if(!v) return;
-  const parts=v.split("-");
-  document.getElementById("dep").value = parts[0];
-  document.getElementById("arr").value = parts[1];
-  // preview compute
-  estimateNow();
+function addRoute(){
+  const d=rDep.value.trim(), a=rArr.value.trim(), m=Number(rMiles.value);
+  if(!d||!a||!m) return alert("入力不完全");
+  routeMiles[`${d}-${a}`]=m; saveRoutes(); renderRoutes();
+}
+function delRoute(k){ delete routeMiles[k]; saveRoutes(); renderRoutes(); }
+
+/* ---------- Data ---------- */
+let flights=JSON.parse(localStorage.getItem("flights")||"[]");
+let plans=JSON.parse(localStorage.getItem("plans")||"[]");
+
+/* ---------- Plan Mode（更新②③） ---------- */
+function getMiles(d,a){
+  return routeMiles[`${d}-${a}`]||routeMiles[`${a}-${d}`]||null;
 }
 
-function estimateRouteMiles(dep,arr){
-  const key = dep+"-"+arr;
-  if(ROUTE_MILES[key]) return ROUTE_MILES[key];
-  // try reversed (往復)
-  const rev = arr+"-"+dep;
-  if(ROUTE_MILES[rev]) return ROUTE_MILES[rev];
-  // fallback: 500 (small), user should adjust later
-  return 500;
-}
-
-function estimateNow(){
-  const preset=document.getElementById("presetRoute").value;
-  const depArr = preset? preset.split("-") : [document.getElementById("dep").value || "HND", document.getElementById("arr").value || "OKA"];
-  const cls=document.getElementById("planClass").value;
-  const cost = Number(document.getElementById("planCost").value)||0;
-  const round = document.getElementById("planRound").value;
-  const miles = estimateRouteMiles(depArr[0], depArr[1]);
-  const rate = CLASS_RATE[cls] || 0.75;
-  const multiplier = DEFAULT_CARD_MULT;
-  const legs = (round==="round")?2:1;
-  const estPP = Math.round(miles * rate * multiplier * legs);
-  const estUnit = cost && estPP ? (cost/estPP).toFixed(1) : "—";
-  document.getElementById("planPreview").innerHTML = `
-    <div class="flex">
-      <div><strong>${depArr[0]} → ${depArr[1]} (${round})</strong></div>
-      <div style="margin-left:auto" class="badge">想定PP: ${estPP} PP</div>
-      <div style="margin-left:8px" class="badge">単価目安: ${estUnit} 円/PP</div>
-    </div>
-  `;
-  return {dep:depArr[0], arr:depArr[1], class:cls, estPP, cost, round};
+preset.onchange=()=>{
+  if(!preset.value) return;
+  const [d,a]=preset.value.split("-");
+  const m=getMiles(d,a);
+  if(!m){ planPreview.innerHTML="<span class='warn'>未登録路線</span>"; return; }
+  const rate=CLASS_RATE[planClass.value];
+  const pp=Math.round(m*rate*CARD_RATE*planTrip.value);
+  const unit=planCost.value? (planCost.value/pp).toFixed(1):"-";
+  planPreview.innerHTML=`想定PP: <b>${pp}</b> / 単価: <b>${unit}</b>`;
 }
 
 function addPlan(){
-  const res = estimateNow();
-  if(!res) return alert("まずは見積りしてください");
-  plans.push({dep:res.dep, arr:res.arr, cls:res.class, estPP:res.estPP, cost:res.cost, round:res.round, created:Date.now()});
-  save(); renderPlans();
+  if(!preset.value) return alert("路線選択");
+  const [d,a]=preset.value.split("-");
+  const m=getMiles(d,a); if(!m) return;
+  const rate=CLASS_RATE[planClass.value];
+  const pp=Math.round(m*rate*CARD_RATE*planTrip.value);
+  plans.push({d,a,pp,cost:Number(planCost.value)||0});
+  localStorage.setItem("plans",JSON.stringify(plans));
+  alert("計画追加");
 }
 
-/* ---------- Plan list UI ---------- */
-function renderPlans(){
-  const tbody=document.getElementById("planList");
-  tbody.innerHTML="";
-  plans.forEach((p,i)=>{
-    const unit = p.cost && p.estPP ? (p.cost/p.estPP).toFixed(1) : "—";
-    let rank="◎";
-    if(unit==="—") rank="△";
-    else if(Number(unit) > 15) rank="✕";
-    else if(Number(unit) > 12) rank="△";
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${i+1}</td>
-      <td>${p.dep}→${p.arr}</td>
-      <td>${p.cls}</td>
-      <td>${p.estPP}</td>
-      <td>${p.cost? p.cost.toLocaleString() + "円" : "未設定"}</td>
-      <td>${rank} (${unit}円)</td>
-      <td>
-        <button class="small" onclick="convertPlanToFlight(${i})">確定へ</button>
-        <button class="small" onclick="deletePlan(${i})">削除</button>
-      </td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-function deletePlan(i){ if(!confirm("計画を削除しますか？")) return; plans.splice(i,1); save(); renderPlans(); }
-
-function convertPlanToFlight(i){
-  const p = plans[i];
-  if(!p) return;
-  // open confirm to ask date and flightNo? For convenience, create a draft with empty date/flightNo
-  const flight = {
-    date: "",
-    dep: p.dep,
-    arr: p.arr,
-    pp: p.estPP,
-    cost: p.cost || 0,
-    flightNo: "",
-    class: p.cls,
-    mult: DEFAULT_CARD_MULT,
-    points: p.estPP,
-    memo: "計画から移行",
-    status: "予約済",
-    estPP: p.estPP,
-    actualPP: null
-  };
-  flights.push(flight);
-  plans.splice(i,1);
-  save(); render(); renderPlans();
-  alert("計画を予約リストへ移行しました。便名・日付を入力して確定してください。");
-}
-
-/* ---------- フライト管理機能（既存） ---------- */
+/* ---------- Flight ---------- */
 function addFlight(){
-  const date=document.getElementById("date").value;
-  const dep=document.getElementById("dep").value.trim();
-  const arr=document.getElementById("arr").value.trim();
-  const pp=Number(document.getElementById("pp").value);
-  const cost=Number(document.getElementById("cost").value);
-  const flightNo=document.getElementById("flightNo").value;
-  const cls=document.getElementById("class").value;
-  const memo=document.getElementById("memo").value;
-  const status=document.getElementById("status").value;
-  const mult = DEFAULT_CARD_MULT;
-  const points = pp * 1.0; // we assume user inputs final PP (or estPP)
-  if(!dep||!arr||!pp||!cost){ alert("出発・到着・PP・金額は必須です"); return; }
-  flights.push({date,dep,arr,pp,cost,flightNo,class:cls,mult,points,memo,status, estPP: pp, actualPP: null});
-  save(); render();
+  const f={date:date.value,dep:dep.value,arr:arr.value,
+    flightNo:flightNo.value,pp:Number(pp.value),cost:Number(cost.value)};
+  flights.push(f); localStorage.setItem("flights",JSON.stringify(flights)); render();
 }
 
-function deleteFlight(i){ if(!confirm("削除しますか？")) return; flights.splice(i,1); save(); render(); }
-
-function clearAll(){ if(confirm("全削除しますか？")){ flights=[]; save(); render(); } }
-
-/* ---------- レンダー（一覧・合計・サマリ） ---------- */
+/* ---------- Render ---------- */
 function render(){
-  // flights list
-  const list = document.getElementById("list");
-  list.innerHTML="";
-  let totalPP=0, totalCost=0;
-  const search=document.getElementById("search").value.toLowerCase();
-  const statusFilter=document.getElementById("statusFilter").value;
+  const l=document.getElementById("list"); l.innerHTML="";
+  let tpp=0,tc=0;
   flights.forEach((f,i)=>{
-    if(search && !( (f.flightNo||"").toLowerCase().includes(search) || (f.dep||"").toLowerCase().includes(search) || (f.arr||"").toLowerCase().includes(search) )) return;
-    if(statusFilter && f.status!==statusFilter) return;
-    totalPP += Number(f.pp || 0);
-    totalCost += Number(f.cost || 0);
-    // difference (想定 vs 実績)
-    const est = f.estPP || f.pp || 0;
-    const actual = (f.actualPP !== null && f.actualPP !== undefined) ? f.actualPP : f.pp;
-    const diff = actual - est;
-    const diffText = (diff===0) ? "0" : (diff>0? `+${diff}`:`${diff}`);
-    const diffClass = diff < 0 ? "warn" : (diff>0? "positive":"");
-    const tr = document.createElement("tr");
-    if(f.status==="キャンセル") tr.className="muted";
-    tr.innerHTML = `<td>${f.date || ""}</td>
-      <td>${f.dep} → ${f.arr}</td>
-      <td>${f.flightNo || ""}</td>
-      <td>${f.class || ""}</td>
-      <td>${f.pp}</td>
-      <td>${f.cost}</td>
-      <td>${(f.points||f.pp).toFixed ? Number(f.points||f.pp).toFixed(0) : f.points||f.pp}</td>
-      <td>${f.status}</td>
-      <td class="${diffClass}">${diffText}</td>
-      <td>
-        <button class="small" onclick="editActualPP(${i})">実績入力</button>
-        <button class="small" onclick="deleteFlight(${i})">削除</button>
-      </td>`;
-    list.appendChild(tr);
+    tpp+=f.pp; tc+=f.cost;
+    l.innerHTML+=`<tr><td>${f.date}</td><td>${f.dep}→${f.arr}</td>
+    <td>${f.flightNo}</td><td>${f.pp}</td><td>${f.cost}</td>
+    <td><button class="small delete" onclick="delFlight(${i})">×</button></td></tr>`;
   });
+  totalPP.textContent=tpp; totalCost.textContent=tc;
+  ppUnit.textContent=tpp?(tc/tpp).toFixed(1):0;
+  progress.value=tpp;
 
-  document.getElementById("totalPP").textContent = totalPP;
-  document.getElementById("totalCost").textContent = totalCost.toLocaleString();
-  document.getElementById("ppUnit").textContent = totalPP? (totalCost/totalPP).toFixed(1) : 0;
-  document.getElementById("progressBar").value = Math.min(totalPP,50000);
-
-  // PP unit alert visual
-  const unit = totalPP? (totalCost/totalPP) : 0;
-  if(unit === 0) {
-    document.getElementById("totalPP").parentElement.classList.remove("danger-bg");
-  } else if(unit > 15){
-    document.getElementById("totalPP").parentElement.classList.add("danger-bg");
-  } else {
-    document.getElementById("totalPP").parentElement.classList.remove("danger-bg");
-  }
-
-  renderSummary();
-  save();
-}
-
-/* ---------- 区間別サマリ ---------- */
-function renderSummary(){
-  const summary=document.getElementById("summary");
-  summary.innerHTML="";
-  const map={};
+  const sum={}; summary.innerHTML="";
   flights.forEach(f=>{
-    if(f.status==="キャンセル") return;
-    const key = `${f.dep}→${f.arr}`;
-    if(!map[key]) map[key] = {pp:0,cost:0,count:0};
-    map[key].pp += Number(f.pp||0);
-    map[key].cost += Number(f.cost||0);
-    map[key].count += 1;
+    const k=f.dep+"→"+f.arr;
+    if(!sum[k]) sum[k]={pp:0};
+    sum[k].pp+=f.pp;
   });
-  for(const k in map){
-    const el = document.createElement("div");
-    const pct = Math.min(map[k].pp/500*100,100);
-    el.innerHTML = `<div style="display:flex;justify-content:space-between;">
-      <div><strong>${k}</strong>（${map[k].count}回）</div>
-      <div class="muted">PP:${map[k].pp} 金額:${map[k].cost.toLocaleString()}円</div>
-    </div>
-    <div class="graph-bar" style="width:${pct}%">${Math.round(pct)}%</div>`;
-    summary.appendChild(el);
-  }
+  Object.entries(sum).forEach(([k,v])=>{
+    summary.innerHTML+=`<div>${k}<div class="bar" style="width:${v.pp/500}px">${v.pp}</div></div>`;
+  });
 }
+function delFlight(i){ flights.splice(i,1); localStorage.setItem("flights",JSON.stringify(flights)); render(); }
 
-/* ---------- 実績PPの編集 ---------- */
-function editActualPP(i){
-  const val = prompt("実績PPを入力してください（半角数字）", flights[i].actualPP || flights[i].pp || "");
-  if(val === null) return;
-  const n = Number(val);
-  if(isNaN(n)) return alert("数値を入力してください");
-  flights[i].actualPP = n;
-  // update points and possibly pp field
-  flights[i].points = n;
-  save();
-  render();
-}
-
-/* ---------- CSV 出力（計画も含む） ---------- */
-function exportCSV(){
-  const headerFlights = ["日付","出発","到着","便名","クラス","PP","金額","獲得P","ステータス","メモ","想定PP","実績PP"];
-  const rowsFlights = flights.map(f => [f.date,f.dep,f.arr,f.flightNo,f.class,f.pp,f.cost,(f.points||f.pp),f.status,f.memo,(f.estPP||""),(f.actualPP||"")]);
-  let csv = headerFlights.join(",") + "\n" + rowsFlights.map(r=> r.map(c=> `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
-  // Plans
-  csv += "\n\n";
-  csv += "計画一覧\n";
-  csv += "区間,クラス,想定PP,想定費用,往復/片道\n";
-  csv += plans.map(p => `${p.dep}→${p.arr},${p.cls},${p.estPP},${p.cost || ""},${p.round}`).join("\n");
-
-  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "sfc_pp_data.csv";
-  document.body.appendChild(link); link.click(); document.body.removeChild(link);
-}
-
-/* ---------- 起動時 ---------- */
-renderPlans();
-render();
-
+renderRoutes(); render();
 </script>
+
 </body>
 </html>
