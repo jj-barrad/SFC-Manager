@@ -346,135 +346,18 @@ const InputModule = (function(){
 document.getElementById("addBtn").addEventListener("click", InputModule.add);
 UIModule.init();
 
-/* =========================
-   Strategy Extension Module
-   (Coreには触れない)
-========================= */
-const StrategyModule = (function(){
+/* ==============================
+   Unified Strategy Engine v1
+   Strategy + Ultimate 完全統合
+   Phase2含む
+================================ */
 
-    function calculate(){
+const StrategyEngine = (function(){
+
+    function collect(){
         const plans = DataModule.getAll();
-
-        let totalPP = 0;
-        let actualPP = 0;
-        let totalCost = 0;
-        let monthly = {};
-
-        plans.forEach(p=>{
-            totalPP += p.pp;
-            totalCost += p.price;
-            if(p.done) actualPP += p.pp;
-            if(p.month){
-                if(!monthly[p.month]) monthly[p.month]=0;
-                monthly[p.month]+=p.pp;
-            }
-        });
-
-        const remainPP = 50000 - actualPP;
-        const avgUnit = totalPP ? totalCost/totalPP : 0;
-
-        return { totalPP, actualPP, remainPP, avgUnit, monthly };
-    }
-
-    function render(){
-        const data = calculate();
-
-        let html = "";
-
-        // 達成予測
-        const months = Object.keys(data.monthly).length;
-        const remainingMonths = 12 - months;
-        let perMonth = remainingMonths>0 ? Math.ceil(data.remainPP/remainingMonths) : 0;
-
-        html += `<b>🎯 修行ロードマップ</b><br>`;
-        if(data.remainPP<=0){
-            html += `ダイヤ到達済み<br><br>`;
-        }else{
-            html += `残り ${data.remainPP} PP<br>`;
-            html += `今後 月平均 ${perMonth} PP 必要<br><br>`;
-        }
-
-        // 効率スコア
-        let score = 100;
-
-        if(data.avgUnit > 15) score -= 30;
-        else if(data.avgUnit > 13) score -= 15;
-
-        if(remainingMonths < 3) score -= 15;
-        if(data.remainPP > 30000) score -= 10;
-
-        if(score<0) score=0;
-
-        html += `<b>🧠 修行効率スコア</b><br>`;
-        html += `${score} / 100<br><br>`;
-
-        // リスク表示
-        html += `<b>⚠ リスク分析</b><br>`;
-        if(data.avgUnit>15){
-            html += `単価が高めです（15円超）<br>`;
-        }
-        if(remainingMonths<3 && data.remainPP>10000){
-            html += `残期間が少ないです<br>`;
-        }
-        if(data.remainPP>40000){
-            html += `修行未着手に近い状態です<br>`;
-        }
-        html += `<br>`;
-
-        // 予算予測
-        const projectedCost = data.remainPP * (data.avgUnit||12);
-        html += `<b>💰 予測必要予算</b><br>`;
-        html += `約 ${Math.floor(projectedCost).toLocaleString()} 円（現在単価基準）`;
-
-        document.getElementById("strategyPanel").innerHTML = html;
-    }
-
-    return { render };
-
-})();
-
-/* =========================
-   Strategy UI追加
-========================= */
-(function(){
-
-    const container = document.querySelector(".container");
-
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `<div id="strategyPanel"></div>`;
-
-    container.appendChild(card);
-
-    // Coreのrender後にも更新されるようHook
-    const originalRender = UIModule.render;
-    UIModule.render = function(){
-        originalRender();
-        StrategyModule.render();
-    };
-
-    // 初回描画
-    StrategyModule.render();
-
-})();
-/* =========================
-   Ultimate Extension Layer v2
-   Core非変更・完全上乗せ
-========================= */
-
-const UltimateStrategy = (function(){
-
-    const intlPresets = {
-        "HND-HNL": 3831,
-        "HND-SIN": 3312,
-        "HND-BKK": 2869,
-        "HND-ICN": 758,
-        "HND-TPE": 1330
-    };
-
-    function baseData(){
-        const plans = DataModule.getAll();
-        let totalPP=0, actualPP=0, totalCost=0, monthly={}, routeStats={};
+        let totalPP=0, actualPP=0, totalCost=0;
+        let monthly={}, routeStats={};
 
         plans.forEach(p=>{
             totalPP+=p.pp;
@@ -495,110 +378,81 @@ const UltimateStrategy = (function(){
         return {plans,totalPP,actualPP,totalCost,monthly,routeStats};
     }
 
-    function roadmap(data){
-        const remain=50000-data.actualPP;
-        const months=Object.keys(data.monthly).length;
-        const remainMonths=Math.max(1,12-months);
-        const perMonth=Math.ceil(remain/remainMonths);
-        return {remain,remainMonths,perMonth};
-    }
-
-    function efficiencyScore(data){
-        let score=100;
-        const avg=data.totalPP?data.totalCost/data.totalPP:0;
-        if(avg>15)score-=30;
-        else if(avg>13)score-=15;
-        if(data.actualPP<5000)score-=10;
-        return Math.max(score,0);
-    }
-
-    function bestRoute(data){
-        let best=null, bestUnit=999;
-        for(let r in data.routeStats){
-            const unit=data.routeStats[r].cost/data.routeStats[r].pp;
-            if(unit<bestUnit){
-                bestUnit=unit;
-                best=r;
-            }
-        }
-        return {route:best,unit:bestUnit};
-    }
-
-    function simulateCompletion(data){
-        const remain=50000-data.actualPP;
-        const avgMonthlyPP=Object.values(data.monthly).reduce((a,b)=>a+b,0)/(Object.keys(data.monthly).length||1);
-
-        let success=0;
-        for(let i=0;i<500;i++){
-            let temp=0;
-            for(let m=0;m<12;m++){
-                temp+=avgMonthlyPP*(0.8+Math.random()*0.4);
-            }
-            if(temp>=remain) success++;
-        }
-        return Math.floor(success/5); // %
-    }
-
     function render(){
 
-        const data=baseData();
-        const map=roadmap(data);
-        const score=efficiencyScore(data);
-        const best=bestRoute(data);
-        const prob=simulateCompletion(data);
-        const avgUnit=data.totalPP?data.totalCost/data.totalPP:0;
-        const projectedCost=map.remain*(avgUnit||12);
+        const d = collect();
+        const remain = 50000 - d.actualPP;
+        const avgUnit = d.totalPP ? d.totalCost/d.totalPP : 0;
+        const monthsUsed = Object.keys(d.monthly).length;
+        const remainMonths = Math.max(1,12-monthsUsed);
+        const perMonth = Math.ceil(remain/remainMonths);
+        const projectedCost = remain * (avgUnit||12);
+
+        let bestRoute=null, bestUnit=999;
+        for(let r in d.routeStats){
+            const u=d.routeStats[r].cost/d.routeStats[r].pp;
+            if(u<bestUnit){ bestUnit=u; bestRoute=r; }
+        }
+
+        const progressPercent = Math.min(100, (d.actualPP/50000)*100);
+
+        let score=100;
+        if(avgUnit>15) score-=30;
+        else if(avgUnit>13) score-=15;
+        if(remain>30000) score-=10;
+        if(score<0) score=0;
 
         let html="";
 
-        html+=`<b>🎯 ロードマップ</b><br>`;
-        html+=`残 ${map.remain}PP / 月${map.perMonth}PP必要<br><br>`;
-
-        html+=`<b>📈 完了確率</b><br>`;
-        html+=`約 ${prob}%<br><br>`;
-
-        html+=`<b>🧠 効率スコア</b><br>`;
-        html+=`${score}/100<br><br>`;
-
-        html+=`<b>🧭 最適ルート候補</b><br>`;
-        if(best.route){
-            html+=`${best.route}（${best.unit.toFixed(1)}円/PP）<br><br>`;
+        html+=`<b>🎯 修行ロードマップ</b><br>`;
+        if(remain<=0){
+            html+=`ダイヤ達成済み<br><br>`;
         }else{
-            html+=`データ不足<br><br>`;
+            html+=`残 ${remain} PP<br>`;
+            html+=`月平均 ${perMonth} PP 必要<br><br>`;
         }
 
-        html+=`<b>💰 予測残予算</b><br>`;
-        html+=`${Math.floor(projectedCost).toLocaleString()}円<br><br>`;
+        html+=`<b>📊 進捗バー</b><br>`;
+        html+=`
+        <div style="background:#eee;border-radius:8px;">
+            <div style="width:${progressPercent}%;background:#2a6df4;height:18px;border-radius:8px;"></div>
+        </div>
+        ${Math.floor(progressPercent)}%達成<br><br>
+        `;
 
-        html+=`<b>🌍 国際線距離プリセット</b><br>`;
-        for(let r in intlPresets){
-            html+=`${r} : ${intlPresets[r]}mi<br>`;
+        html+=`<b>🧠 効率スコア</b><br>${score}/100<br><br>`;
+
+        html+=`<b>💰 予測残予算</b><br>${Math.floor(projectedCost).toLocaleString()}円<br><br>`;
+
+        if(bestRoute){
+            html+=`<b>🧭 最適ルート</b><br>${bestRoute} (${bestUnit.toFixed(1)}円/PP)<br><br>`;
         }
 
-        document.getElementById("ultimatePanel").innerHTML=html;
+        html+=`<b>⚠ リスク分析</b><br>`;
+        if(remain>40000) html+=`修行未着手に近い状態<br>`;
+        if(avgUnit>15) html+=`単価高め<br>`;
+        if(remainMonths<3 && remain>10000) html+=`残期間不足リスク<br>`;
+
+        document.getElementById("strategyUnified").innerHTML=html;
     }
 
     return {render};
 })();
 
-/* =========================
-   UI追加
-========================= */
 (function(){
     const container=document.querySelector(".container");
-
     const card=document.createElement("div");
     card.className="card";
-    card.innerHTML=`<div id="ultimatePanel"></div>`;
+    card.innerHTML=`<div id="strategyUnified"></div>`;
     container.appendChild(card);
 
     const originalRender=UIModule.render;
     UIModule.render=function(){
         originalRender();
-        UltimateStrategy.render();
+        StrategyEngine.render();
     };
 
-    UltimateStrategy.render();
+    StrategyEngine.render();
 })();
 </script>
 
