@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SFC修行管理アプリ Stable Core v3</title>
+<title>SFC修行管理アプリ Stable Core v4</title>
 <style>
 body{font-family:-apple-system;background:#f3f6fa;margin:0}
 header{background:#003f88;color:#fff;padding:14px;text-align:center;font-weight:bold}
@@ -24,7 +24,7 @@ th,td{border-bottom:1px solid #eee;padding:6px;text-align:center}
 </head>
 <body>
 
-<header>SFC修行管理アプリ Stable Core v3</header>
+<header>SFC修行管理アプリ Stable Core v4</header>
 
 <div class="container">
 
@@ -41,19 +41,7 @@ th,td{border-bottom:1px solid #eee;padding:6px;text-align:center}
 <b>計画入力</b>
 
 テンプレ区間
-<select id="template" onchange="Input.applyTemplate()">
-<option value="">選択なし</option>
-<option value="HND-OKA">羽田-那覇</option>
-<option value="HND-CTS">羽田-札幌</option>
-<option value="HND-FUK">羽田-福岡</option>
-<option value="HND-ISG">羽田-石垣</option>
-<option value="HND-KOJ">羽田-鹿児島</option>
-<option value="ITM-OKA">伊丹-那覇</option>
-<option value="ITM-CTS">伊丹-札幌</option>
-<option value="KIX-OKA">関空-那覇</option>
-<option value="NGO-OKA">中部-那覇</option>
-<option value="FUK-OKA">福岡-那覇</option>
-</select>
+<select id="template"></select>
 
 出発地<input id="from">
 到着地<input id="to">
@@ -71,16 +59,9 @@ th,td{border-bottom:1px solid #eee;padding:6px;text-align:center}
 </select>
 
 運賃種別
-<select id="rate">
-<option value="0.75">スーパーバリュー(75%)</option>
-<option value="1">バリュー(100%)</option>
-<option value="1.25">プレミアム株主(125%)</option>
-<option value="1">国際線Y/B/M(100%)</option>
-<option value="0.5">国際線格安(50%)</option>
-</select>
+<select id="rate"></select>
 
 国際線距離（マイル）<input type="number" id="intlDist" placeholder="国内線は空欄">
-
 <span id="intlWarning" class="warning"></span>
 
 座席
@@ -92,7 +73,7 @@ th,td{border-bottom:1px solid #eee;padding:6px;text-align:center}
 価格<input type="number" id="price">
 搭乗月<input id="month">
 
-<button onclick="Input.add()">追加</button>
+<button id="addBtn">追加</button>
 </div>
 
 <div class="card">
@@ -100,27 +81,15 @@ th,td{border-bottom:1px solid #eee;padding:6px;text-align:center}
 <table>
 <thead>
 <tr>
-<th>区間</th>
-<th>月</th>
-<th>PP</th>
-<th>価格</th>
-<th>済</th>
-<th>削除</th>
+<th>区間</th><th>月</th><th>PP</th><th>価格</th><th>済</th><th>削除</th>
 </tr>
 </thead>
 <tbody id="planTable"></tbody>
 </table>
 </div>
 
-<div class="card">
-<b>月別PP</b>
-<div id="monthly"></div>
-</div>
-
-<div class="card">
-<b>PP単価ヒートマップ</b>
-<div id="heat"></div>
-</div>
+<div class="card"><b>月別PP</b><div id="monthly"></div></div>
+<div class="card"><b>PP単価ヒートマップ</b><div id="heat"></div></div>
 
 <div class="card">
 <b>ANAセール目安</b>
@@ -133,134 +102,250 @@ th,td{border-bottom:1px solid #eee;padding:6px;text-align:center}
 </div>
 
 <script>
-const Data={
-plans:JSON.parse(localStorage.getItem("plans"))||[],
-save(){localStorage.setItem("plans",JSON.stringify(this.plans))}
-}
 
-const Logic={
-airportMap:{
-"羽田":"HND","成田":"NRT","伊丹":"ITM","関空":"KIX","中部":"NGO",
-"札幌":"CTS","福岡":"FUK","那覇":"OKA","石垣":"ISG","鹿児島":"KOJ",
-"広島":"HIJ","仙台":"SDJ","宮古":"MMY"
-},
-distance:{
-"HND-OKA":984,"HND-CTS":510,"HND-FUK":567,"HND-ISG":1224,"HND-KOJ":601,
-"ITM-OKA":739,"ITM-CTS":666,"KIX-OKA":738,"NGO-OKA":758,"FUK-OKA":537
-},
-convert(name){
-for(let k in this.airportMap){
-name=name.replaceAll(k,this.airportMap[k])
-}
-return name.toUpperCase()
-},
-isDomestic(from,to){
-let key=from+"-"+to
-return this.distance[key]||this.distance[to+"-"+from]
-},
-calcDomestic(from,to,rate,seat){
-let base=this.distance[from+"-"+to]||this.distance[to+"-"+from]
-let pp=base*rate+400
-if(seat==="premium")pp*=1.5
-return pp
-},
-calcIntl(dist,rate){return dist*rate}
-}
+/* =========================
+   Data Module
+========================= */
+const DataModule = (function(){
+    let plans = JSON.parse(localStorage.getItem("plans")) || [];
 
-const Input={
-applyTemplate(){
-let val=document.getElementById("template").value
-if(!val)return
-let arr=val.split("-")
-document.getElementById("from").value=arr[0]
-document.getElementById("to").value=arr[1]
-},
-add(){
-let from=Logic.convert(document.getElementById("from").value)
-let to=Logic.convert(document.getElementById("to").value)
-let type=document.getElementById("tripType").value
-let airline=document.getElementById("airline").value
-let rate=parseFloat(document.getElementById("rate").value)
-let seat=document.getElementById("seat").value
-let price=parseFloat(document.getElementById("price").value)
-let month=document.getElementById("month").value
-let intl=parseFloat(document.getElementById("intlDist").value)
+    function save(){
+        localStorage.setItem("plans", JSON.stringify(plans));
+    }
 
-let pp=0
-let route=from+"-"+to
+    function getAll(){ return plans; }
 
-if(airline==="ANA"){
-if(Logic.isDomestic(from,to)){
-pp+=Logic.calcDomestic(from,to,rate,seat)
-if(type==="round")pp+=Logic.calcDomestic(to,from,rate,seat)
-document.getElementById("intlWarning").innerText=""
-}else{
-if(!intl){
-document.getElementById("intlWarning").innerText="※国際線は距離入力必須"
-return
-}
-pp+=Logic.calcIntl(intl,rate)
-if(type==="round")pp+=Logic.calcIntl(intl,rate)
-}
-}
+    function add(plan){
+        plans.push(plan);
+        save();
+    }
 
-pp=Math.floor(pp)
+    function remove(index){
+        plans.splice(index,1);
+        save();
+    }
 
-Data.plans.push({route,pp,price,month,done:false})
-Data.save()
-UI.render()
-}
-}
+    function toggleDone(index, val){
+        plans[index].done = val;
+        save();
+    }
 
-const UI={
-render(){
-let total=0,actual=0,cost=0,monthly={}
-let tableHTML=""
-Data.plans.forEach((p,i)=>{
-total+=p.pp
-cost+=p.price
-if(p.done)actual+=p.pp
-if(p.month){
-if(!monthly[p.month])monthly[p.month]=0
-monthly[p.month]+=p.pp
-}
-tableHTML+=`
-<tr>
-<td>${p.route}</td>
-<td>${p.month||""}</td>
-<td>${p.pp}</td>
-<td>${p.price||""}</td>
-<td><input type="checkbox" ${p.done?"checked":""}
-onclick="Data.plans[${i}].done=this.checked;Data.save();UI.render()"></td>
-<td><button onclick="Data.plans.splice(${i},1);Data.save();UI.render()">削除</button></td>
-</tr>`
-})
-document.getElementById("planTable").innerHTML=tableHTML
+    return { getAll, add, remove, toggleDone };
+})();
 
-let avg=total?cost/total:0
-document.getElementById("totalPP").innerText=total
-document.getElementById("actualPP").innerText=actual
-document.getElementById("avgUnit").innerText=avg.toFixed(1)
-document.getElementById("nahaEq").innerText=(total/2276).toFixed(1)
-document.getElementById("ctsEq").innerText=(total/1365).toFixed(1)
+/* =========================
+   Logic Module
+========================= */
+const LogicModule = (function(){
 
-let mHTML=""
-for(let m in monthly){
-let width=Math.min(monthly[m]/500,100)
-mHTML+=`${m}<div class="bar"><div class="bar-inner" style="width:${width}%"></div></div>`
-}
-document.getElementById("monthly").innerHTML=mHTML
+    const airportMap = {
+        "羽田":"HND","成田":"NRT","伊丹":"ITM","関空":"KIX","中部":"NGO",
+        "札幌":"CTS","福岡":"FUK","那覇":"OKA","石垣":"ISG","鹿児島":"KOJ",
+        "広島":"HIJ","仙台":"SDJ","宮古":"MMY"
+    };
 
-let hClass="heat-good"
-if(avg>15)hClass="heat-bad"
-else if(avg>13)hClass="heat-mid"
-document.getElementById("heat").innerHTML=`<div class="${hClass}">
-平均単価 ${avg.toFixed(1)} 円
-</div>`
-}
-}
+    const distance = {
+        "HND-OKA":984,"HND-CTS":510,"HND-FUK":567,"HND-ISG":1224,"HND-KOJ":601,
+        "ITM-OKA":739,"ITM-CTS":666,"KIX-OKA":738,"NGO-OKA":758,"FUK-OKA":537
+    };
 
-UI.render()
+    function convert(name){
+        for(let k in airportMap){
+            name = name.replaceAll(k, airportMap[k]);
+        }
+        return name.toUpperCase();
+    }
+
+    function isDomestic(from,to){
+        return distance[from+"-"+to] || distance[to+"-"+from];
+    }
+
+    function calcDomestic(from,to,rate,seat){
+        let base = distance[from+"-"+to] || distance[to+"-"+from];
+        let pp = base * rate + 400;
+        if(seat==="premium") pp *= 1.5;
+        return pp;
+    }
+
+    function calcIntl(dist,rate){
+        return dist * rate;
+    }
+
+    return { convert, isDomestic, calcDomestic, calcIntl };
+
+})();
+
+/* =========================
+   UI Module
+========================= */
+const UIModule = (function(){
+
+    function init(){
+        initTemplates();
+        initRates();
+        render();
+    }
+
+    function initTemplates(){
+        const select = document.getElementById("template");
+        const templates = [
+            "HND-OKA","HND-CTS","HND-FUK","HND-ISG","HND-KOJ",
+            "ITM-OKA","ITM-CTS","KIX-OKA","NGO-OKA","FUK-OKA"
+        ];
+        select.innerHTML = '<option value="">選択なし</option>';
+        templates.forEach(t=>{
+            select.innerHTML += `<option value="${t}">${t}</option>`;
+        });
+        select.addEventListener("change",()=>{
+            let val = select.value;
+            if(!val) return;
+            let arr = val.split("-");
+            document.getElementById("from").value = arr[0];
+            document.getElementById("to").value = arr[1];
+        });
+    }
+
+    function initRates(){
+        const rateSelect = document.getElementById("rate");
+        const rates = [
+            ["0.75","スーパーバリュー(75%)"],
+            ["1","バリュー(100%)"],
+            ["1.25","プレミアム株主(125%)"],
+            ["1","国際線Y/B/M(100%)"],
+            ["0.5","国際線格安(50%)"]
+        ];
+        rates.forEach(r=>{
+            rateSelect.innerHTML += `<option value="${r[0]}">${r[1]}</option>`;
+        });
+    }
+
+    function render(){
+        let plans = DataModule.getAll();
+        let total=0, actual=0, cost=0, monthly={};
+        let tableHTML="";
+
+        plans.forEach((p,i)=>{
+            total+=p.pp;
+            cost+=p.price;
+            if(p.done) actual+=p.pp;
+            if(p.month){
+                if(!monthly[p.month]) monthly[p.month]=0;
+                monthly[p.month]+=p.pp;
+            }
+
+            tableHTML+=`
+            <tr>
+            <td>${p.route}</td>
+            <td>${p.month||""}</td>
+            <td>${p.pp}</td>
+            <td>${p.price||""}</td>
+            <td><input type="checkbox" ${p.done?"checked":""} data-index="${i}" class="doneCheck"></td>
+            <td><button data-index="${i}" class="deleteBtn">削除</button></td>
+            </tr>`;
+        });
+
+        document.getElementById("planTable").innerHTML=tableHTML;
+
+        let avg = total? cost/total : 0;
+
+        document.getElementById("totalPP").innerText=total;
+        document.getElementById("actualPP").innerText=actual;
+        document.getElementById("avgUnit").innerText=avg.toFixed(1);
+        document.getElementById("nahaEq").innerText=(total/2276).toFixed(1);
+        document.getElementById("ctsEq").innerText=(total/1365).toFixed(1);
+
+        renderMonthly(monthly);
+        renderHeat(avg);
+
+        attachEvents();
+    }
+
+    function renderMonthly(monthly){
+        let html="";
+        for(let m in monthly){
+            let width=Math.min(monthly[m]/500,100);
+            html+=`${m}<div class="bar"><div class="bar-inner" style="width:${width}%"></div></div>`;
+        }
+        document.getElementById("monthly").innerHTML=html;
+    }
+
+    function renderHeat(avg){
+        let cls="heat-good";
+        if(avg>15) cls="heat-bad";
+        else if(avg>13) cls="heat-mid";
+        document.getElementById("heat").innerHTML=`<div class="${cls}">平均単価 ${avg.toFixed(1)} 円</div>`;
+    }
+
+    function attachEvents(){
+        document.querySelectorAll(".doneCheck").forEach(cb=>{
+            cb.onclick = ()=> {
+                DataModule.toggleDone(cb.dataset.index, cb.checked);
+                render();
+            };
+        });
+
+        document.querySelectorAll(".deleteBtn").forEach(btn=>{
+            btn.onclick = ()=>{
+                DataModule.remove(btn.dataset.index);
+                render();
+            };
+        });
+    }
+
+    return { init, render };
+
+})();
+
+/* =========================
+   Input Module
+========================= */
+const InputModule = (function(){
+
+    function add(){
+        let from = LogicModule.convert(document.getElementById("from").value);
+        let to = LogicModule.convert(document.getElementById("to").value);
+        let type = document.getElementById("tripType").value;
+        let airline = document.getElementById("airline").value;
+        let rate = parseFloat(document.getElementById("rate").value);
+        let seat = document.getElementById("seat").value;
+        let price = parseFloat(document.getElementById("price").value)||0;
+        let month = document.getElementById("month").value;
+        let intl = parseFloat(document.getElementById("intlDist").value);
+
+        let pp=0;
+        let route=from+"-"+to;
+
+        if(airline==="ANA"){
+            if(LogicModule.isDomestic(from,to)){
+                pp+=LogicModule.calcDomestic(from,to,rate,seat);
+                if(type==="round") pp+=LogicModule.calcDomestic(to,from,rate,seat);
+                document.getElementById("intlWarning").innerText="";
+            }else{
+                if(!intl){
+                    document.getElementById("intlWarning").innerText="※国際線は距離入力必須";
+                    return;
+                }
+                pp+=LogicModule.calcIntl(intl,rate);
+                if(type==="round") pp+=LogicModule.calcIntl(intl,rate);
+            }
+        }
+
+        pp=Math.floor(pp);
+
+        DataModule.add({route,pp,price,month,done:false});
+        UIModule.render();
+    }
+
+    return { add };
+
+})();
+
+/* =========================
+   Bootstrap
+========================= */
+document.getElementById("addBtn").addEventListener("click", InputModule.add);
+UIModule.init();
+
 </script>
 
 </body>
