@@ -459,6 +459,151 @@ const StrategyModule = (function(){
 
 })();
 </script>
+<script>
+/* =========================
+   Ultimate Extension Layer v2
+   Core非変更・完全上乗せ
+========================= */
+
+const UltimateStrategy = (function(){
+
+    const intlPresets = {
+        "HND-HNL": 3831,
+        "HND-SIN": 3312,
+        "HND-BKK": 2869,
+        "HND-ICN": 758,
+        "HND-TPE": 1330
+    };
+
+    function baseData(){
+        const plans = DataModule.getAll();
+        let totalPP=0, actualPP=0, totalCost=0, monthly={}, routeStats={};
+
+        plans.forEach(p=>{
+            totalPP+=p.pp;
+            totalCost+=p.price;
+            if(p.done) actualPP+=p.pp;
+
+            if(p.month){
+                if(!monthly[p.month]) monthly[p.month]=0;
+                monthly[p.month]+=p.pp;
+            }
+
+            if(!routeStats[p.route]) routeStats[p.route]={pp:0,cost:0,count:0};
+            routeStats[p.route].pp+=p.pp;
+            routeStats[p.route].cost+=p.price;
+            routeStats[p.route].count++;
+        });
+
+        return {plans,totalPP,actualPP,totalCost,monthly,routeStats};
+    }
+
+    function roadmap(data){
+        const remain=50000-data.actualPP;
+        const months=Object.keys(data.monthly).length;
+        const remainMonths=Math.max(1,12-months);
+        const perMonth=Math.ceil(remain/remainMonths);
+        return {remain,remainMonths,perMonth};
+    }
+
+    function efficiencyScore(data){
+        let score=100;
+        const avg=data.totalPP?data.totalCost/data.totalPP:0;
+        if(avg>15)score-=30;
+        else if(avg>13)score-=15;
+        if(data.actualPP<5000)score-=10;
+        return Math.max(score,0);
+    }
+
+    function bestRoute(data){
+        let best=null, bestUnit=999;
+        for(let r in data.routeStats){
+            const unit=data.routeStats[r].cost/data.routeStats[r].pp;
+            if(unit<bestUnit){
+                bestUnit=unit;
+                best=r;
+            }
+        }
+        return {route:best,unit:bestUnit};
+    }
+
+    function simulateCompletion(data){
+        const remain=50000-data.actualPP;
+        const avgMonthlyPP=Object.values(data.monthly).reduce((a,b)=>a+b,0)/(Object.keys(data.monthly).length||1);
+
+        let success=0;
+        for(let i=0;i<500;i++){
+            let temp=0;
+            for(let m=0;m<12;m++){
+                temp+=avgMonthlyPP*(0.8+Math.random()*0.4);
+            }
+            if(temp>=remain) success++;
+        }
+        return Math.floor(success/5); // %
+    }
+
+    function render(){
+
+        const data=baseData();
+        const map=roadmap(data);
+        const score=efficiencyScore(data);
+        const best=bestRoute(data);
+        const prob=simulateCompletion(data);
+        const avgUnit=data.totalPP?data.totalCost/data.totalPP:0;
+        const projectedCost=map.remain*(avgUnit||12);
+
+        let html="";
+
+        html+=`<b>🎯 ロードマップ</b><br>`;
+        html+=`残 ${map.remain}PP / 月${map.perMonth}PP必要<br><br>`;
+
+        html+=`<b>📈 完了確率</b><br>`;
+        html+=`約 ${prob}%<br><br>`;
+
+        html+=`<b>🧠 効率スコア</b><br>`;
+        html+=`${score}/100<br><br>`;
+
+        html+=`<b>🧭 最適ルート候補</b><br>`;
+        if(best.route){
+            html+=`${best.route}（${best.unit.toFixed(1)}円/PP）<br><br>`;
+        }else{
+            html+=`データ不足<br><br>`;
+        }
+
+        html+=`<b>💰 予測残予算</b><br>`;
+        html+=`${Math.floor(projectedCost).toLocaleString()}円<br><br>`;
+
+        html+=`<b>🌍 国際線距離プリセット</b><br>`;
+        for(let r in intlPresets){
+            html+=`${r} : ${intlPresets[r]}mi<br>`;
+        }
+
+        document.getElementById("ultimatePanel").innerHTML=html;
+    }
+
+    return {render};
+})();
+
+/* =========================
+   UI追加
+========================= */
+(function(){
+    const container=document.querySelector(".container");
+
+    const card=document.createElement("div");
+    card.className="card";
+    card.innerHTML=`<div id="ultimatePanel"></div>`;
+    container.appendChild(card);
+
+    const originalRender=UIModule.render;
+    UIModule.render=function(){
+        originalRender();
+        UltimateStrategy.render();
+    };
+
+    UltimateStrategy.render();
+})();
+</script>
 </script>
 
 </body>
