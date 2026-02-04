@@ -454,6 +454,87 @@ const StrategyEngine = (function(){
 
     StrategyEngine.render();
 })();
+/* ==============================
+   Route Optimization Engine v1
+================================ */
+
+const OptimizationEngine = (function(){
+
+    function analyze(){
+        const plans = DataModule.getAll();
+        let actualPP=0;
+        let routeStats={};
+
+        plans.forEach(p=>{
+            if(p.done) actualPP+=p.pp;
+
+            if(!routeStats[p.route]) routeStats[p.route]={pp:0,cost:0,count:0};
+            routeStats[p.route].pp+=p.pp;
+            routeStats[p.route].cost+=p.price;
+            routeStats[p.route].count++;
+        });
+
+        const remain=50000-actualPP;
+
+        let bestRoute=null;
+        let bestUnit=999;
+        let avgPPperTrip=0;
+
+        for(let r in routeStats){
+            const unit=routeStats[r].cost/routeStats[r].pp;
+            if(unit<bestUnit){
+                bestUnit=unit;
+                bestRoute=r;
+                avgPPperTrip=routeStats[r].pp/routeStats[r].count;
+            }
+        }
+
+        if(!bestRoute){
+            return null;
+        }
+
+        const tripsNeeded=Math.ceil(remain/avgPPperTrip);
+        const estimatedCost=Math.floor(tripsNeeded*avgPPperTrip*bestUnit);
+
+        return {remain,bestRoute,tripsNeeded,estimatedCost,bestUnit};
+    }
+
+    function render(){
+        const result=analyze();
+
+        if(!result) return;
+
+        let html="";
+
+        html+=`<b>🤖 自動最適修行プラン</b><br>`;
+        html+=`残 ${result.remain}PP<br>`;
+        html+=`推奨路線：${result.bestRoute}<br>`;
+        html+=`必要往復回数：約 ${result.tripsNeeded} 回<br>`;
+        html+=`想定追加予算：約 ${result.estimatedCost.toLocaleString()} 円<br>`;
+        html+=`想定単価：${result.bestUnit.toFixed(1)} 円/PP`;
+
+        document.getElementById("optimizePanel").innerHTML=html;
+    }
+
+    return {render};
+})();
+
+(function(){
+    const container=document.querySelector(".container");
+    const card=document.createElement("div");
+    card.className="card";
+    card.innerHTML=`<div id="optimizePanel"></div>`;
+    container.appendChild(card);
+
+    const originalRender=UIModule.render;
+    UIModule.render=function(){
+        originalRender();
+        StrategyEngine.render();
+        OptimizationEngine.render();
+    };
+
+    OptimizationEngine.render();
+})();
 </script>
 
 </body>
