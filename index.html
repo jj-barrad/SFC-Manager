@@ -3,137 +3,172 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SFC修行 Pro Architect v2</title>
+<title>SFC修行 Strategy Engine</title>
 <style>
 body{margin:0;font-family:-apple-system;background:#f4f6f9;}
-header{background:#005BAC;color:white;padding:15px;text-align:center;font-weight:bold;}
+header{background:#003f88;color:white;padding:15px;text-align:center;font-weight:bold;}
 .container{padding:15px;}
 .card{background:white;border-radius:14px;padding:15px;margin-bottom:15px;box-shadow:0 4px 12px rgba(0,0,0,0.08);}
 input,select,button{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #ccc;}
-button{background:#005BAC;color:white;border:none;font-weight:bold;}
-table{width:100%;border-collapse:collapse;font-size:12px;}
-th,td{padding:6px;text-align:center;}
-th{background:#eee;}
+button{background:#003f88;color:white;border:none;font-weight:bold;}
 .progress-bar{background:#ddd;height:18px;border-radius:10px;overflow:hidden;}
-.progress{background:#005BAC;height:100%;width:0%;}
-.bar{height:12px;background:#005BAC;margin:3px 0;}
-.saleItem{padding:5px;border-bottom:1px solid #eee;}
+.progress{background:#003f88;height:100%;width:0%;}
+.score{font-size:22px;font-weight:bold;}
 </style>
 </head>
 <body>
 
-<header>SFC修行 Pro Architect v2</header>
+<header>SFC修行 Strategy Engine v3</header>
 
 <div class="container">
 
 <div class="card">
 <b>総合状況</b><br>
-予定PP：<b id="totalPP">0</b> / 50,000<br>
-実績PP：<b id="actualPP">0</b><br>
-平均単価：<b id="avgUnit">0</b><br>
-残必要PP：<b id="remainPP">50000</b><br>
-残予算予測：<b id="remainBudget">0</b>円<br>
-那覇換算（予定）：<b id="nahaPlan">0</b>往復<br>
-那覇換算（実績）：<b id="nahaActual">0</b>往復<br>
-石垣換算（予定）：<b id="ishigakiPlan">0</b>往復<br>
-石垣換算（実績）：<b id="ishigakiActual">0</b>往復<br>
+予定PP：<span id="totalPP">0</span> / 50,000<br>
+実績PP：<span id="actualPP">0</span><br>
+平均単価：<span id="avgUnit">0</span><br>
+残必要PP：<span id="remainPP">50000</span><br>
+達成予測：<span id="forecast"></span><br>
 <div class="progress-bar"><div class="progress" id="progress"></div></div>
 </div>
 
 <div class="card">
+<b>修行効率スコア</b><br>
+<div class="score" id="score">0</div>
+</div>
+
+<div class="card">
 <b>計画入力</b>
-<input id="from" placeholder="出発地">
-<input id="to" placeholder="到着地">
-<select id="tripType"><option value="oneway">片道</option><option value="round">往復</option></select>
-<select id="via"><option value="none">直行</option><option value="OKA">那覇経由</option></select>
-<select id="airline"><option value="ANA">ANA</option><option value="other">他社</option></select>
-<select id="seat"><option value="normal">普通席</option><option value="premium">プレミアム</option></select>
-<select id="rate"><option value="0.75">75%</option><option value="1">100%</option><option value="1.25">125%</option></select>
-<input id="price" type="number" placeholder="価格">
-<input id="month" placeholder="2026-04">
-<button onclick="InputModule.add()">追加</button>
+
+出発地
+<input id="from">
+
+到着地
+<input id="to">
+
+片道/往復
+<select id="tripType">
+<option value="oneway">片道</option>
+<option value="round">往復</option>
+</select>
+
+航空会社
+<select id="airline">
+<option value="ANA">ANA</option>
+<option value="other">他社</option>
+</select>
+
+運賃種別
+<select id="fareType" onchange="Logic.setRate()">
+<option value="0.75">スーパーバリュー(75%)</option>
+<option value="1">バリュー(100%)</option>
+<option value="1.25">プレミアム株主(125%)</option>
+<option value="0.5">国際線格安(50%)</option>
+<option value="1">国際線Y/B/M(100%)</option>
+</select>
+
+距離（国際線用）
+<input id="intlDistance" type="number" placeholder="国際線距離（マイル）">
+
+座席
+<select id="seat">
+<option value="normal">普通席</option>
+<option value="premium">プレミアム</option>
+</select>
+
+価格
+<input id="price" type="number">
+
+搭乗月（例:2026-04）
+<input id="month">
+
+<button onclick="Input.add()">追加</button>
 </div>
 
 <div class="card">
-<b>保存済み</b>
-<table>
-<thead><tr><th>区間</th><th>PP</th><th>単価</th><th>月</th><th>状態</th><th></th></tr></thead>
-<tbody id="list"></tbody>
-</table>
-</div>
-
-<div class="card">
-<b>月別PPグラフ</b>
-<div id="monthlyGraph"></div>
-</div>
-
-<div class="card">
-<b>セール監視</b>
-<input id="saleRoute" placeholder="区間">
-<input id="salePrice" type="number" placeholder="価格">
-<input id="salePP" type="number" placeholder="PP">
-<button onclick="SaleModule.add()">登録</button>
-<div id="saleList"></div>
+<b>修行ロードマップ</b>
+<div id="roadmap"></div>
 </div>
 
 </div>
 
 <script>
 
-/* ================= DATA ================= */
-const DataModule={
+/* ===== DATA ===== */
+const Data={
 plans:JSON.parse(localStorage.getItem("plans"))||[],
-sales:JSON.parse(localStorage.getItem("sales"))||[],
-save(){
-localStorage.setItem("plans",JSON.stringify(this.plans));
-localStorage.setItem("sales",JSON.stringify(this.sales));
-}
+save(){localStorage.setItem("plans",JSON.stringify(this.plans));}
 };
 
-/* ================= LOGIC ================= */
-const LogicModule={
-airportMap:{"羽田":"HND","那覇":"OKA","札幌":"CTS","福岡":"FUK","石垣":"ISG"},
+/* ===== LOGIC ===== */
+const Logic={
+airportMap:{
+"羽田":"HND","伊丹":"ITM","関空":"KIX","中部":"NGO",
+"札幌":"CTS","福岡":"FUK","那覇":"OKA","石垣":"ISG","鹿児島":"KOJ"
+},
 distance:{
-"HND-OKA":984,"OKA-HND":984,
-"HND-CTS":510,"CTS-HND":510,
-"HND-FUK":567,"FUK-HND":567,
-"OKA-ISG":247,"ISG-OKA":247
+"HND-OKA":984,"HND-CTS":510,"HND-FUK":567,"HND-ITM":280,
+"ITM-OKA":739,"OKA-ISG":247
 },
 convert(name){
 for(let k in this.airportMap){name=name.replaceAll(k,this.airportMap[k]);}
 return name.toUpperCase();
 },
-buildRoute(from,to,via,type){
-let segs=[];
-if(via==="none"){segs.push(from+"-"+to);}
-else{segs.push(from+"-OKA");segs.push("OKA-"+to);}
-if(type==="round"){
-if(via==="none"){segs.push(to+"-"+from);}
-else{segs.push(to+"-OKA");segs.push("OKA-"+from);}
-}
-return segs;
-},
-segmentPP(seg,rate,seat){
-let base=this.distance[seg];
+calcDomestic(from,to,rate,seat){
+let key=from+"-"+to;
+let base=this.distance[key]||this.distance[to+"-"+from];
 if(!base) return 0;
 let pp=base*rate+400;
 if(seat==="premium") pp*=1.5;
 return pp;
+},
+calcIntl(dist,rate){ return dist*rate; },
+setRate(){ /* 将来拡張用 */ }
+};
+
+/* ===== INPUT ===== */
+const Input={
+add(){
+let from=Logic.convert(document.getElementById("from").value);
+let to=Logic.convert(document.getElementById("to").value);
+let type=document.getElementById("tripType").value;
+let airline=document.getElementById("airline").value;
+let rate=parseFloat(document.getElementById("fareType").value);
+let seat=document.getElementById("seat").value;
+let price=parseFloat(document.getElementById("price").value);
+let month=document.getElementById("month").value;
+let intlDist=parseFloat(document.getElementById("intlDistance").value);
+
+let totalPP=0;
+
+if(airline==="ANA"){
+if(intlDist){
+totalPP+=Logic.calcIntl(intlDist,rate);
+}else{
+totalPP+=Logic.calcDomestic(from,to,rate,seat);
+}
+if(type==="round"){
+if(intlDist){
+totalPP+=Logic.calcIntl(intlDist,rate);
+}else{
+totalPP+=Logic.calcDomestic(to,from,rate,seat);
+}
+}
+}
+
+totalPP=Math.floor(totalPP);
+
+Data.plans.push({pp:totalPP,price,month,done:false});
+Data.save();
+UI.render();
 }
 };
 
-/* ================= UI ================= */
-const UIModule={
-heat(u){
-if(u<10) return "#2e7d32";
-if(u<13) return "#1565c0";
-if(u<16) return "#f9a825";
-return "#c62828";
-},
+/* ===== UI ===== */
+const UI={
 render(){
 let totalPP=0,actualPP=0,totalCost=0,monthly={};
-let html="";
-DataModule.plans.forEach((p,i)=>{
+Data.plans.forEach(p=>{
 totalPP+=p.pp;
 totalCost+=p.price;
 if(p.done) actualPP+=p.pp;
@@ -141,18 +176,7 @@ if(p.month){
 if(!monthly[p.month]) monthly[p.month]=0;
 monthly[p.month]+=p.pp;
 }
-let unit=(p.price/p.pp||0).toFixed(1);
-html+=`<tr>
-<td>${p.route}</td>
-<td>${p.pp}</td>
-<td style="background:${this.heat(unit)};color:white">${unit}</td>
-<td>${p.month||"-"}</td>
-<td><button onclick="InputModule.toggle(${i})">${p.done?'済':'予定'}</button></td>
-<td><button onclick="InputModule.del(${i})">削除</button></td>
-</tr>`;
 });
-document.getElementById("list").innerHTML=html;
-
 let avg= totalPP? totalCost/totalPP:0;
 let remain=50000-actualPP;
 
@@ -160,83 +184,30 @@ document.getElementById("totalPP").innerText=totalPP;
 document.getElementById("actualPP").innerText=actualPP;
 document.getElementById("avgUnit").innerText=avg.toFixed(1);
 document.getElementById("remainPP").innerText=remain;
-document.getElementById("remainBudget").innerText=Math.floor(remain*avg);
-
-document.getElementById("nahaPlan").innerText=(totalPP/1845).toFixed(1);
-document.getElementById("nahaActual").innerText=(actualPP/1845).toFixed(1);
-document.getElementById("ishigakiPlan").innerText=(totalPP/2140).toFixed(1);
-document.getElementById("ishigakiActual").innerText=(actualPP/2140).toFixed(1);
-
 document.getElementById("progress").style.width=(actualPP/50000*100)+"%";
 
-let graph="";
-for(let m in monthly){
-graph+=`${m}<div class="bar" style="width:${monthly[m]/500}px"></div>`;
+document.getElementById("forecast").innerText=
+remain<=0?"達成済み":`あと${remain}PP`;
+
+let score=100;
+if(avg>15) score-=30;
+if(avg>13) score-=15;
+if(Object.keys(monthly).length<3) score-=10;
+document.getElementById("score").innerText=score;
+
+let roadmapHTML="";
+let monthsLeft=12-Object.keys(monthly).length;
+if(monthsLeft>0){
+let perMonth=Math.ceil(remain/monthsLeft);
+roadmapHTML=`今後${monthsLeft}ヶ月で月${perMonth}PP必要`;
+}else{
+roadmapHTML="月別計画を追加してください";
 }
-document.getElementById("monthlyGraph").innerHTML=graph;
-
-SaleModule.render();
-}
-};
-
-/* ================= INPUT ================= */
-const InputModule={
-add(){
-let from=LogicModule.convert(document.getElementById("from").value);
-let to=LogicModule.convert(document.getElementById("to").value);
-let type=document.getElementById("tripType").value;
-let via=document.getElementById("via").value;
-let airline=document.getElementById("airline").value;
-let seat=document.getElementById("seat").value;
-let rate=parseFloat(document.getElementById("rate").value);
-let price=parseFloat(document.getElementById("price").value);
-let month=document.getElementById("month").value;
-
-let segs=LogicModule.buildRoute(from,to,via,type);
-let totalPP=0;
-
-if(airline==="ANA"){
-segs.forEach(seg=>{totalPP+=LogicModule.segmentPP(seg,rate,seat);});
-}
-totalPP=Math.floor(totalPP);
-
-DataModule.plans.push({route:segs.join(","),pp:totalPP,price,month,done:false});
-DataModule.save();
-UIModule.render();
-},
-toggle(i){
-DataModule.plans[i].done=!DataModule.plans[i].done;
-DataModule.save();
-UIModule.render();
-},
-del(i){
-DataModule.plans.splice(i,1);
-DataModule.save();
-UIModule.render();
+document.getElementById("roadmap").innerText=roadmapHTML;
 }
 };
 
-/* ================= SALE ================= */
-const SaleModule={
-add(){
-let route=document.getElementById("saleRoute").value;
-let price=parseFloat(document.getElementById("salePrice").value);
-let pp=parseFloat(document.getElementById("salePP").value);
-let unit=(price/pp).toFixed(1);
-DataModule.sales.push({route,price,pp,unit});
-DataModule.save();
-UIModule.render();
-},
-render(){
-let html="";
-DataModule.sales.sort((a,b)=>a.unit-b.unit).forEach(s=>{
-html+=`<div class="saleItem">${s.route}：${s.price}円 / ${s.pp}PP → 単価${s.unit}</div>`;
-});
-document.getElementById("saleList").innerHTML=html;
-}
-};
-
-UIModule.render();
+UI.render();
 
 </script>
 
