@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SFC修行管理アプリ Stable Core</title>
+<title>SFC修行管理アプリ Stable Core v3</title>
 <style>
 body{font-family:-apple-system;background:#f3f6fa;margin:0}
 header{background:#003f88;color:#fff;padding:14px;text-align:center;font-weight:bold}
@@ -11,17 +11,20 @@ header{background:#003f88;color:#fff;padding:14px;text-align:center;font-weight:
 .card{background:#fff;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 4px 12px rgba(0,0,0,0.08)}
 input,select,button{width:100%;padding:8px;margin:6px 0;border-radius:8px;border:1px solid #ccc}
 button{background:#003f88;color:#fff;font-weight:bold;border:none}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{border-bottom:1px solid #eee;padding:6px;text-align:center}
 .bar{background:#ddd;height:14px;border-radius:8px;margin:4px 0}
 .bar-inner{background:#003f88;height:100%;border-radius:8px}
-.heat-good{background:#d4edda}
-.heat-mid{background:#fff3cd}
-.heat-bad{background:#f8d7da}
+.heat-good{background:#d4edda;padding:10px;border-radius:8px}
+.heat-mid{background:#fff3cd;padding:10px;border-radius:8px}
+.heat-bad{background:#f8d7da;padding:10px;border-radius:8px}
 .small{font-size:13px;color:#666}
+.warning{color:#d9534f;font-size:12px}
 </style>
 </head>
 <body>
 
-<header>SFC修行管理アプリ Stable Core v1</header>
+<header>SFC修行管理アプリ Stable Core v3</header>
 
 <div class="container">
 
@@ -30,8 +33,8 @@ button{background:#003f88;color:#fff;font-weight:bold;border:none}
 予定PP：<span id="totalPP">0</span> / 50,000<br>
 実績PP：<span id="actualPP">0</span><br>
 平均PP単価：<span id="avgUnit">0</span><br>
-那覇換算回数：<span id="nahaEq">0</span><br>
-札幌換算回数：<span id="ctsEq">0</span>
+那覇換算：<span id="nahaEq">0</span><br>
+札幌換算：<span id="ctsEq">0</span>
 </div>
 
 <div class="card">
@@ -42,14 +45,18 @@ button{background:#003f88;color:#fff;font-weight:bold;border:none}
 <option value="">選択なし</option>
 <option value="HND-OKA">羽田-那覇</option>
 <option value="HND-CTS">羽田-札幌</option>
+<option value="HND-FUK">羽田-福岡</option>
+<option value="HND-ISG">羽田-石垣</option>
+<option value="HND-KOJ">羽田-鹿児島</option>
 <option value="ITM-OKA">伊丹-那覇</option>
+<option value="ITM-CTS">伊丹-札幌</option>
+<option value="KIX-OKA">関空-那覇</option>
+<option value="NGO-OKA">中部-那覇</option>
+<option value="FUK-OKA">福岡-那覇</option>
 </select>
 
-出発地
-<input id="from">
-
-到着地
-<input id="to">
+出発地<input id="from">
+到着地<input id="to">
 
 片道/往復
 <select id="tripType">
@@ -68,11 +75,13 @@ button{background:#003f88;color:#fff;font-weight:bold;border:none}
 <option value="0.75">スーパーバリュー(75%)</option>
 <option value="1">バリュー(100%)</option>
 <option value="1.25">プレミアム株主(125%)</option>
+<option value="1">国際線Y/B/M(100%)</option>
 <option value="0.5">国際線格安(50%)</option>
 </select>
 
-国際線距離（マイル）
-<input type="number" id="intlDist" placeholder="国内線は空欄">
+国際線距離（マイル）<input type="number" id="intlDist" placeholder="国内線は空欄">
+
+<span id="intlWarning" class="warning"></span>
 
 座席
 <select id="seat">
@@ -80,13 +89,27 @@ button{background:#003f88;color:#fff;font-weight:bold;border:none}
 <option value="premium">プレミアム</option>
 </select>
 
-価格（円）
-<input type="number" id="price">
-
-搭乗月（例:2026-04）
-<input id="month">
+価格<input type="number" id="price">
+搭乗月<input id="month">
 
 <button onclick="Input.add()">追加</button>
+</div>
+
+<div class="card">
+<b>計画一覧（管理）</b>
+<table>
+<thead>
+<tr>
+<th>区間</th>
+<th>月</th>
+<th>PP</th>
+<th>価格</th>
+<th>済</th>
+<th>削除</th>
+</tr>
+</thead>
+<tbody id="planTable"></tbody>
+</table>
 </div>
 
 <div class="card">
@@ -103,8 +126,7 @@ button{background:#003f88;color:#fff;font-weight:bold;border:none}
 <b>ANAセール目安</b>
 <div class="small">
 1月/4月/7月/10月：国内線タイムセール傾向<br>
-2月/9月：国際線セール傾向<br>
-ボーナスマイル：不定期
+2月/9月：国際線セール傾向
 </div>
 </div>
 
@@ -118,12 +140,13 @@ save(){localStorage.setItem("plans",JSON.stringify(this.plans))}
 
 const Logic={
 airportMap:{
-"羽田":"HND","那覇":"OKA","札幌":"CTS","伊丹":"ITM"
+"羽田":"HND","成田":"NRT","伊丹":"ITM","関空":"KIX","中部":"NGO",
+"札幌":"CTS","福岡":"FUK","那覇":"OKA","石垣":"ISG","鹿児島":"KOJ",
+"広島":"HIJ","仙台":"SDJ","宮古":"MMY"
 },
 distance:{
-"HND-OKA":984,
-"HND-CTS":510,
-"ITM-OKA":739
+"HND-OKA":984,"HND-CTS":510,"HND-FUK":567,"HND-ISG":1224,"HND-KOJ":601,
+"ITM-OKA":739,"ITM-CTS":666,"KIX-OKA":738,"NGO-OKA":758,"FUK-OKA":537
 },
 convert(name){
 for(let k in this.airportMap){
@@ -131,10 +154,12 @@ name=name.replaceAll(k,this.airportMap[k])
 }
 return name.toUpperCase()
 },
-calcDomestic(from,to,rate,seat){
+isDomestic(from,to){
 let key=from+"-"+to
-let base=this.distance[key]||this.distance[to+"-"+from]
-if(!base)return 0
+return this.distance[key]||this.distance[to+"-"+from]
+},
+calcDomestic(from,to,rate,seat){
+let base=this.distance[from+"-"+to]||this.distance[to+"-"+from]
 let pp=base*rate+400
 if(seat==="premium")pp*=1.5
 return pp
@@ -162,25 +187,26 @@ let month=document.getElementById("month").value
 let intl=parseFloat(document.getElementById("intlDist").value)
 
 let pp=0
+let route=from+"-"+to
 
 if(airline==="ANA"){
-if(intl){
-pp+=Logic.calcIntl(intl,rate)
-}else{
+if(Logic.isDomestic(from,to)){
 pp+=Logic.calcDomestic(from,to,rate,seat)
-}
-if(type==="round"){
-if(intl){
-pp+=Logic.calcIntl(intl,rate)
+if(type==="round")pp+=Logic.calcDomestic(to,from,rate,seat)
+document.getElementById("intlWarning").innerText=""
 }else{
-pp+=Logic.calcDomestic(to,from,rate,seat)
+if(!intl){
+document.getElementById("intlWarning").innerText="※国際線は距離入力必須"
+return
 }
+pp+=Logic.calcIntl(intl,rate)
+if(type==="round")pp+=Logic.calcIntl(intl,rate)
 }
 }
 
 pp=Math.floor(pp)
 
-Data.plans.push({pp,price,month,done:false})
+Data.plans.push({route,pp,price,month,done:false})
 Data.save()
 UI.render()
 }
@@ -189,7 +215,8 @@ UI.render()
 const UI={
 render(){
 let total=0,actual=0,cost=0,monthly={}
-Data.plans.forEach(p=>{
+let tableHTML=""
+Data.plans.forEach((p,i)=>{
 total+=p.pp
 cost+=p.price
 if(p.done)actual+=p.pp
@@ -197,9 +224,20 @@ if(p.month){
 if(!monthly[p.month])monthly[p.month]=0
 monthly[p.month]+=p.pp
 }
+tableHTML+=`
+<tr>
+<td>${p.route}</td>
+<td>${p.month||""}</td>
+<td>${p.pp}</td>
+<td>${p.price||""}</td>
+<td><input type="checkbox" ${p.done?"checked":""}
+onclick="Data.plans[${i}].done=this.checked;Data.save();UI.render()"></td>
+<td><button onclick="Data.plans.splice(${i},1);Data.save();UI.render()">削除</button></td>
+</tr>`
 })
-let avg=total?cost/total:0
+document.getElementById("planTable").innerHTML=tableHTML
 
+let avg=total?cost/total:0
 document.getElementById("totalPP").innerText=total
 document.getElementById("actualPP").innerText=actual
 document.getElementById("avgUnit").innerText=avg.toFixed(1)
@@ -216,9 +254,7 @@ document.getElementById("monthly").innerHTML=mHTML
 let hClass="heat-good"
 if(avg>15)hClass="heat-bad"
 else if(avg>13)hClass="heat-mid"
-
-document.getElementById("heat").innerHTML=
-`<div class="${hClass}" style="padding:10px;border-radius:8px">
+document.getElementById("heat").innerHTML=`<div class="${hClass}">
 平均単価 ${avg.toFixed(1)} 円
 </div>`
 }
