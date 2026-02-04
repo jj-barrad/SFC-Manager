@@ -2,60 +2,139 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>SFC PP管理ノリ</title>
+<title>SFC修行 完全管理アプリ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{font-family:sans-serif;background:#f2f4f7;padding:15px;}
-.card{background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
-input,select,button{width:100%;padding:8px;margin:5px 0;border-radius:8px;border:1px solid #ccc;}
-button{background:#005BAC;color:#fff;font-weight:bold;border:none;}
-.progress-bar{background:#ddd;border-radius:10px;height:20px;overflow:hidden;}
-.progress{background:#005BAC;height:100%;width:0%;}
-table{width:100%;border-collapse:collapse;font-size:13px;}
-th,td{padding:6px;text-align:center;}
-th{background:#f0f0f0;}
-.delete-btn{background:#c62828;color:#fff;border:none;padding:4px 6px;border-radius:6px;}
-.done{background:#2e7d32 !important;}
-.small{font-size:12px;color:#666;}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont;background:#f3f6fa;}
+header{background:#005BAC;color:white;padding:15px;font-size:18px;font-weight:bold;text-align:center;}
+.container{padding:15px;}
+.card{
+background:white;
+border-radius:14px;
+padding:15px;
+margin-bottom:15px;
+box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+h3{margin-top:0}
+input,select,button{
+width:100%;
+padding:10px;
+margin-top:6px;
+margin-bottom:6px;
+border-radius:8px;
+border:1px solid #ccc;
+font-size:14px;
+}
+button{
+background:#005BAC;
+color:white;
+border:none;
+font-weight:bold;
+}
+button.secondary{
+background:#666;
+}
+button.danger{
+background:#c62828;
+}
+.progress-bar{
+background:#e0e0e0;
+height:18px;
+border-radius:10px;
+overflow:hidden;
+}
+.progress{
+background:#005BAC;
+height:100%;
+width:0%;
+}
+.small{font-size:12px;color:#666}
+table{
+width:100%;
+border-collapse:collapse;
+font-size:12px;
+}
+th,td{
+padding:6px;
+text-align:center;
+}
+th{background:#f0f0f0}
+.done{
+background:#2e7d32 !important;
+}
+.tabs{
+display:flex;
+margin-bottom:10px;
+}
+.tab{
+flex:1;
+padding:8px;
+text-align:center;
+background:#ddd;
+cursor:pointer;
+font-size:13px;
+}
+.tab.active{
+background:#005BAC;
+color:white;
+}
+.hidden{display:none}
 </style>
 </head>
 
 <body>
 
-<h2>SFC PP管理ノリ 完全版</h2>
+<header>SFC修行 完全管理アプリ</header>
+
+<div class="container">
+
+<div class="tabs">
+<div class="tab active" onclick="switchTab('main')">修行管理</div>
+<div class="tab" onclick="switchTab('sale')">セール監視</div>
+</div>
+
+<!-- ===================== 修行管理 ===================== -->
+<div id="main">
 
 <div class="card">
-<b>総合管理</b><br>
-合計予定PP: <span id="totalPP">0</span> / 50,000<br>
-実績PP: <span id="actualPP">0</span><br>
-合計費用: <span id="totalCost">0</span> 円<br>
-PP単価: <span id="totalUnit">0</span><br>
-達成予測: <span id="forecast">-</span>
+<h3>総合状況</h3>
+予定PP：<b id="totalPP">0</b> / 50,000<br>
+実績PP：<b id="actualPP">0</b><br>
+合計費用：<b id="totalCost">0</b>円<br>
+全体PP単価：<b id="totalUnit">0</b><br>
+達成状況：<b id="forecast">-</b>
 <div class="progress-bar"><div class="progress" id="progressBar"></div></div>
 </div>
 
 <div class="card">
-<b>計画追加（乗継OK）</b>
+<h3>計画追加</h3>
 区間（例 HND-OKA,OKA-ISG）
 <input id="route">
-運賃
+種別
+<select id="type">
+<option value="dom">国内線</option>
+<option value="intl">国際線</option>
+</select>
+積算率
 <select id="rate">
-<option value="0.75">S(75%)</option>
-<option value="1">普通(100%)</option>
-<option value="1.25">プレミアム(125%)</option>
+<option value="0.75">75%</option>
+<option value="1">100%</option>
+<option value="1.25">125%</option>
+<option value="1.5">150%</option>
 </select>
 価格（合計）
 <input id="price" type="number">
-搭乗月（例 2026-03）
+搭乗月（例 2026-04）
 <input id="month">
 <button onclick="addPlan()">保存</button>
 </div>
 
 <div class="card">
-<b>保存済み計画</b>
+<h3>保存済み</h3>
 <table>
 <thead>
 <tr>
-<th>区間</th><th>PP</th><th>費用</th><th>単価</th><th>月</th><th>実績</th><th></th>
+<th>区間</th><th>PP</th><th>費用</th><th>単価</th><th>月</th><th>状態</th><th></th>
 </tr>
 </thead>
 <tbody id="planList"></tbody>
@@ -63,32 +142,76 @@ PP単価: <span id="totalUnit">0</span><br>
 </div>
 
 <div class="card">
-<b>月別集計</b>
+<h3>月別集計</h3>
 <div id="monthly"></div>
 </div>
 
 <div class="card">
-<b>PP単価ランキング</b>
+<h3>PP単価ランキング</h3>
 <div id="ranking"></div>
+</div>
+
+<div class="card">
+<button class="secondary" onclick="exportData()">データ書き出し</button>
+<button class="danger" onclick="resetData()">全削除</button>
+</div>
+
+</div>
+
+<!-- ===================== セール監視 ===================== -->
+<div id="sale" class="hidden">
+
+<div class="card">
+<h3>セール候補登録</h3>
+区間
+<input id="saleRoute">
+価格
+<input id="salePrice" type="number">
+想定PP
+<input id="salePP" type="number">
+<button onclick="addSale()">登録</button>
+</div>
+
+<div class="card">
+<h3>セール比較</h3>
+<div id="saleList"></div>
+</div>
+
+</div>
+
 </div>
 
 <script>
 
-const distance={
+const domesticDistance={
 "HND-OKA":984,"OKA-ISG":247,"HND-CTS":510,"HND-FUK":567,
 "HND-KOJ":601,"HND-KMI":550,"HND-NGS":594,"HND-HIJ":414,"HND-OKJ":327
 };
 
 let plans=JSON.parse(localStorage.getItem("sfcPlans"))||[];
+let sales=JSON.parse(localStorage.getItem("sfcSales"))||[];
 
-function calcRoutePP(route,rate){
+function switchTab(tab){
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+event.target.classList.add("active");
+document.getElementById("main").classList.add("hidden");
+document.getElementById("sale").classList.add("hidden");
+document.getElementById(tab).classList.remove("hidden");
+}
+
+function calcPP(route,rate,type){
 let segments=route.split(",");
 let total=0;
 segments.forEach(seg=>{
-if(distance[seg]){
-let base=distance[seg];
-let one=(base*rate)+400;
-total+=one;
+if(type==="dom" && domesticDistance[seg]){
+let base=domesticDistance[seg];
+total+=(base*rate)+400;
+}else if(type==="intl"){
+// 国際線簡易計算（距離入力前提）
+let base=parseInt(seg);
+if(!isNaN(base)){
+total+=base*rate*1.0;
+}
 }
 });
 return Math.floor(total);
@@ -96,13 +219,12 @@ return Math.floor(total);
 
 function addPlan(){
 let route=document.getElementById("route").value.toUpperCase();
+let type=document.getElementById("type").value;
 let rate=parseFloat(document.getElementById("rate").value);
 let price=parseFloat(document.getElementById("price").value);
 let month=document.getElementById("month").value;
-
-let pp=calcRoutePP(route,rate);
-if(pp===0){alert("区間未登録");return;}
-
+let pp=calcPP(route,rate,type);
+if(pp<=0){alert("区間不明");return;}
 plans.push({route,pp,price,month,done:false});
 localStorage.setItem("sfcPlans",JSON.stringify(plans));
 render();
@@ -121,23 +243,19 @@ render();
 }
 
 function render(){
-let list=document.getElementById("planList");
-list.innerHTML="";
 let totalPP=0,totalCost=0,actualPP=0;
 let monthlyData={};
-
+let listHTML="";
 plans.forEach((p,i)=>{
 totalPP+=p.pp;
 totalCost+=p.price;
 if(p.done) actualPP+=p.pp;
-
 if(p.month){
 if(!monthlyData[p.month]) monthlyData[p.month]={pp:0,cost:0};
 monthlyData[p.month].pp+=p.pp;
 monthlyData[p.month].cost+=p.price;
 }
-
-list.innerHTML+=`
+listHTML+=`
 <tr>
 <td>${p.route}</td>
 <td>${p.pp}</td>
@@ -145,20 +263,17 @@ list.innerHTML+=`
 <td>${(p.price/p.pp).toFixed(1)}</td>
 <td>${p.month||"-"}</td>
 <td><button class="${p.done?'done':''}" onclick="toggleDone(${i})">${p.done?'済':'予定'}</button></td>
-<td><button class="delete-btn" onclick="deletePlan(${i})">削除</button></td>
+<td><button class="danger" onclick="deletePlan(${i})">削除</button></td>
 </tr>`;
 });
-
+document.getElementById("planList").innerHTML=listHTML;
 document.getElementById("totalPP").innerText=totalPP;
 document.getElementById("actualPP").innerText=actualPP;
 document.getElementById("totalCost").innerText=totalCost;
 document.getElementById("totalUnit").innerText= totalPP? (totalCost/totalPP).toFixed(1):0;
-
 let progress=Math.min((actualPP/50000)*100,100);
 document.getElementById("progressBar").style.width=progress+"%";
-
-let remain=50000-actualPP;
-document.getElementById("forecast").innerText= remain<=0?"達成！":`残り${remain}PP`;
+document.getElementById("forecast").innerText= actualPP>=50000?"達成！":`残${50000-actualPP}PP`;
 
 let monthlyHTML="";
 for(let m in monthlyData){
@@ -174,7 +289,41 @@ rankHTML+=`${p.route}：${(p.price/p.pp).toFixed(1)}<br>`;
 document.getElementById("ranking").innerHTML=rankHTML;
 }
 
+function addSale(){
+let route=document.getElementById("saleRoute").value;
+let price=parseFloat(document.getElementById("salePrice").value);
+let pp=parseFloat(document.getElementById("salePP").value);
+let unit=(price/pp).toFixed(1);
+sales.push({route,price,pp,unit});
+localStorage.setItem("sfcSales",JSON.stringify(sales));
+renderSale();
+}
+
+function renderSale(){
+let html="";
+sales.sort((a,b)=>a.unit-b.unit).forEach(s=>{
+html+=`${s.route}：${s.price}円 / ${s.pp}PP → 単価${s.unit}<br>`;
+});
+document.getElementById("saleList").innerHTML=html;
+}
+
+function exportData(){
+let data=JSON.stringify(plans,null,2);
+alert(data);
+}
+
+function resetData(){
+if(confirm("全データ削除しますか？")){
+localStorage.clear();
+plans=[];
+sales=[];
 render();
+renderSale();
+}
+}
+
+render();
+renderSale();
 
 </script>
 
