@@ -2,237 +2,98 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SFC PP 管理アプリ（フレキシブル完全版）</title>
-
+<title>SFC PP管理ノリ</title>
 <style>
-body { font-family:-apple-system,BlinkMacSystemFont,sans-serif; background:#f4f7fb; margin:0; padding:16px; }
-h1 { text-align:center; color:#0053a0; }
-.card { background:#fff; padding:14px; border-radius:12px; margin-bottom:14px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-input,select,button { width:100%; padding:8px; margin-top:6px; border-radius:8px; border:1px solid #ccc; }
-.row { display:flex; gap:8px; }
-.row > * { flex:1; }
-button { background:#0053a0; color:#fff; font-weight:700; }
-button.small { width:auto; padding:6px 10px; }
-button.delete { background:#c9302c; }
-table { width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; }
-th,td { padding:6px; border-bottom:1px solid #ddd; text-align:center; }
-.warn { color:#b06a00; font-weight:700; }
-.good { color:#0a7b3d; font-weight:700; }
-.bar { height:16px; background:#0053a0; border-radius:6px; color:#fff; padding-left:6px; margin-top:4px; }
+body { font-family: sans-serif; padding:20px; background:#f5f5f5; }
+.card { background:#fff; padding:20px; border-radius:12px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+select,input,button { padding:8px; margin:5px 0; width:100%; }
+button { background:#005BAC; color:white; border:none; border-radius:8px; font-weight:bold;}
+.result { font-size:18px; font-weight:bold; margin-top:10px;}
 </style>
 </head>
 
 <body>
 
-<h1>SFC PP 管理アプリ</h1>
+<h1>SFC PP管理ノリ</h1>
 
-<!-- ===== SUMMARY ===== -->
-<div class="card">
-<strong>合計PP:</strong> <span id="totalPP">0</span> / 50,000　
-<strong>費用:</strong> <span id="totalCost">0</span>円　
-<strong>PP単価:</strong> <span id="ppUnit">0</span>
-<progress id="progress" max="50000" value="0" style="width:100%;margin-top:8px"></progress>
-</div>
-
-<!-- ===== PLAN MODE ===== -->
 <div class="card">
 <h2>旅行計画（自由入力OK）</h2>
 
-<div class="row">
-<select id="preset">
-<option value="">プリセット選択</option>
-<option value="HND-OKA">HND → OKA</option>
-<option value="HND-CTS">HND → CTS</option>
-<option value="HND-FUK">HND → FUK</option>
-<option value="HND-HNL">HND → HNL</option>
+出発
+<input id="from" value="HND">
+
+到着
+<input id="to" value="OKA">
+
+運賃種別
+<select id="rate">
+<option value="0.75">S（75%）</option>
+<option value="1.0">普通運賃（100%）</option>
+<option value="1.25">プレミアム（125%）</option>
 </select>
-<select id="planClass">
-<option value="S">S（75%）</option>
-<option value="M">M（75%）</option>
-<option value="Y">Y（100%）</option>
-<option value="L">L（50%）</option>
+
+価格（往復合計）
+<input id="price" type="number" value="21840">
+
+区間
+<select id="type">
+<option value="round">往復</option>
+<option value="oneway">片道</option>
 </select>
-</div>
 
-<div class="row">
-<input id="planDep" placeholder="出発（自由入力）">
-<input id="planArr" placeholder="到着（自由入力）">
-</div>
+<button onclick="calcPP()">想定PPを計算</button>
 
-<div class="row">
-<input id="planCost" type="number" placeholder="想定金額（往復など）">
-<select id="planTrip">
-<option value="2">往復</option>
-<option value="1">片道</option>
-</select>
-</div>
-
-<button onclick="estimatePlan()">想定PPを計算</button>
-<div id="planPreview" style="margin-top:8px"></div>
-<button onclick="savePlan()" style="margin-top:6px">この計画を保存</button>
-</div>
-
-<!-- ===== ROUTE MILES ===== -->
-<div class="card">
-<h2>路線マイル管理（ANA公式）</h2>
-<table>
-<thead><tr><th>出発</th><th>到着</th><th>マイル</th><th></th></tr></thead>
-<tbody id="routeTable"></tbody>
-</table>
-
-<div class="row">
-<input id="rDep" placeholder="HND">
-<input id="rArr" placeholder="OKA">
-<input id="rMiles" type="number" placeholder="984">
-</div>
-<button onclick="addRoute()">追加／更新</button>
-</div>
-
-<!-- ===== FLIGHT INPUT ===== -->
-<div class="card">
-<h2>確定入力（予約後）</h2>
-<input id="date" type="date">
-<div class="row">
-<input id="dep" placeholder="出発">
-<input id="arr" placeholder="到着">
-</div>
-<div class="row">
-<input id="flightNo" placeholder="便名">
-<input id="pp" type="number" placeholder="PP">
-</div>
-<input id="cost" type="number" placeholder="金額">
-<button onclick="addFlight()">追加</button>
-</div>
-
-<!-- ===== LIST ===== -->
-<div class="card">
-<h2>フライト一覧</h2>
-<table>
-<thead><tr><th>日付</th><th>区間</th><th>便</th><th>PP</th><th>金額</th><th></th></tr></thead>
-<tbody id="list"></tbody>
-</table>
-</div>
-
-<!-- ===== SUMMARY BY ROUTE ===== -->
-<div class="card">
-<h2>区間別PP</h2>
-<div id="summary"></div>
+<div class="result" id="output"></div>
 </div>
 
 <script>
-const CARD_RATE = 1.25;
-const CLASS_RATE = {Y:1.0, M:0.75, S:0.75, L:0.5};
 
-let routeMiles = JSON.parse(localStorage.getItem("routeMiles")) || {
-  "HND-OKA":984,"HND-CTS":510,"HND-FUK":567,"HND-HNL":3850
+// 距離データ（ANA公式区間基本マイル）
+const distance = {
+"HND-OKA":984,
+"HND-CTS":510,
+"HND-FUK":567,
+"HND-KOJ":601,
+"HND-KMI":550,
+"HND-NGS":594,
+"HND-HIJ":414,
+"HND-OKJ":327
 };
-let flights = JSON.parse(localStorage.getItem("flights") || "[]");
-let plans = JSON.parse(localStorage.getItem("plans") || "[]");
 
-/* ===== ROUTES ===== */
-function saveRoutes(){ localStorage.setItem("routeMiles",JSON.stringify(routeMiles)); }
+function calcPP(){
 
-function renderRoutes(){
-  routeTable.innerHTML="";
-  Object.entries(routeMiles).forEach(([k,v])=>{
-    const [d,a]=k.split("-");
-    routeTable.innerHTML+=`
-      <tr>
-        <td>${d}</td><td>${a}</td><td>${v}</td>
-        <td><button class="small delete" onclick="delRoute('${k}')">削除</button></td>
-      </tr>`;
-  });
-}
-function addRoute(){
-  if(!rDep.value||!rArr.value||!rMiles.value) return alert("未入力あり");
-  routeMiles[`${rDep.value}-${rArr.value}`]=Number(rMiles.value);
-  saveRoutes(); renderRoutes();
-}
-function delRoute(k){ delete routeMiles[k]; saveRoutes(); renderRoutes(); }
+let from = document.getElementById("from").value.toUpperCase();
+let to = document.getElementById("to").value.toUpperCase();
+let rate = parseFloat(document.getElementById("rate").value);
+let price = parseFloat(document.getElementById("price").value);
+let type = document.getElementById("type").value;
 
-/* ===== PLAN ===== */
-function getPlanRoute(){
-  if(preset.value){
-    const [d,a]=preset.value.split("-");
-    return {d,a};
-  }
-  if(planDep.value && planArr.value){
-    return {d:planDep.value, a:planArr.value};
-  }
-  return null;
+let key = from + "-" + to;
+
+if(!distance[key]){
+document.getElementById("output").innerHTML = "距離データ未登録";
+return;
 }
 
-function getMiles(d,a){
-  return routeMiles[`${d}-${a}`] || routeMiles[`${a}-${d}`] || null;
+let baseMiles = distance[key];
+
+// 国内線PP計算式
+// (区間マイル × 積算率) ＋ 400PP（普通席）
+// プレミアムでも国内線は基本+400
+
+let oneWayPP = (baseMiles * rate) + 400;
+
+let totalPP = (type === "round") ? oneWayPP * 2 : oneWayPP;
+
+totalPP = Math.floor(totalPP);
+
+let unit = (price && totalPP) ? (price / totalPP).toFixed(1) : 0;
+
+document.getElementById("output").innerHTML =
+"想定PP： " + totalPP + " / PP単価： " + unit;
+
 }
 
-function estimatePlan(){
-  const r=getPlanRoute();
-  if(!r) return planPreview.innerHTML="<span class='warn'>路線を入力または選択してください</span>";
-
-  const miles=getMiles(r.d,r.a);
-  if(!miles){
-    planPreview.innerHTML="<span class='warn'>未登録路線です（下で追加すれば即対応）</span>";
-    return;
-  }
-  const pp=Math.round(miles*CLASS_RATE[planClass.value]*CARD_RATE*planTrip.value);
-  const unit=planCost.value?(planCost.value/pp).toFixed(1):"-";
-  planPreview.innerHTML=`想定PP：<b>${pp}</b> ／ PP単価：<b>${unit}</b>`;
-}
-
-function savePlan(){
-  const r=getPlanRoute();
-  if(!r) return;
-  const miles=getMiles(r.d,r.a); if(!miles) return;
-  const pp=Math.round(miles*CLASS_RATE[planClass.value]*CARD_RATE*planTrip.value);
-  plans.push({route:`${r.d}-${r.a}`,pp,cost:planCost.value||0});
-  localStorage.setItem("plans",JSON.stringify(plans));
-  alert("計画を保存しました");
-}
-
-/* ===== FLIGHT ===== */
-function addFlight(){
-  flights.push({
-    date:date.value,dep:dep.value,arr:arr.value,
-    flightNo:flightNo.value,pp:Number(pp.value),cost:Number(cost.value)
-  });
-  localStorage.setItem("flights",JSON.stringify(flights));
-  render();
-}
-
-/* ===== RENDER ===== */
-function render(){
-  list.innerHTML="";
-  let tpp=0,tc=0;
-  const sum={};
-
-  flights.forEach((f,i)=>{
-    tpp+=f.pp; tc+=f.cost;
-    list.innerHTML+=`
-    <tr>
-      <td>${f.date}</td><td>${f.dep}→${f.arr}</td>
-      <td>${f.flightNo}</td><td>${f.pp}</td><td>${f.cost}</td>
-      <td><button class="small delete" onclick="delFlight(${i})">×</button></td>
-    </tr>`;
-    const k=f.dep+"→"+f.arr;
-    sum[k]=(sum[k]||0)+f.pp;
-  });
-
-  totalPP.textContent=tpp;
-  totalCost.textContent=tc;
-  ppUnit.textContent=tpp?(tc/tpp).toFixed(1):0;
-  progress.value=tpp;
-
-  summary.innerHTML="";
-  Object.entries(sum).forEach(([k,v])=>{
-    summary.innerHTML+=`<div>${k}<div class="bar" style="width:${v/500}px">${v} PP</div></div>`;
-  });
-}
-function delFlight(i){ flights.splice(i,1); localStorage.setItem("flights",JSON.stringify(flights)); render(); }
-
-renderRoutes();
-render();
 </script>
 
 </body>
