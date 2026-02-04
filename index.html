@@ -4,95 +4,177 @@
 <meta charset="UTF-8">
 <title>SFC PP管理ノリ</title>
 <style>
-body { font-family: sans-serif; padding:20px; background:#f5f5f5; }
-.card { background:#fff; padding:20px; border-radius:12px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
-select,input,button { padding:8px; margin:5px 0; width:100%; }
-button { background:#005BAC; color:white; border:none; border-radius:8px; font-weight:bold;}
-.result { font-size:18px; font-weight:bold; margin-top:10px;}
+body{font-family:sans-serif;background:#f2f4f7;padding:15px;}
+.card{background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+input,select,button{width:100%;padding:8px;margin:5px 0;border-radius:8px;border:1px solid #ccc;}
+button{background:#005BAC;color:#fff;font-weight:bold;border:none;}
+.progress-bar{background:#ddd;border-radius:10px;height:20px;overflow:hidden;}
+.progress{background:#005BAC;height:100%;width:0%;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{padding:6px;text-align:center;}
+th{background:#f0f0f0;}
+.delete-btn{background:#c62828;color:#fff;border:none;padding:4px 6px;border-radius:6px;}
+.done{background:#2e7d32 !important;}
+.small{font-size:12px;color:#666;}
 </style>
 </head>
 
 <body>
 
-<h1>SFC PP管理ノリ</h1>
+<h2>SFC PP管理ノリ 完全版</h2>
 
 <div class="card">
-<h2>旅行計画（自由入力OK）</h2>
+<b>総合管理</b><br>
+合計予定PP: <span id="totalPP">0</span> / 50,000<br>
+実績PP: <span id="actualPP">0</span><br>
+合計費用: <span id="totalCost">0</span> 円<br>
+PP単価: <span id="totalUnit">0</span><br>
+達成予測: <span id="forecast">-</span>
+<div class="progress-bar"><div class="progress" id="progressBar"></div></div>
+</div>
 
-出発
-<input id="from" value="HND">
-
-到着
-<input id="to" value="OKA">
-
-運賃種別
+<div class="card">
+<b>計画追加（乗継OK）</b>
+区間（例 HND-OKA,OKA-ISG）
+<input id="route">
+運賃
 <select id="rate">
-<option value="0.75">S（75%）</option>
-<option value="1.0">普通運賃（100%）</option>
-<option value="1.25">プレミアム（125%）</option>
+<option value="0.75">S(75%)</option>
+<option value="1">普通(100%)</option>
+<option value="1.25">プレミアム(125%)</option>
 </select>
+価格（合計）
+<input id="price" type="number">
+搭乗月（例 2026-03）
+<input id="month">
+<button onclick="addPlan()">保存</button>
+</div>
 
-価格（往復合計）
-<input id="price" type="number" value="21840">
+<div class="card">
+<b>保存済み計画</b>
+<table>
+<thead>
+<tr>
+<th>区間</th><th>PP</th><th>費用</th><th>単価</th><th>月</th><th>実績</th><th></th>
+</tr>
+</thead>
+<tbody id="planList"></tbody>
+</table>
+</div>
 
-区間
-<select id="type">
-<option value="round">往復</option>
-<option value="oneway">片道</option>
-</select>
+<div class="card">
+<b>月別集計</b>
+<div id="monthly"></div>
+</div>
 
-<button onclick="calcPP()">想定PPを計算</button>
-
-<div class="result" id="output"></div>
+<div class="card">
+<b>PP単価ランキング</b>
+<div id="ranking"></div>
 </div>
 
 <script>
 
-// 距離データ（ANA公式区間基本マイル）
-const distance = {
-"HND-OKA":984,
-"HND-CTS":510,
-"HND-FUK":567,
-"HND-KOJ":601,
-"HND-KMI":550,
-"HND-NGS":594,
-"HND-HIJ":414,
-"HND-OKJ":327
+const distance={
+"HND-OKA":984,"OKA-ISG":247,"HND-CTS":510,"HND-FUK":567,
+"HND-KOJ":601,"HND-KMI":550,"HND-NGS":594,"HND-HIJ":414,"HND-OKJ":327
 };
 
-function calcPP(){
+let plans=JSON.parse(localStorage.getItem("sfcPlans"))||[];
 
-let from = document.getElementById("from").value.toUpperCase();
-let to = document.getElementById("to").value.toUpperCase();
-let rate = parseFloat(document.getElementById("rate").value);
-let price = parseFloat(document.getElementById("price").value);
-let type = document.getElementById("type").value;
-
-let key = from + "-" + to;
-
-if(!distance[key]){
-document.getElementById("output").innerHTML = "距離データ未登録";
-return;
+function calcRoutePP(route,rate){
+let segments=route.split(",");
+let total=0;
+segments.forEach(seg=>{
+if(distance[seg]){
+let base=distance[seg];
+let one=(base*rate)+400;
+total+=one;
+}
+});
+return Math.floor(total);
 }
 
-let baseMiles = distance[key];
+function addPlan(){
+let route=document.getElementById("route").value.toUpperCase();
+let rate=parseFloat(document.getElementById("rate").value);
+let price=parseFloat(document.getElementById("price").value);
+let month=document.getElementById("month").value;
 
-// 国内線PP計算式
-// (区間マイル × 積算率) ＋ 400PP（普通席）
-// プレミアムでも国内線は基本+400
+let pp=calcRoutePP(route,rate);
+if(pp===0){alert("区間未登録");return;}
 
-let oneWayPP = (baseMiles * rate) + 400;
-
-let totalPP = (type === "round") ? oneWayPP * 2 : oneWayPP;
-
-totalPP = Math.floor(totalPP);
-
-let unit = (price && totalPP) ? (price / totalPP).toFixed(1) : 0;
-
-document.getElementById("output").innerHTML =
-"想定PP： " + totalPP + " / PP単価： " + unit;
-
+plans.push({route,pp,price,month,done:false});
+localStorage.setItem("sfcPlans",JSON.stringify(plans));
+render();
 }
+
+function toggleDone(i){
+plans[i].done=!plans[i].done;
+localStorage.setItem("sfcPlans",JSON.stringify(plans));
+render();
+}
+
+function deletePlan(i){
+plans.splice(i,1);
+localStorage.setItem("sfcPlans",JSON.stringify(plans));
+render();
+}
+
+function render(){
+let list=document.getElementById("planList");
+list.innerHTML="";
+let totalPP=0,totalCost=0,actualPP=0;
+let monthlyData={};
+
+plans.forEach((p,i)=>{
+totalPP+=p.pp;
+totalCost+=p.price;
+if(p.done) actualPP+=p.pp;
+
+if(p.month){
+if(!monthlyData[p.month]) monthlyData[p.month]={pp:0,cost:0};
+monthlyData[p.month].pp+=p.pp;
+monthlyData[p.month].cost+=p.price;
+}
+
+list.innerHTML+=`
+<tr>
+<td>${p.route}</td>
+<td>${p.pp}</td>
+<td>${p.price}</td>
+<td>${(p.price/p.pp).toFixed(1)}</td>
+<td>${p.month||"-"}</td>
+<td><button class="${p.done?'done':''}" onclick="toggleDone(${i})">${p.done?'済':'予定'}</button></td>
+<td><button class="delete-btn" onclick="deletePlan(${i})">削除</button></td>
+</tr>`;
+});
+
+document.getElementById("totalPP").innerText=totalPP;
+document.getElementById("actualPP").innerText=actualPP;
+document.getElementById("totalCost").innerText=totalCost;
+document.getElementById("totalUnit").innerText= totalPP? (totalCost/totalPP).toFixed(1):0;
+
+let progress=Math.min((actualPP/50000)*100,100);
+document.getElementById("progressBar").style.width=progress+"%";
+
+let remain=50000-actualPP;
+document.getElementById("forecast").innerText= remain<=0?"達成！":`残り${remain}PP`;
+
+let monthlyHTML="";
+for(let m in monthlyData){
+monthlyHTML+=`${m}：${monthlyData[m].pp}PP / ${monthlyData[m].cost}円<br>`;
+}
+document.getElementById("monthly").innerHTML=monthlyHTML;
+
+let sorted=[...plans].sort((a,b)=>(a.price/a.pp)-(b.price/b.pp));
+let rankHTML="";
+sorted.forEach(p=>{
+rankHTML+=`${p.route}：${(p.price/p.pp).toFixed(1)}<br>`;
+});
+document.getElementById("ranking").innerHTML=rankHTML;
+}
+
+render();
 
 </script>
 
