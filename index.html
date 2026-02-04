@@ -3,22 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SFC修行 Strategy Engine</title>
+<title>SFC修行管理アプリ Stable Core</title>
 <style>
-body{margin:0;font-family:-apple-system;background:#f4f6f9;}
-header{background:#003f88;color:white;padding:15px;text-align:center;font-weight:bold;}
-.container{padding:15px;}
-.card{background:white;border-radius:14px;padding:15px;margin-bottom:15px;box-shadow:0 4px 12px rgba(0,0,0,0.08);}
-input,select,button{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #ccc;}
-button{background:#003f88;color:white;border:none;font-weight:bold;}
-.progress-bar{background:#ddd;height:18px;border-radius:10px;overflow:hidden;}
-.progress{background:#003f88;height:100%;width:0%;}
-.score{font-size:22px;font-weight:bold;}
+body{font-family:-apple-system;background:#f3f6fa;margin:0}
+header{background:#003f88;color:#fff;padding:14px;text-align:center;font-weight:bold}
+.container{padding:15px}
+.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+input,select,button{width:100%;padding:8px;margin:6px 0;border-radius:8px;border:1px solid #ccc}
+button{background:#003f88;color:#fff;font-weight:bold;border:none}
+.bar{background:#ddd;height:14px;border-radius:8px;margin:4px 0}
+.bar-inner{background:#003f88;height:100%;border-radius:8px}
+.heat-good{background:#d4edda}
+.heat-mid{background:#fff3cd}
+.heat-bad{background:#f8d7da}
+.small{font-size:13px;color:#666}
 </style>
 </head>
 <body>
 
-<header>SFC修行 Strategy Engine v3</header>
+<header>SFC修行管理アプリ Stable Core v1</header>
 
 <div class="container">
 
@@ -26,19 +29,21 @@ button{background:#003f88;color:white;border:none;font-weight:bold;}
 <b>総合状況</b><br>
 予定PP：<span id="totalPP">0</span> / 50,000<br>
 実績PP：<span id="actualPP">0</span><br>
-平均単価：<span id="avgUnit">0</span><br>
-残必要PP：<span id="remainPP">50000</span><br>
-達成予測：<span id="forecast"></span><br>
-<div class="progress-bar"><div class="progress" id="progress"></div></div>
-</div>
-
-<div class="card">
-<b>修行効率スコア</b><br>
-<div class="score" id="score">0</div>
+平均PP単価：<span id="avgUnit">0</span><br>
+那覇換算回数：<span id="nahaEq">0</span><br>
+札幌換算回数：<span id="ctsEq">0</span>
 </div>
 
 <div class="card">
 <b>計画入力</b>
+
+テンプレ区間
+<select id="template" onchange="Input.applyTemplate()">
+<option value="">選択なし</option>
+<option value="HND-OKA">羽田-那覇</option>
+<option value="HND-CTS">羽田-札幌</option>
+<option value="ITM-OKA">伊丹-那覇</option>
+</select>
 
 出発地
 <input id="from">
@@ -59,16 +64,15 @@ button{background:#003f88;color:white;border:none;font-weight:bold;}
 </select>
 
 運賃種別
-<select id="fareType" onchange="Logic.setRate()">
+<select id="rate">
 <option value="0.75">スーパーバリュー(75%)</option>
 <option value="1">バリュー(100%)</option>
 <option value="1.25">プレミアム株主(125%)</option>
 <option value="0.5">国際線格安(50%)</option>
-<option value="1">国際線Y/B/M(100%)</option>
 </select>
 
-距離（国際線用）
-<input id="intlDistance" type="number" placeholder="国際線距離（マイル）">
+国際線距離（マイル）
+<input type="number" id="intlDist" placeholder="国内線は空欄">
 
 座席
 <select id="seat">
@@ -76,8 +80,8 @@ button{background:#003f88;color:white;border:none;font-weight:bold;}
 <option value="premium">プレミアム</option>
 </select>
 
-価格
-<input id="price" type="number">
+価格（円）
+<input type="number" id="price">
 
 搭乗月（例:2026-04）
 <input id="month">
@@ -86,129 +90,141 @@ button{background:#003f88;color:white;border:none;font-weight:bold;}
 </div>
 
 <div class="card">
-<b>修行ロードマップ</b>
-<div id="roadmap"></div>
+<b>月別PP</b>
+<div id="monthly"></div>
+</div>
+
+<div class="card">
+<b>PP単価ヒートマップ</b>
+<div id="heat"></div>
+</div>
+
+<div class="card">
+<b>ANAセール目安</b>
+<div class="small">
+1月/4月/7月/10月：国内線タイムセール傾向<br>
+2月/9月：国際線セール傾向<br>
+ボーナスマイル：不定期
+</div>
 </div>
 
 </div>
 
 <script>
-
-/* ===== DATA ===== */
 const Data={
 plans:JSON.parse(localStorage.getItem("plans"))||[],
-save(){localStorage.setItem("plans",JSON.stringify(this.plans));}
-};
+save(){localStorage.setItem("plans",JSON.stringify(this.plans))}
+}
 
-/* ===== LOGIC ===== */
 const Logic={
 airportMap:{
-"羽田":"HND","伊丹":"ITM","関空":"KIX","中部":"NGO",
-"札幌":"CTS","福岡":"FUK","那覇":"OKA","石垣":"ISG","鹿児島":"KOJ"
+"羽田":"HND","那覇":"OKA","札幌":"CTS","伊丹":"ITM"
 },
 distance:{
-"HND-OKA":984,"HND-CTS":510,"HND-FUK":567,"HND-ITM":280,
-"ITM-OKA":739,"OKA-ISG":247
+"HND-OKA":984,
+"HND-CTS":510,
+"ITM-OKA":739
 },
 convert(name){
-for(let k in this.airportMap){name=name.replaceAll(k,this.airportMap[k]);}
-return name.toUpperCase();
+for(let k in this.airportMap){
+name=name.replaceAll(k,this.airportMap[k])
+}
+return name.toUpperCase()
 },
 calcDomestic(from,to,rate,seat){
-let key=from+"-"+to;
-let base=this.distance[key]||this.distance[to+"-"+from];
-if(!base) return 0;
-let pp=base*rate+400;
-if(seat==="premium") pp*=1.5;
-return pp;
+let key=from+"-"+to
+let base=this.distance[key]||this.distance[to+"-"+from]
+if(!base)return 0
+let pp=base*rate+400
+if(seat==="premium")pp*=1.5
+return pp
 },
-calcIntl(dist,rate){ return dist*rate; },
-setRate(){ /* 将来拡張用 */ }
-};
+calcIntl(dist,rate){return dist*rate}
+}
 
-/* ===== INPUT ===== */
 const Input={
+applyTemplate(){
+let val=document.getElementById("template").value
+if(!val)return
+let arr=val.split("-")
+document.getElementById("from").value=arr[0]
+document.getElementById("to").value=arr[1]
+},
 add(){
-let from=Logic.convert(document.getElementById("from").value);
-let to=Logic.convert(document.getElementById("to").value);
-let type=document.getElementById("tripType").value;
-let airline=document.getElementById("airline").value;
-let rate=parseFloat(document.getElementById("fareType").value);
-let seat=document.getElementById("seat").value;
-let price=parseFloat(document.getElementById("price").value);
-let month=document.getElementById("month").value;
-let intlDist=parseFloat(document.getElementById("intlDistance").value);
+let from=Logic.convert(document.getElementById("from").value)
+let to=Logic.convert(document.getElementById("to").value)
+let type=document.getElementById("tripType").value
+let airline=document.getElementById("airline").value
+let rate=parseFloat(document.getElementById("rate").value)
+let seat=document.getElementById("seat").value
+let price=parseFloat(document.getElementById("price").value)
+let month=document.getElementById("month").value
+let intl=parseFloat(document.getElementById("intlDist").value)
 
-let totalPP=0;
+let pp=0
 
 if(airline==="ANA"){
-if(intlDist){
-totalPP+=Logic.calcIntl(intlDist,rate);
+if(intl){
+pp+=Logic.calcIntl(intl,rate)
 }else{
-totalPP+=Logic.calcDomestic(from,to,rate,seat);
+pp+=Logic.calcDomestic(from,to,rate,seat)
 }
 if(type==="round"){
-if(intlDist){
-totalPP+=Logic.calcIntl(intlDist,rate);
+if(intl){
+pp+=Logic.calcIntl(intl,rate)
 }else{
-totalPP+=Logic.calcDomestic(to,from,rate,seat);
+pp+=Logic.calcDomestic(to,from,rate,seat)
 }
 }
 }
 
-totalPP=Math.floor(totalPP);
+pp=Math.floor(pp)
 
-Data.plans.push({pp:totalPP,price,month,done:false});
-Data.save();
-UI.render();
+Data.plans.push({pp,price,month,done:false})
+Data.save()
+UI.render()
 }
-};
+}
 
-/* ===== UI ===== */
 const UI={
 render(){
-let totalPP=0,actualPP=0,totalCost=0,monthly={};
+let total=0,actual=0,cost=0,monthly={}
 Data.plans.forEach(p=>{
-totalPP+=p.pp;
-totalCost+=p.price;
-if(p.done) actualPP+=p.pp;
+total+=p.pp
+cost+=p.price
+if(p.done)actual+=p.pp
 if(p.month){
-if(!monthly[p.month]) monthly[p.month]=0;
-monthly[p.month]+=p.pp;
+if(!monthly[p.month])monthly[p.month]=0
+monthly[p.month]+=p.pp
 }
-});
-let avg= totalPP? totalCost/totalPP:0;
-let remain=50000-actualPP;
+})
+let avg=total?cost/total:0
 
-document.getElementById("totalPP").innerText=totalPP;
-document.getElementById("actualPP").innerText=actualPP;
-document.getElementById("avgUnit").innerText=avg.toFixed(1);
-document.getElementById("remainPP").innerText=remain;
-document.getElementById("progress").style.width=(actualPP/50000*100)+"%";
+document.getElementById("totalPP").innerText=total
+document.getElementById("actualPP").innerText=actual
+document.getElementById("avgUnit").innerText=avg.toFixed(1)
+document.getElementById("nahaEq").innerText=(total/2276).toFixed(1)
+document.getElementById("ctsEq").innerText=(total/1365).toFixed(1)
 
-document.getElementById("forecast").innerText=
-remain<=0?"達成済み":`あと${remain}PP`;
-
-let score=100;
-if(avg>15) score-=30;
-if(avg>13) score-=15;
-if(Object.keys(monthly).length<3) score-=10;
-document.getElementById("score").innerText=score;
-
-let roadmapHTML="";
-let monthsLeft=12-Object.keys(monthly).length;
-if(monthsLeft>0){
-let perMonth=Math.ceil(remain/monthsLeft);
-roadmapHTML=`今後${monthsLeft}ヶ月で月${perMonth}PP必要`;
-}else{
-roadmapHTML="月別計画を追加してください";
+let mHTML=""
+for(let m in monthly){
+let width=Math.min(monthly[m]/500,100)
+mHTML+=`${m}<div class="bar"><div class="bar-inner" style="width:${width}%"></div></div>`
 }
-document.getElementById("roadmap").innerText=roadmapHTML;
+document.getElementById("monthly").innerHTML=mHTML
+
+let hClass="heat-good"
+if(avg>15)hClass="heat-bad"
+else if(avg>13)hClass="heat-mid"
+
+document.getElementById("heat").innerHTML=
+`<div class="${hClass}" style="padding:10px;border-radius:8px">
+平均単価 ${avg.toFixed(1)} 円
+</div>`
 }
-};
+}
 
-UI.render();
-
+UI.render()
 </script>
 
 </body>
