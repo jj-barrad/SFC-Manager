@@ -345,7 +345,120 @@ const InputModule = (function(){
 ========================= */
 document.getElementById("addBtn").addEventListener("click", InputModule.add);
 UIModule.init();
+<script>
 
+/* =========================
+   Strategy Extension Module
+   (Coreには触れない)
+========================= */
+const StrategyModule = (function(){
+
+    function calculate(){
+        const plans = DataModule.getAll();
+
+        let totalPP = 0;
+        let actualPP = 0;
+        let totalCost = 0;
+        let monthly = {};
+
+        plans.forEach(p=>{
+            totalPP += p.pp;
+            totalCost += p.price;
+            if(p.done) actualPP += p.pp;
+            if(p.month){
+                if(!monthly[p.month]) monthly[p.month]=0;
+                monthly[p.month]+=p.pp;
+            }
+        });
+
+        const remainPP = 50000 - actualPP;
+        const avgUnit = totalPP ? totalCost/totalPP : 0;
+
+        return { totalPP, actualPP, remainPP, avgUnit, monthly };
+    }
+
+    function render(){
+        const data = calculate();
+
+        let html = "";
+
+        // 達成予測
+        const months = Object.keys(data.monthly).length;
+        const remainingMonths = 12 - months;
+        let perMonth = remainingMonths>0 ? Math.ceil(data.remainPP/remainingMonths) : 0;
+
+        html += `<b>🎯 修行ロードマップ</b><br>`;
+        if(data.remainPP<=0){
+            html += `ダイヤ到達済み<br><br>`;
+        }else{
+            html += `残り ${data.remainPP} PP<br>`;
+            html += `今後 月平均 ${perMonth} PP 必要<br><br>`;
+        }
+
+        // 効率スコア
+        let score = 100;
+
+        if(data.avgUnit > 15) score -= 30;
+        else if(data.avgUnit > 13) score -= 15;
+
+        if(remainingMonths < 3) score -= 15;
+        if(data.remainPP > 30000) score -= 10;
+
+        if(score<0) score=0;
+
+        html += `<b>🧠 修行効率スコア</b><br>`;
+        html += `${score} / 100<br><br>`;
+
+        // リスク表示
+        html += `<b>⚠ リスク分析</b><br>`;
+        if(data.avgUnit>15){
+            html += `単価が高めです（15円超）<br>`;
+        }
+        if(remainingMonths<3 && data.remainPP>10000){
+            html += `残期間が少ないです<br>`;
+        }
+        if(data.remainPP>40000){
+            html += `修行未着手に近い状態です<br>`;
+        }
+        html += `<br>`;
+
+        // 予算予測
+        const projectedCost = data.remainPP * (data.avgUnit||12);
+        html += `<b>💰 予測必要予算</b><br>`;
+        html += `約 ${Math.floor(projectedCost).toLocaleString()} 円（現在単価基準）`;
+
+        document.getElementById("strategyPanel").innerHTML = html;
+    }
+
+    return { render };
+
+})();
+
+/* =========================
+   Strategy UI追加
+========================= */
+(function(){
+
+    const container = document.querySelector(".container");
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<div id="strategyPanel"></div>`;
+
+    container.appendChild(card);
+
+    // Coreのrender後にも更新されるようHook
+    const originalRender = UIModule.render;
+    UIModule.render = function(){
+        originalRender();
+        StrategyModule.render();
+    };
+
+    // 初回描画
+    StrategyModule.render();
+
+})();
+</script>
 </script>
 
 </body>
