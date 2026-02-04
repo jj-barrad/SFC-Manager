@@ -535,6 +535,119 @@ const OptimizationEngine = (function(){
 
     OptimizationEngine.render();
 })();
+/* ==============================
+   International Hybrid Optimizer
+================================ */
+
+const HybridOptimizer = (function(){
+
+    const intlOptions = [
+        {route:"HND-HNL", pp:8000, cost:120000},
+        {route:"HND-SIN", pp:6000, cost:90000},
+        {route:"HND-BKK", pp:5500, cost:85000},
+        {route:"HND-ICN", pp:2000, cost:40000},
+        {route:"HND-TPE", pp:3000, cost:55000}
+    ];
+
+    function analyze(){
+        const plans = DataModule.getAll();
+
+        let actualPP=0;
+        let domesticBest=null;
+        let bestDomesticUnit=999;
+        let avgPPperTrip=0;
+
+        let routeStats={};
+
+        plans.forEach(p=>{
+            if(p.done) actualPP+=p.pp;
+
+            if(!routeStats[p.route]) routeStats[p.route]={pp:0,cost:0,count:0};
+            routeStats[p.route].pp+=p.pp;
+            routeStats[p.route].cost+=p.price;
+            routeStats[p.route].count++;
+        });
+
+        for(let r in routeStats){
+            const unit=routeStats[r].cost/routeStats[r].pp;
+            if(unit<bestDomesticUnit){
+                bestDomesticUnit=unit;
+                domesticBest=r;
+                avgPPperTrip=routeStats[r].pp/routeStats[r].count;
+            }
+        }
+
+        const remain=50000-actualPP;
+
+        // 国際線ベスト
+        let bestIntl=null;
+        let bestIntlUnit=999;
+
+        intlOptions.forEach(opt=>{
+            const unit=opt.cost/opt.pp;
+            if(unit<bestIntlUnit){
+                bestIntlUnit=unit;
+                bestIntl=opt;
+            }
+        });
+
+        if(!domesticBest){
+            return null;
+        }
+
+        // 混合案（例：国際1回＋国内補填）
+        const intlTrips=1;
+        const remainAfterIntl=remain-bestIntl.pp;
+
+        const domesticTrips=Math.ceil(remainAfterIntl/avgPPperTrip);
+
+        const totalCost=
+            bestIntl.cost +
+            domesticTrips*avgPPperTrip*bestDomesticUnit;
+
+        return {
+            remain,
+            domesticBest,
+            bestDomesticUnit,
+            bestIntl,
+            domesticTrips,
+            totalCost
+        };
+    }
+
+    function render(){
+        const r=analyze();
+        if(!r) return;
+
+        let html="";
+        html+=`<b>🌏 国際線混合最適化</b><br>`;
+        html+=`推奨：${r.bestIntl.route} 1回 + ${r.domesticBest} ${r.domesticTrips}回<br>`;
+        html+=`想定総追加予算：約 ${Math.floor(r.totalCost).toLocaleString()} 円<br>`;
+        html+=`国内単価：${r.bestDomesticUnit.toFixed(1)} 円/PP`;
+
+        document.getElementById("hybridPanel").innerHTML=html;
+    }
+
+    return {render};
+})();
+
+(function(){
+    const container=document.querySelector(".container");
+    const card=document.createElement("div");
+    card.className="card";
+    card.innerHTML=`<div id="hybridPanel"></div>`;
+    container.appendChild(card);
+
+    const originalRender=UIModule.render;
+    UIModule.render=function(){
+        originalRender();
+        StrategyEngine.render();
+        OptimizationEngine.render();
+        HybridOptimizer.render();
+    };
+
+    HybridOptimizer.render();
+})();
 </script>
 
 </body>
