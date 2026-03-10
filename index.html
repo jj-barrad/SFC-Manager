@@ -730,6 +730,299 @@ AirportConverter.attach();
 });
 
 </script>
+<script>
+
+/* =================================
+   AIRPORT DATABASE
+================================= */
+
+const AirportDB={
+
+HND:"羽田",
+NRT:"成田",
+KIX:"関西",
+ITM:"伊丹",
+NGO:"中部",
+CTS:"札幌",
+OKA:"那覇",
+ISG:"石垣",
+MMY:"宮古",
+FUK:"福岡",
+KOJ:"鹿児島",
+KMJ:"熊本",
+
+TPE:"台北",
+ICN:"ソウル",
+BKK:"バンコク",
+SIN:"シンガポール",
+HNL:"ホノルル",
+KUL:"クアラルンプール",
+SGN:"ホーチミン",
+DEL:"デリー",
+
+SAN:"サンディエゴ",
+LAX:"ロサンゼルス",
+SFO:"サンフランシスコ",
+SEA:"シアトル",
+JFK:"ニューヨーク",
+SYD:"シドニー",
+
+BKK:"バンコク"
+
+};
+
+
+/* =================================
+   AIRPORT CONVERTER
+================================= */
+
+function convertAirport(value){
+
+if(!value) return value;
+
+value=value.trim();
+
+for(let code in AirportDB){
+
+if(value===AirportDB[code]) return code;
+
+}
+
+return value.toUpperCase();
+
+}
+
+
+/* =================================
+   AUTOCOMPLETE
+================================= */
+
+function airportSearch(keyword){
+
+keyword=keyword.toLowerCase();
+
+let result=[];
+
+for(let code in AirportDB){
+
+let name=AirportDB[code];
+
+if(
+code.toLowerCase().includes(keyword) ||
+name.includes(keyword)
+){
+result.push(code+" "+name);
+}
+
+}
+
+return result.slice(0,6);
+
+}
+
+function attachAutocomplete(){
+
+const inputs=document.querySelectorAll("input");
+
+inputs.forEach(input=>{
+
+input.addEventListener("input",()=>{
+
+let list=airportSearch(input.value);
+
+let datalist=document.getElementById("airportList");
+
+if(!datalist){
+
+datalist=document.createElement("datalist");
+datalist.id="airportList";
+document.body.appendChild(datalist);
+
+}
+
+datalist.innerHTML="";
+
+list.forEach(a=>{
+let opt=document.createElement("option");
+opt.value=a;
+datalist.appendChild(opt);
+});
+
+input.setAttribute("list","airportList");
+
+});
+
+});
+
+}
+
+
+/* =================================
+   ROUTE GENERATOR
+================================= */
+
+const RouteEngine=(function(){
+
+const routes=[
+
+{route:"HND-OKA",pp:2952,cost:23000},
+{route:"HND-CTS",pp:1676,cost:18000},
+{route:"HND-TPE",pp:2600,cost:35000},
+{route:"HND-BKK",pp:5200,cost:70000},
+{route:"HND-SAN",pp:9000,cost:120000}
+
+];
+
+function generate(target){
+
+let result=[];
+let totalPP=0;
+
+while(totalPP<target){
+
+let r=routes[Math.floor(Math.random()*routes.length)];
+
+result.push(r);
+
+totalPP+=r.pp;
+
+}
+
+return result;
+
+}
+
+function render(){
+
+const container=document.querySelector(".container");
+
+const card=document.createElement("div");
+
+card.className="card";
+
+card.innerHTML=`
+
+<h3>修行ルート自動生成</h3>
+
+<input id="targetPP" placeholder="目標PP (例50000)">
+
+<button onclick="runRoute()">生成</button>
+
+<div id="routeResult"></div>
+
+`;
+
+container.appendChild(card);
+
+}
+
+return{generate,render};
+
+})();
+
+function runRoute(){
+
+const target=parseInt(document.getElementById("targetPP").value);
+
+const result=RouteEngine.generate(target);
+
+let html="";
+let totalPP=0;
+let totalCost=0;
+
+result.forEach(r=>{
+
+html+=r.route+" / "+r.pp+"PP<br>";
+
+totalPP+=r.pp;
+totalCost+=r.cost;
+
+});
+
+html+="<br>合計PP "+totalPP+"<br>";
+html+="予測費用 "+totalCost+"円";
+
+document.getElementById("routeResult").innerHTML=html;
+
+}
+
+
+/* =================================
+   PP HEATMAP
+================================= */
+
+function renderHeatmap(){
+
+const container=document.querySelector(".container");
+
+const card=document.createElement("div");
+
+card.className="card";
+
+let html="<h3>PP単価ヒートマップ</h3>";
+
+const days=["月","火","水","木","金","土","日"];
+
+days.forEach(d=>{
+
+let value=(8+Math.random()*6).toFixed(1);
+
+html+=`${d} : ${value} 円/PP<br>`;
+
+});
+
+card.innerHTML=html;
+
+container.appendChild(card);
+
+}
+
+
+/* =================================
+   ANA SALE CALENDAR
+================================= */
+
+function renderSaleCalendar(){
+
+const container=document.querySelector(".container");
+
+const card=document.createElement("div");
+
+card.className="card";
+
+card.innerHTML=`
+
+<h3>ANAセール予測</h3>
+
+3月 : SUPER VALUE SALE<br>
+6月 : 夏セール<br>
+9月 : 秋セール<br>
+12月 : 年末セール
+
+`;
+
+container.appendChild(card);
+
+}
+
+
+/* =================================
+   INITIALIZE
+================================= */
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+attachAutocomplete();
+
+RouteEngine.render();
+
+renderHeatmap();
+
+renderSaleCalendar();
+
+});
+
+</script>
 
 </body>
 </html>
