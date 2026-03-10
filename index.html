@@ -1595,5 +1595,191 @@ container.appendChild(card)
 document.addEventListener("DOMContentLoaded",initSFC)
 
 </script>
+<script>
+
+/* ===============================
+SFC ADVANCED MODULE
+履歴管理 + 分析 + AI v2
+=============================== */
+
+
+/* ===============================
+履歴テーブル
+=============================== */
+
+function renderFlightHistory(){
+
+let html="<table border='1' style='width:100%;font-size:12px'>"
+
+html+="<tr><th>日付</th><th>Route</th><th>PP</th><th>Price</th><th>PP単価</th></tr>"
+
+flights.forEach(f=>{
+
+let unit=(f.price/f.pp).toFixed(2)
+
+html+="<tr>"
+
+html+="<td>"+f.date.toLocaleDateString()+"</td>"
+html+="<td>"+f.route+"</td>"
+html+="<td>"+f.pp+"</td>"
+html+="<td>"+f.price+"</td>"
+html+="<td>"+unit+"</td>"
+
+html+="</tr>"
+
+})
+
+html+="</table>"
+
+document.getElementById("history").innerHTML=html
+
+}
+
+
+/* ===============================
+PP単価分析
+=============================== */
+
+function renderAnalysis(){
+
+if(flights.length==0){
+
+document.getElementById("analysis").innerHTML="データなし"
+return
+
+}
+
+let totalPP=0
+let totalCost=0
+
+flights.forEach(f=>{
+
+totalPP+=f.pp
+totalCost+=f.price
+
+})
+
+let avg=(totalCost/totalPP).toFixed(2)
+
+let html=""
+
+html+="平均PP単価 : "+avg+"円/PP<br>"
+html+="総PP : "+totalPP+"<br>"
+html+="総費用 : "+totalCost+"円<br>"
+
+document.getElementById("analysis").innerHTML=html
+
+}
+
+
+/* ===============================
+AI v2（最安探索）
+=============================== */
+
+function optimizeRouteV2(){
+
+let routes=Object.keys(ROUTE_PP)
+
+let bestCost=999999999
+let bestPlan=[]
+
+for(let i=0;i<2000;i++){
+
+let totalPP=0
+let totalCost=0
+let plan=[]
+
+while(totalPP<50000){
+
+let r=routes[Math.floor(Math.random()*routes.length)]
+
+let price=simulatePrice()
+
+plan.push({route:r,pp:ROUTE_PP[r],price:price})
+
+totalPP+=ROUTE_PP[r]
+totalCost+=price
+
+}
+
+if(totalCost<bestCost){
+
+bestCost=totalCost
+bestPlan=plan
+
+}
+
+}
+
+let html=""
+
+bestPlan.forEach(p=>{
+
+html+=p.route+" "+p.pp+"PP "+p.price+"円<br>"
+
+})
+
+html+="<br>推定最安費用 : "+bestCost+"円"
+
+document.getElementById("optimizerV2").innerHTML=html
+
+}
+
+
+/* ===============================
+既存関数拡張
+=============================== */
+
+const originalAddFlight=addFlight
+
+addFlight=function(){
+
+originalAddFlight()
+
+renderFlightHistory()
+
+renderAnalysis()
+
+}
+
+
+/* ===============================
+UI追加
+=============================== */
+
+function initAdvanced(){
+
+let container=document.querySelector(".container")
+
+let card=document.createElement("div")
+
+card.className="card"
+
+card.innerHTML=`
+
+<h3>修行履歴</h3>
+<div id="history"></div>
+
+<h3>PP分析</h3>
+<div id="analysis"></div>
+
+<h3>AI最安ルート探索 v2</h3>
+
+<button onclick="optimizeRouteV2()">
+最安ルート探索
+</button>
+
+<div id="optimizerV2"></div>
+
+`
+
+container.appendChild(card)
+
+}
+
+document.addEventListener("DOMContentLoaded",initAdvanced)
+
+</script>
+
 </body>
 </html>
