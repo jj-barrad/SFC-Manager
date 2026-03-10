@@ -649,6 +649,87 @@ const HybridOptimizer = (function(){
     HybridOptimizer.render();
 })();
 </script>
+<script>
+
+/* =========================
+   Airport Name → IATA Converter
+========================= */
+
+const AirportConverter = (function(){
+
+const airportMap = {
+
+"羽田":"HND",
+"東京":"HND",
+"成田":"NRT",
+"大阪":"ITM",
+"伊丹":"ITM",
+"関西":"KIX",
+"関西空港":"KIX",
+"中部":"NGO",
+"名古屋":"NGO",
+"札幌":"CTS",
+"新千歳":"CTS",
+"那覇":"OKA",
+"沖縄":"OKA",
+"石垣":"ISG",
+"宮古":"MMY",
+"宮古島":"MMY",
+"福岡":"FUK",
+"鹿児島":"KOJ",
+"熊本":"KMJ",
+"長崎":"NGS",
+"台北":"TPE",
+"ソウル":"ICN",
+"バンコク":"BKK",
+"シンガポール":"SIN",
+"ホノルル":"HNL"
+
+};
+
+function convert(value){
+
+if(!value) return value;
+
+value = value.trim();
+
+if(airportMap[value]){
+return airportMap[value];
+}
+
+return value.toUpperCase();
+
+}
+
+function attach(){
+
+const from = document.getElementById("from");
+const to = document.getElementById("to");
+
+if(!from || !to) return;
+
+from.addEventListener("blur", ()=>{
+from.value = convert(from.value);
+});
+
+to.addEventListener("blur", ()=>{
+to.value = convert(to.value);
+});
+
+}
+
+return { attach };
+
+})();
+
+
+/* 初期化 */
+
+document.addEventListener("DOMContentLoaded", ()=>{
+AirportConverter.attach();
+});
+
+</script>
 
 </body>
 </html>
