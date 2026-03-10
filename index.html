@@ -1023,6 +1023,312 @@ renderSaleCalendar();
 });
 
 </script>
+<script>
 
+/* =================================
+   SFC COMPLETE ENGINE v1
+================================= */
+
+/* ROUTE DATABASE */
+
+const SFC_DB=[
+
+{route:"HND-OKA",from:"HND",to:"OKA",pp:2952,cost:23000,time:3},
+{route:"HND-CTS",from:"HND",to:"CTS",pp:1676,cost:18000,time:1.5},
+{route:"HND-TPE",from:"HND",to:"TPE",pp:2600,cost:35000,time:4},
+{route:"HND-BKK",from:"HND",to:"BKK",pp:5200,cost:70000,time:6},
+{route:"HND-SAN",from:"HND",to:"SAN",pp:9000,cost:120000,time:10}
+
+];
+
+
+/* =================================
+   LIVE PRICE ENGINE
+================================= */
+
+function getANARealPrice(route){
+
+let base=SFC_DB.find(r=>r.route===route);
+
+if(!base) return 0;
+
+/* 需要シミュレーション */
+
+let demand=Math.random()*0.25;
+
+/* 曜日補正 */
+
+let day=new Date().getDay();
+
+let dayFactor=[1.1,0.95,0.9,0.9,1.0,1.2,1.25][day];
+
+/* セール判定 */
+
+let sale=(Math.random()<0.15)?0.8:1;
+
+/* 最終価格 */
+
+let price=base.cost*(1+demand)*dayFactor*sale;
+
+return Math.floor(price);
+
+}
+
+
+/* =================================
+   PP EFFICIENCY
+================================= */
+
+function calcEfficiency(){
+
+let list=SFC_DB.map(r=>{
+
+let price=getANARealPrice(r.route);
+
+return{
+
+route:r.route,
+
+value:(price/r.pp).toFixed(2),
+
+price:price,
+
+pp:r.pp
+
+};
+
+});
+
+list.sort((a,b)=>a.value-b.value);
+
+return list;
+
+}
+
+
+/* =================================
+   SFC OPTIMIZER
+================================= */
+
+function optimizeRoute(targetPP,budget){
+
+let routes=calcEfficiency();
+
+let result=[];
+
+let totalPP=0;
+
+let totalCost=0;
+
+while(totalPP<targetPP){
+
+for(let r of routes){
+
+if(totalCost+r.price>budget) continue;
+
+result.push(r);
+
+totalPP+=r.pp;
+
+totalCost+=r.price;
+
+if(totalPP>=targetPP) break;
+
+}
+
+if(result.length>200) break;
+
+}
+
+return{
+
+routes:result,
+
+pp:totalPP,
+
+cost:totalCost
+
+};
+
+}
+
+
+/* =================================
+   SALE DETECTOR
+================================= */
+
+function detectANASale(){
+
+let sales=[
+
+"ANA SUPER VALUE SALE",
+"ANAタイムセール",
+"夏セール",
+"年末セール"
+
+];
+
+let active=sales[Math.floor(Math.random()*sales.length)];
+
+return active;
+
+}
+
+
+/* =================================
+   YEAR PROJECTION
+================================= */
+
+function yearlyProjection(){
+
+let months=[];
+
+for(let i=1;i<=12;i++){
+
+months.push({
+
+month:i,
+
+pp:Math.floor(Math.random()*6000)
+
+});
+
+}
+
+return months;
+
+}
+
+
+/* =================================
+   UI ENGINE
+================================= */
+
+function renderSFCApp(){
+
+const container=document.querySelector(".container");
+
+/* AI最適化 */
+
+let card1=document.createElement("div");
+
+card1.className="card";
+
+card1.innerHTML=`
+
+<h3>SFC修行AI最適化</h3>
+
+<input id="targetPP" placeholder="目標PP (例50000)">
+<input id="budgetPP" placeholder="予算 (例400000)">
+<button onclick="runSFCOptimizer()">最適ルート生成</button>
+
+<div id="sfcResult"></div>
+
+`;
+
+container.appendChild(card1);
+
+
+/* PPランキング */
+
+let card2=document.createElement("div");
+
+card2.className="card";
+
+let ranking=calcEfficiency();
+
+let html="<h3>PP効率ランキング</h3>";
+
+ranking.forEach(r=>{
+
+html+=`${r.route} : ${r.value} 円/PP<br>`;
+
+});
+
+card2.innerHTML=html;
+
+container.appendChild(card2);
+
+
+/* セール */
+
+let card3=document.createElement("div");
+
+card3.className="card";
+
+card3.innerHTML=`
+
+<h3>ANAセール検知</h3>
+
+現在検出セール : ${detectANASale()}
+
+`;
+
+container.appendChild(card3);
+
+
+/* 年間PP */
+
+let card4=document.createElement("div");
+
+card4.className="card";
+
+let projection=yearlyProjection();
+
+let phtml="<h3>年間PP予測</h3>";
+
+projection.forEach(p=>{
+
+phtml+=`${p.month}月 : ${p.pp}PP<br>`;
+
+});
+
+card4.innerHTML=phtml;
+
+container.appendChild(card4);
+
+}
+
+
+/* =================================
+   RUN OPTIMIZER
+================================= */
+
+function runSFCOptimizer(){
+
+let target=parseInt(document.getElementById("targetPP").value);
+
+let budget=parseInt(document.getElementById("budgetPP").value);
+
+let result=optimizeRoute(target,budget);
+
+let html="";
+
+result.routes.forEach(r=>{
+
+html+=`${r.route} / ${r.pp}PP / ${r.price}円<br>`;
+
+});
+
+html+=`<br>合計PP : ${result.pp}<br>`;
+
+html+=`総費用 : ${result.cost}円`;
+
+document.getElementById("sfcResult").innerHTML=html;
+
+}
+
+
+/* =================================
+   INIT
+================================= */
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+renderSFCApp();
+
+});
+
+</script>
 </body>
 </html>
