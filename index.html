@@ -1330,5 +1330,270 @@ renderSFCApp();
 });
 
 </script>
+<script>
+
+/* =============================
+SFC COMPLETE SYSTEM
+============================= */
+
+/* FLIGHT DATABASE */
+
+let flights=[];
+
+/* ROUTE PP DATABASE */
+
+const ROUTE_PP={
+
+"HND-OKA":2952,
+"OKA-HND":2952,
+"HND-CTS":1676,
+"CTS-HND":1676,
+"HND-TPE":2600,
+"TPE-HND":2600,
+"HND-BKK":5200,
+"BKK-HND":5200,
+"HND-SAN":9000,
+"SAN-HND":9000
+
+};
+
+
+/* PRICE SIMULATION */
+
+function simulatePrice(){
+
+return Math.floor(20000+Math.random()*60000)
+
+}
+
+
+/* ADD FLIGHT */
+
+function addFlight(){
+
+let route=document.getElementById("routeInput").value
+
+let price=simulatePrice()
+
+let pp=ROUTE_PP[route] || 0
+
+flights.push({
+
+date:new Date(),
+
+route:route,
+
+pp:pp,
+
+price:price
+
+})
+
+renderDashboard()
+
+}
+
+
+/* DASHBOARD */
+
+function renderDashboard(){
+
+let totalPP=0
+let totalCost=0
+
+flights.forEach(f=>{
+
+totalPP+=f.pp
+totalCost+=f.price
+
+})
+
+let remain=50000-totalPP
+
+let html=""
+
+html+="現在PP : "+totalPP+"<br>"
+html+="残PP : "+remain+"<br>"
+html+="総費用 : "+totalCost+"円<br>"
+
+document.getElementById("dashboard").innerHTML=html
+
+renderPrediction()
+
+renderRanking()
+
+}
+
+
+/* YEARLY PREDICTION */
+
+function renderPrediction(){
+
+if(flights.length==0){
+
+document.getElementById("prediction").innerHTML="データなし"
+
+return
+
+}
+
+let first=flights[0].date
+
+let now=new Date()
+
+let months=(now-first)/(1000*60*60*24*30)
+
+if(months<1) months=1
+
+let totalPP=0
+
+flights.forEach(f=>totalPP+=f.pp)
+
+let monthly=totalPP/months
+
+let yearly=Math.floor(monthly*12)
+
+document.getElementById("prediction").innerHTML=
+
+"年間予測PP : "+yearly
+
+}
+
+
+/* PP EFFICIENCY RANKING */
+
+function renderRanking(){
+
+let list=[]
+
+for(let r in ROUTE_PP){
+
+let price=simulatePrice()
+
+list.push({
+
+route:r,
+
+value:(price/ROUTE_PP[r]).toFixed(2)
+
+})
+
+}
+
+list.sort((a,b)=>a.value-b.value)
+
+let html=""
+
+list.slice(0,5).forEach(r=>{
+
+html+=r.route+" "+r.value+"円/PP<br>"
+
+})
+
+document.getElementById("ranking").innerHTML=html
+
+}
+
+
+/* ROUTE OPTIMIZER */
+
+function optimizeRoute(){
+
+let routes=Object.keys(ROUTE_PP)
+
+let result=[]
+
+let total=0
+
+while(total<50000){
+
+let r=routes[Math.floor(Math.random()*routes.length)]
+
+result.push(r)
+
+total+=ROUTE_PP[r]
+
+}
+
+let html=""
+
+result.forEach(r=>{
+
+html+=r+" "+ROUTE_PP[r]+"PP<br>"
+
+})
+
+document.getElementById("optimizer").innerHTML=html
+
+}
+
+
+/* SALE DETECTOR */
+
+function detectSale(){
+
+let sales=[
+
+"ANA SUPER VALUE SALE",
+"ANAタイムセール",
+"夏セール",
+"年末セール"
+
+]
+
+return sales[Math.floor(Math.random()*sales.length)]
+
+}
+
+
+/* INIT UI */
+
+function initSFC(){
+
+let container=document.querySelector(".container")
+
+let card=document.createElement("div")
+
+card.className="card"
+
+card.innerHTML=`
+
+<h2>SFC修行ダッシュボード</h2>
+
+<div id="dashboard"></div>
+
+<h3>年間PP予測</h3>
+
+<div id="prediction"></div>
+
+<h3>PP効率ランキング</h3>
+
+<div id="ranking"></div>
+
+<h3>フライト追加</h3>
+
+<input id="routeInput" placeholder="HND-OKA">
+
+<button onclick="addFlight()">追加</button>
+
+<h3>AI修行ルート</h3>
+
+<button onclick="optimizeRoute()">生成</button>
+
+<div id="optimizer"></div>
+
+<h3>セール検知</h3>
+
+<div id="sale">${detectSale()}</div>
+
+`
+
+container.appendChild(card)
+
+}
+
+document.addEventListener("DOMContentLoaded",initSFC)
+
+</script>
 </body>
 </html>
