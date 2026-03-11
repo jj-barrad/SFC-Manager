@@ -840,5 +840,206 @@ input.setAttribute("list","airportList");
 
 </script>
 
+<script>
+
+/* ==============================
+   PP Efficiency Ranking
+================================ */
+
+const RankingEngine=(function(){
+
+function render(){
+
+const plans=DataModule.getAll()
+
+let routes={}
+
+plans.forEach(p=>{
+
+if(!routes[p.route]){
+routes[p.route]={pp:0,cost:0}
+}
+
+routes[p.route].pp+=p.pp
+routes[p.route].cost+=p.price
+
+})
+
+let list=[]
+
+for(let r in routes){
+
+let unit=routes[r].cost/routes[r].pp
+
+list.push({route:r,unit})
+
+}
+
+list.sort((a,b)=>a.unit-b.unit)
+
+let html="<b>🏆 PP効率ランキング</b><br>"
+
+list.slice(0,6).forEach(r=>{
+html+=`${r.route} : ${r.unit.toFixed(1)} 円/PP<br>`
+})
+
+document.getElementById("rankingPanel").innerHTML=html
+
+}
+
+return{render}
+
+})()
+
+;(function(){
+
+const container=document.querySelector(".container")
+
+const card=document.createElement("div")
+card.className="card"
+card.innerHTML=`<div id="rankingPanel"></div>`
+
+container.appendChild(card)
+
+const originalRender=UIModule.render
+
+UIModule.render=function(){
+
+originalRender()
+StrategyEngine.render()
+OptimizationEngine.render()
+HybridOptimizer.render()
+RankingEngine.render()
+
+}
+
+RankingEngine.render()
+
+})()
+
+
+/* ==============================
+   AI Route Generator
+================================ */
+
+const AIRouteEngine=(function(){
+
+function generate(){
+
+let target=parseInt(document.getElementById("aiTarget").value)||50000
+let budget=parseInt(document.getElementById("aiBudget").value)||200000
+
+const routes=[
+{route:"HND-OKA",pp:2276,cost:23000},
+{route:"HND-CTS",pp:1365,cost:15000},
+{route:"HND-FUK",pp:1436,cost:17000}
+]
+
+let best=null
+
+routes.forEach(r=>{
+
+let unit=r.cost/r.pp
+
+if(!best||unit<best.unit){
+best={...r,unit}
+}
+
+})
+
+let trips=Math.ceil(target/best.pp)
+let cost=trips*best.cost
+
+let html=`推奨ルート<br>
+${best.route} × ${trips}往復<br>
+必要予算 約 ${cost.toLocaleString()}円`
+
+document.getElementById("aiResult").innerHTML=html
+
+}
+
+return{generate}
+
+})()
+
+;(function(){
+
+const container=document.querySelector(".container")
+
+const card=document.createElement("div")
+card.className="card"
+
+card.innerHTML=`
+<b>🤖 AI修行ルート生成</b><br>
+
+目標PP
+<input id="aiTarget" placeholder="50000">
+
+予算
+<input id="aiBudget" placeholder="200000">
+
+<button id="aiBtn">生成</button>
+
+<div id="aiResult"></div>
+`
+
+container.appendChild(card)
+
+document.getElementById("aiBtn").onclick=AIRouteEngine.generate
+
+})()
+
+
+/* ==============================
+   ANA Sale Prediction
+================================ */
+
+const SalePredictor=(function(){
+
+function render(){
+
+const now=new Date()
+const m=now.getMonth()+1
+
+let domestic="7月"
+let intl="9月"
+
+if(m<=1) domestic="1月"
+else if(m<=4) domestic="4月"
+else if(m<=7) domestic="7月"
+else domestic="10月"
+
+if(m<=2) intl="2月"
+else intl="9月"
+
+let html=`
+<b>✈ ANAセール予測</b><br>
+国内線タイムセール：${domestic}頃<br>
+国際線セール：${intl}頃
+`
+
+document.getElementById("salePredictPanel").innerHTML=html
+
+}
+
+return{render}
+
+})()
+
+;(function(){
+
+const container=document.querySelector(".container")
+
+const card=document.createElement("div")
+card.className="card"
+card.innerHTML=`<div id="salePredictPanel"></div>`
+
+container.appendChild(card)
+
+SalePredictor.render()
+
+})()
+
+</script>
 </body>
 </html>
