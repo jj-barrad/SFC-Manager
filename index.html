@@ -1,1492 +1,323 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SFC修行管理アプリ Stable Core v4</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>SFC修行AIマネージャー Ultimate</title>
+
 <style>
-body{font-family:-apple-system;background:#f3f6fa;margin:0}
-header{background:#003f88;color:#fff;padding:14px;text-align:center;font-weight:bold}
-.container{padding:15px}
-.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 4px 12px rgba(0,0,0,0.08)}
-input,select,button{width:100%;padding:8px;margin:6px 0;border-radius:8px;border:1px solid #ccc}
-button{background:#003f88;color:#fff;font-weight:bold;border:none}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th,td{border-bottom:1px solid #eee;padding:6px;text-align:center}
-.bar{background:#ddd;height:14px;border-radius:8px;margin:4px 0}
-.bar-inner{background:#003f88;height:100%;border-radius:8px}
-.heat-good{background:#d4edda;padding:10px;border-radius:8px}
-.heat-mid{background:#fff3cd;padding:10px;border-radius:8px}
-.heat-bad{background:#f8d7da;padding:10px;border-radius:8px}
-.small{font-size:13px;color:#666}
-.warning{color:#d9534f;font-size:12px}
+
+body{
+font-family:sans-serif;
+background:#f2f4f7;
+margin:0;
+}
+
+header{
+background:#003b7a;
+color:white;
+padding:15px;
+font-size:20px;
+}
+
+.container{
+max-width:750px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:white;
+border-radius:10px;
+padding:15px;
+margin-bottom:20px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+button{
+background:#0a4fa3;
+color:white;
+border:none;
+padding:10px;
+border-radius:6px;
+width:100%;
+margin-top:10px;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin-top:5px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+.progress{
+background:#ddd;
+height:20px;
+border-radius:10px;
+overflow:hidden;
+}
+
+.bar{
+background:#2ea44f;
+height:100%;
+width:0%;
+}
+
+.good{color:green}
+.mid{color:orange}
+.bad{color:red}
+
 </style>
 </head>
+
 <body>
 
-<header>SFC修行管理アプリ Stable Core v4</header>
+<header>SFC修行AIマネージャー Ultimate</header>
 
 <div class="container">
 
-<div class="card">
-<b>総合状況</b><br>
-予定PP：<span id="totalPP">0</span> / 50,000<br>
-実績PP：<span id="actualPP">0</span><br>
-平均PP単価：<span id="avgUnit">0</span><br>
-那覇換算：<span id="nahaEq">0</span><br>
-札幌換算：<span id="ctsEq">0</span>
-</div>
+<!-- 進捗 -->
 
 <div class="card">
-<b>計画入力</b>
 
-テンプレ区間
-<select id="template"></select>
+<h3>修行進捗</h3>
 
-出発地<input id="from">
-到着地<input id="to">
-
-片道/往復
-<select id="tripType">
-<option value="oneway">片道</option>
-<option value="round">往復</option>
-</select>
-
-航空会社
-<select id="airline">
-<option value="ANA">ANA</option>
-<option value="other">他社</option>
-</select>
-
-運賃種別
-<select id="rate"></select>
-
-国際線距離（マイル）<input type="number" id="intlDist" placeholder="国内線は空欄">
-<span id="intlWarning" class="warning"></span>
-
-座席
-<select id="seat">
-<option value="normal">普通席</option>
-<option value="premium">プレミアム</option>
-</select>
-
-価格<input type="number" id="price">
-搭乗月<input id="month">
-
-<button id="addBtn">追加</button>
+<div class="progress">
+<div class="bar" id="progressBar"></div>
 </div>
+
+<p id="ppText">0 / 50000 PP</p>
+
+<p id="yearForecast"></p>
+
+</div>
+
+<!-- フライト入力 -->
 
 <div class="card">
-<b>計画一覧（管理）</b>
-<table>
-<thead>
-<tr>
-<th>区間</th><th>月</th><th>PP</th><th>価格</th><th>済</th><th>削除</th>
-</tr>
-</thead>
-<tbody id="planTable"></tbody>
-</table>
+
+<h3>フライト追加</h3>
+
+出発地
+<input id="fromInput" placeholder="例 羽田">
+
+到着地
+<input id="toInput" placeholder="例 那覇">
+
+PP
+<input id="ppInput">
+
+価格
+<input id="priceInput">
+
+<button onclick="addFlight()">追加</button>
+
 </div>
 
-<div class="card"><b>月別PP</b><div id="monthly"></div></div>
-<div class="card"><b>PP単価ヒートマップ</b><div id="heat"></div></div>
+<!-- テンプレ -->
 
 <div class="card">
-<b>ANAセール目安</b>
-<div class="small">
-1月/4月/7月/10月：国内線タイムセール傾向<br>
-2月/9月：国際線セール傾向
-</div>
-</div>
+
+<h3>テンプレート</h3>
+
+<button onclick="addTemplate('HND','OKA',2200,23000)">HND-OKA</button>
+<button onclick="addTemplate('HND','CTS',1700,20000)">HND-CTS</button>
+<button onclick="addTemplate('HND','FUK',1500,18000)">HND-FUK</button>
+<button onclick="addTemplate('HND','TPE',2000,26000)">HND-TPE</button>
+<button onclick="addTemplate('HND','BKK',3000,45000)">HND-BKK</button>
+<button onclick="addTemplate('HND','HNL',4000,65000)">HND-HNL</button>
 
 </div>
 
-<script>
+<!-- PPランキング -->
 
-/* =========================
-   Data Module
-========================= */
-const DataModule = (function(){
-    let plans = JSON.parse(localStorage.getItem("plans")) || [];
+<div class="card">
 
-    function save(){
-        localStorage.setItem("plans", JSON.stringify(plans));
-    }
+<h3>PP効率ランキング</h3>
 
-    function getAll(){ return plans; }
+<div id="ranking"></div>
 
-    function add(plan){
-        plans.push(plan);
-        save();
-    }
+</div>
 
-    function remove(index){
-        plans.splice(index,1);
-        save();
-    }
+<!-- 自動修行 -->
 
-    function toggleDone(index, val){
-        plans[index].done = val;
-        save();
-    }
+<div class="card">
 
-    return { getAll, add, remove, toggleDone };
-})();
+<h3>自動修行プラン</h3>
 
-/* =========================
-   Logic Module
-========================= */
-const LogicModule = (function(){
+<div id="autoPlan"></div>
 
-    const airportMap = {
-        "羽田":"HND","成田":"NRT","伊丹":"ITM","関空":"KIX","中部":"NGO",
-        "札幌":"CTS","福岡":"FUK","那覇":"OKA","石垣":"ISG","鹿児島":"KOJ",
-        "広島":"HIJ","仙台":"SDJ","宮古":"MMY"
-    };
+</div>
 
-    const distance = {
-        "HND-OKA":984,"HND-CTS":510,"HND-FUK":567,"HND-ISG":1224,"HND-KOJ":601,
-        "ITM-OKA":739,"ITM-CTS":666,"KIX-OKA":738,"NGO-OKA":758,"FUK-OKA":537
-    };
+<!-- 国際線 -->
 
-    function convert(name){
-        for(let k in airportMap){
-            name = name.replaceAll(k, airportMap[k]);
-        }
-        return name.toUpperCase();
-    }
+<div class="card">
 
-    function isDomestic(from,to){
-        return distance[from+"-"+to] || distance[to+"-"+from];
-    }
+<h3>国際線混合最適化</h3>
 
-    function calcDomestic(from,to,rate,seat){
-        let base = distance[from+"-"+to] || distance[to+"-"+from];
-        let pp = base * rate + 400;
-        if(seat==="premium") pp *= 1.5;
-        return pp;
-    }
+<div id="intlPlan"></div>
 
-    function calcIntl(dist,rate){
-        return dist * rate;
-    }
+</div>
 
-    return { convert, isDomestic, calcDomestic, calcIntl };
+<!-- AIルート -->
 
-})();
+<div class="card">
 
-/* =========================
-   UI Module
-========================= */
-const UIModule = (function(){
+<h3>AI修行ルート生成</h3>
 
-    function init(){
-        initTemplates();
-        initRates();
-        render();
-    }
+目標PP
+<input id="targetPP">
 
-    function initTemplates(){
-        const select = document.getElementById("template");
-        const templates = [
-            "HND-OKA","HND-CTS","HND-FUK","HND-ISG","HND-KOJ",
-            "ITM-OKA","ITM-CTS","KIX-OKA","NGO-OKA","FUK-OKA"
-        ];
-        select.innerHTML = '<option value="">選択なし</option>';
-        templates.forEach(t=>{
-            select.innerHTML += `<option value="${t}">${t}</option>`;
-        });
-        select.addEventListener("change",()=>{
-            let val = select.value;
-            if(!val) return;
-            let arr = val.split("-");
-            document.getElementById("from").value = arr[0];
-            document.getElementById("to").value = arr[1];
-        });
-    }
+予算
+<input id="budget">
 
-    function initRates(){
-        const rateSelect = document.getElementById("rate");
-        const rates = [
-            ["0.75","スーパーバリュー(75%)"],
-            ["1","バリュー(100%)"],
-            ["1.25","プレミアム株主(125%)"],
-            ["1","国際線Y/B/M(100%)"],
-            ["0.5","国際線格安(50%)"]
-        ];
-        rates.forEach(r=>{
-            rateSelect.innerHTML += `<option value="${r[0]}">${r[1]}</option>`;
-        });
-    }
-
-    function render(){
-        let plans = DataModule.getAll();
-        let total=0, actual=0, cost=0, monthly={};
-        let tableHTML="";
-
-        plans.forEach((p,i)=>{
-            total+=p.pp;
-            cost+=p.price;
-            if(p.done) actual+=p.pp;
-            if(p.month){
-                if(!monthly[p.month]) monthly[p.month]=0;
-                monthly[p.month]+=p.pp;
-            }
-
-            tableHTML+=`
-            <tr>
-            <td>${p.route}</td>
-            <td>${p.month||""}</td>
-            <td>${p.pp}</td>
-            <td>${p.price||""}</td>
-            <td><input type="checkbox" ${p.done?"checked":""} data-index="${i}" class="doneCheck"></td>
-            <td><button data-index="${i}" class="deleteBtn">削除</button></td>
-            </tr>`;
-        });
-
-        document.getElementById("planTable").innerHTML=tableHTML;
-
-        let avg = total? cost/total : 0;
-
-        document.getElementById("totalPP").innerText=total;
-        document.getElementById("actualPP").innerText=actual;
-        document.getElementById("avgUnit").innerText=avg.toFixed(1);
-        document.getElementById("nahaEq").innerText=(total/2276).toFixed(1);
-        document.getElementById("ctsEq").innerText=(total/1365).toFixed(1);
-
-        renderMonthly(monthly);
-        renderHeat(avg);
-
-        attachEvents();
-    }
-
-    function renderMonthly(monthly){
-        let html="";
-        for(let m in monthly){
-            let width=Math.min(monthly[m]/500,100);
-            html+=`${m}<div class="bar"><div class="bar-inner" style="width:${width}%"></div></div>`;
-        }
-        document.getElementById("monthly").innerHTML=html;
-    }
-
-    function renderHeat(avg){
-        let cls="heat-good";
-        if(avg>15) cls="heat-bad";
-        else if(avg>13) cls="heat-mid";
-        document.getElementById("heat").innerHTML=`<div class="${cls}">平均単価 ${avg.toFixed(1)} 円</div>`;
-    }
-
-    function attachEvents(){
-        document.querySelectorAll(".doneCheck").forEach(cb=>{
-            cb.onclick = ()=> {
-                DataModule.toggleDone(cb.dataset.index, cb.checked);
-                render();
-            };
-        });
-
-        document.querySelectorAll(".deleteBtn").forEach(btn=>{
-            btn.onclick = ()=>{
-                DataModule.remove(btn.dataset.index);
-                render();
-            };
-        });
-    }
-
-    return { init, render };
-
-})();
-
-/* =========================
-   Input Module
-========================= */
-const InputModule = (function(){
-
-    function add(){
-        let from = LogicModule.convert(document.getElementById("from").value);
-        let to = LogicModule.convert(document.getElementById("to").value);
-        let type = document.getElementById("tripType").value;
-        let airline = document.getElementById("airline").value;
-        let rate = parseFloat(document.getElementById("rate").value);
-        let seat = document.getElementById("seat").value;
-        let price = parseFloat(document.getElementById("price").value)||0;
-        let month = document.getElementById("month").value;
-        let intl = parseFloat(document.getElementById("intlDist").value);
-
-        let pp=0;
-        let route=from+"-"+to;
-
-        if(airline==="ANA"){
-            if(LogicModule.isDomestic(from,to)){
-                pp+=LogicModule.calcDomestic(from,to,rate,seat);
-                if(type==="round") pp+=LogicModule.calcDomestic(to,from,rate,seat);
-                document.getElementById("intlWarning").innerText="";
-            }else{
-                if(!intl){
-                    document.getElementById("intlWarning").innerText="※国際線は距離入力必須";
-                    return;
-                }
-                pp+=LogicModule.calcIntl(intl,rate);
-                if(type==="round") pp+=LogicModule.calcIntl(intl,rate);
-            }
-        }
-
-        pp=Math.floor(pp);
-
-        DataModule.add({route,pp,price,month,done:false});
-        UIModule.render();
-    }
-
-    return { add };
-
-})();
-
-/* =========================
-   Bootstrap
-========================= */
-document.getElementById("addBtn").addEventListener("click", InputModule.add);
-UIModule.init();
-
-/* ==============================
-   Unified Strategy Engine v1
-   Strategy + Ultimate 完全統合
-   Phase2含む
-================================ */
-
-const StrategyEngine = (function(){
-
-    function collect(){
-        const plans = DataModule.getAll();
-        let totalPP=0, actualPP=0, totalCost=0;
-        let monthly={}, routeStats={};
-
-        plans.forEach(p=>{
-            totalPP+=p.pp;
-            totalCost+=p.price;
-            if(p.done) actualPP+=p.pp;
-
-            if(p.month){
-                if(!monthly[p.month]) monthly[p.month]=0;
-                monthly[p.month]+=p.pp;
-            }
-
-            if(!routeStats[p.route]) routeStats[p.route]={pp:0,cost:0,count:0};
-            routeStats[p.route].pp+=p.pp;
-            routeStats[p.route].cost+=p.price;
-            routeStats[p.route].count++;
-        });
-
-        return {plans,totalPP,actualPP,totalCost,monthly,routeStats};
-    }
-
-    function render(){
-
-        const d = collect();
-        const remain = 50000 - d.actualPP;
-        const avgUnit = d.totalPP ? d.totalCost/d.totalPP : 0;
-        const monthsUsed = Object.keys(d.monthly).length;
-        const remainMonths = Math.max(1,12-monthsUsed);
-        const perMonth = Math.ceil(remain/remainMonths);
-        const projectedCost = remain * (avgUnit||12);
-
-        let bestRoute=null, bestUnit=999;
-        for(let r in d.routeStats){
-            const u=d.routeStats[r].cost/d.routeStats[r].pp;
-            if(u<bestUnit){ bestUnit=u; bestRoute=r; }
-        }
-
-        const progressPercent = Math.min(100, (d.actualPP/50000)*100);
-
-        let score=100;
-        if(avgUnit>15) score-=30;
-        else if(avgUnit>13) score-=15;
-        if(remain>30000) score-=10;
-        if(score<0) score=0;
-
-        let html="";
-
-        html+=`<b>🎯 修行ロードマップ</b><br>`;
-        if(remain<=0){
-            html+=`ダイヤ達成済み<br><br>`;
-        }else{
-            html+=`残 ${remain} PP<br>`;
-            html+=`月平均 ${perMonth} PP 必要<br><br>`;
-        }
-
-        html+=`<b>📊 進捗バー</b><br>`;
-        html+=`
-        <div style="background:#eee;border-radius:8px;">
-            <div style="width:${progressPercent}%;background:#2a6df4;height:18px;border-radius:8px;"></div>
-        </div>
-        ${Math.floor(progressPercent)}%達成<br><br>
-        `;
-
-        html+=`<b>🧠 効率スコア</b><br>${score}/100<br><br>`;
-
-        html+=`<b>💰 予測残予算</b><br>${Math.floor(projectedCost).toLocaleString()}円<br><br>`;
-
-        if(bestRoute){
-            html+=`<b>🧭 最適ルート</b><br>${bestRoute} (${bestUnit.toFixed(1)}円/PP)<br><br>`;
-        }
-
-        html+=`<b>⚠ リスク分析</b><br>`;
-        if(remain>40000) html+=`修行未着手に近い状態<br>`;
-        if(avgUnit>15) html+=`単価高め<br>`;
-        if(remainMonths<3 && remain>10000) html+=`残期間不足リスク<br>`;
-
-        document.getElementById("strategyUnified").innerHTML=html;
-    }
-
-    return {render};
-})();
-
-(function(){
-    const container=document.querySelector(".container");
-    const card=document.createElement("div");
-    card.className="card";
-    card.innerHTML=`<div id="strategyUnified"></div>`;
-    container.appendChild(card);
-
-    const originalRender=UIModule.render;
-    UIModule.render=function(){
-        originalRender();
-        StrategyEngine.render();
-    };
-
-    StrategyEngine.render();
-})();
-/* ==============================
-   Route Optimization Engine v1
-================================ */
-
-const OptimizationEngine = (function(){
-
-    function analyze(){
-        const plans = DataModule.getAll();
-        let actualPP=0;
-        let routeStats={};
-
-        plans.forEach(p=>{
-            if(p.done) actualPP+=p.pp;
-
-            if(!routeStats[p.route]) routeStats[p.route]={pp:0,cost:0,count:0};
-            routeStats[p.route].pp+=p.pp;
-            routeStats[p.route].cost+=p.price;
-            routeStats[p.route].count++;
-        });
-
-        const remain=50000-actualPP;
-
-        let bestRoute=null;
-        let bestUnit=999;
-        let avgPPperTrip=0;
-
-        for(let r in routeStats){
-            const unit=routeStats[r].cost/routeStats[r].pp;
-            if(unit<bestUnit){
-                bestUnit=unit;
-                bestRoute=r;
-                avgPPperTrip=routeStats[r].pp/routeStats[r].count;
-            }
-        }
-
-        if(!bestRoute){
-            return null;
-        }
-
-        const tripsNeeded=Math.ceil(remain/avgPPperTrip);
-        const estimatedCost=Math.floor(tripsNeeded*avgPPperTrip*bestUnit);
-
-        return {remain,bestRoute,tripsNeeded,estimatedCost,bestUnit};
-    }
-
-    function render(){
-        const result=analyze();
-
-        if(!result) return;
-
-        let html="";
-
-        html+=`<b>🤖 自動最適修行プラン</b><br>`;
-        html+=`残 ${result.remain}PP<br>`;
-        html+=`推奨路線：${result.bestRoute}<br>`;
-        html+=`必要往復回数：約 ${result.tripsNeeded} 回<br>`;
-        html+=`想定追加予算：約 ${result.estimatedCost.toLocaleString()} 円<br>`;
-        html+=`想定単価：${result.bestUnit.toFixed(1)} 円/PP`;
-
-        document.getElementById("optimizePanel").innerHTML=html;
-    }
-
-    return {render};
-})();
-
-(function(){
-    const container=document.querySelector(".container");
-    const card=document.createElement("div");
-    card.className="card";
-    card.innerHTML=`<div id="optimizePanel"></div>`;
-    container.appendChild(card);
-
-    const originalRender=UIModule.render;
-    UIModule.render=function(){
-        originalRender();
-        StrategyEngine.render();
-        OptimizationEngine.render();
-    };
-
-    OptimizationEngine.render();
-})();
-/* ==============================
-   International Hybrid Optimizer
-================================ */
-
-const HybridOptimizer = (function(){
-
-    const intlOptions = [
-        {route:"HND-HNL", pp:8000, cost:120000},
-        {route:"HND-SIN", pp:6000, cost:90000},
-        {route:"HND-BKK", pp:5500, cost:85000},
-        {route:"HND-ICN", pp:2000, cost:40000},
-        {route:"HND-TPE", pp:3000, cost:55000}
-    ];
-
-    function analyze(){
-        const plans = DataModule.getAll();
-
-        let actualPP=0;
-        let domesticBest=null;
-        let bestDomesticUnit=999;
-        let avgPPperTrip=0;
-
-        let routeStats={};
-
-        plans.forEach(p=>{
-            if(p.done) actualPP+=p.pp;
-
-            if(!routeStats[p.route]) routeStats[p.route]={pp:0,cost:0,count:0};
-            routeStats[p.route].pp+=p.pp;
-            routeStats[p.route].cost+=p.price;
-            routeStats[p.route].count++;
-        });
-
-        for(let r in routeStats){
-            const unit=routeStats[r].cost/routeStats[r].pp;
-            if(unit<bestDomesticUnit){
-                bestDomesticUnit=unit;
-                domesticBest=r;
-                avgPPperTrip=routeStats[r].pp/routeStats[r].count;
-            }
-        }
-
-        const remain=50000-actualPP;
-
-        // 国際線ベスト
-        let bestIntl=null;
-        let bestIntlUnit=999;
-
-        intlOptions.forEach(opt=>{
-            const unit=opt.cost/opt.pp;
-            if(unit<bestIntlUnit){
-                bestIntlUnit=unit;
-                bestIntl=opt;
-            }
-        });
-
-        if(!domesticBest){
-            return null;
-        }
-
-        // 混合案（例：国際1回＋国内補填）
-        const intlTrips=1;
-        const remainAfterIntl=remain-bestIntl.pp;
-
-        const domesticTrips=Math.ceil(remainAfterIntl/avgPPperTrip);
-
-        const totalCost=
-            bestIntl.cost +
-            domesticTrips*avgPPperTrip*bestDomesticUnit;
-
-        return {
-            remain,
-            domesticBest,
-            bestDomesticUnit,
-            bestIntl,
-            domesticTrips,
-            totalCost
-        };
-    }
-
-    function render(){
-        const r=analyze();
-        if(!r) return;
-
-        let html="";
-        html+=`<b>🌏 国際線混合最適化</b><br>`;
-        html+=`推奨：${r.bestIntl.route} 1回 + ${r.domesticBest} ${r.domesticTrips}回<br>`;
-        html+=`想定総追加予算：約 ${Math.floor(r.totalCost).toLocaleString()} 円<br>`;
-        html+=`国内単価：${r.bestDomesticUnit.toFixed(1)} 円/PP`;
-
-        document.getElementById("hybridPanel").innerHTML=html;
-    }
-
-    return {render};
-})();
-
-(function(){
-    const container=document.querySelector(".container");
-    const card=document.createElement("div");
-    card.className="card";
-    card.innerHTML=`<div id="hybridPanel"></div>`;
-    container.appendChild(card);
-
-    const originalRender=UIModule.render;
-    UIModule.render=function(){
-        originalRender();
-        StrategyEngine.render();
-        OptimizationEngine.render();
-        HybridOptimizer.render();
-    };
-
-    HybridOptimizer.render();
-})();
-</script>
-<script>
-
-/* =========================
-   Airport Name → IATA Converter
-========================= */
-
-const AirportConverter = (function(){
-
-const airportMap = {
-
-"羽田":"HND",
-"東京":"HND",
-"成田":"NRT",
-"大阪":"ITM",
-"伊丹":"ITM",
-"関西":"KIX",
-"関西空港":"KIX",
-"中部":"NGO",
-"名古屋":"NGO",
-"札幌":"CTS",
-"新千歳":"CTS",
-"那覇":"OKA",
-"沖縄":"OKA",
-"石垣":"ISG",
-"宮古":"MMY",
-"宮古島":"MMY",
-"福岡":"FUK",
-"鹿児島":"KOJ",
-"熊本":"KMJ",
-"長崎":"NGS",
-"台北":"TPE",
-"ソウル":"ICN",
-"バンコク":"BKK",
-"シンガポール":"SIN",
-"ホノルル":"HNL"
-
-};
-
-function convert(value){
-
-if(!value) return value;
-
-value = value.trim();
-
-if(airportMap[value]){
-return airportMap[value];
-}
-
-return value.toUpperCase();
-
-}
-
-function attach(){
-
-const from = document.getElementById("from");
-const to = document.getElementById("to");
-
-if(!from || !to) return;
-
-from.addEventListener("blur", ()=>{
-from.value = convert(from.value);
-});
-
-to.addEventListener("blur", ()=>{
-to.value = convert(to.value);
-});
-
-}
-
-return { attach };
-
-})();
-
-
-/* 初期化 */
-
-document.addEventListener("DOMContentLoaded", ()=>{
-AirportConverter.attach();
-});
-
-</script>
-<script>
-
-/* =================================
-   AIRPORT DATABASE
-================================= */
-
-const AirportDB={
-
-HND:"羽田",
-NRT:"成田",
-KIX:"関西",
-ITM:"伊丹",
-NGO:"中部",
-CTS:"札幌",
-OKA:"那覇",
-ISG:"石垣",
-MMY:"宮古",
-FUK:"福岡",
-KOJ:"鹿児島",
-KMJ:"熊本",
-
-TPE:"台北",
-ICN:"ソウル",
-BKK:"バンコク",
-SIN:"シンガポール",
-HNL:"ホノルル",
-KUL:"クアラルンプール",
-SGN:"ホーチミン",
-DEL:"デリー",
-
-SAN:"サンディエゴ",
-LAX:"ロサンゼルス",
-SFO:"サンフランシスコ",
-SEA:"シアトル",
-JFK:"ニューヨーク",
-SYD:"シドニー",
-
-BKK:"バンコク"
-
-};
-
-
-/* =================================
-   AIRPORT CONVERTER
-================================= */
-
-function convertAirport(value){
-
-if(!value) return value;
-
-value=value.trim();
-
-for(let code in AirportDB){
-
-if(value===AirportDB[code]) return code;
-
-}
-
-return value.toUpperCase();
-
-}
-
-
-/* =================================
-   AUTOCOMPLETE
-================================= */
-
-function airportSearch(keyword){
-
-keyword=keyword.toLowerCase();
-
-let result=[];
-
-for(let code in AirportDB){
-
-let name=AirportDB[code];
-
-if(
-code.toLowerCase().includes(keyword) ||
-name.includes(keyword)
-){
-result.push(code+" "+name);
-}
-
-}
-
-return result.slice(0,6);
-
-}
-
-function attachAutocomplete(){
-
-const inputs=document.querySelectorAll("input");
-
-inputs.forEach(input=>{
-
-input.addEventListener("input",()=>{
-
-let list=airportSearch(input.value);
-
-let datalist=document.getElementById("airportList");
-
-if(!datalist){
-
-datalist=document.createElement("datalist");
-datalist.id="airportList";
-document.body.appendChild(datalist);
-
-}
-
-datalist.innerHTML="";
-
-list.forEach(a=>{
-let opt=document.createElement("option");
-opt.value=a;
-datalist.appendChild(opt);
-});
-
-input.setAttribute("list","airportList");
-
-});
-
-});
-
-}
-
-
-/* =================================
-   ROUTE GENERATOR
-================================= */
-
-const RouteEngine=(function(){
-
-const routes=[
-
-{route:"HND-OKA",pp:2952,cost:23000},
-{route:"HND-CTS",pp:1676,cost:18000},
-{route:"HND-TPE",pp:2600,cost:35000},
-{route:"HND-BKK",pp:5200,cost:70000},
-{route:"HND-SAN",pp:9000,cost:120000}
-
-];
-
-function generate(target){
-
-let result=[];
-let totalPP=0;
-
-while(totalPP<target){
-
-let r=routes[Math.floor(Math.random()*routes.length)];
-
-result.push(r);
-
-totalPP+=r.pp;
-
-}
-
-return result;
-
-}
-
-function render(){
-
-const container=document.querySelector(".container");
-
-const card=document.createElement("div");
-
-card.className="card";
-
-card.innerHTML=`
-
-<h3>修行ルート自動生成</h3>
-
-<input id="targetPP" placeholder="目標PP (例50000)">
-
-<button onclick="runRoute()">生成</button>
+<button onclick="generateRoute()">AI生成</button>
 
 <div id="routeResult"></div>
 
-`;
+</div>
 
-container.appendChild(card);
+<!-- 最安 -->
 
-}
+<div class="card">
 
-return{generate,render};
+<h3>AI最安ルート探索</h3>
 
-})();
+<button onclick="searchCheapest()">検索</button>
 
-function runRoute(){
+<div id="cheapResult"></div>
 
-const target=parseInt(document.getElementById("targetPP").value);
+</div>
 
-const result=RouteEngine.generate(target);
+</div>
 
-let html="";
-let totalPP=0;
-let totalCost=0;
-
-result.forEach(r=>{
-
-html+=r.route+" / "+r.pp+"PP<br>";
-
-totalPP+=r.pp;
-totalCost+=r.cost;
-
-});
-
-html+="<br>合計PP "+totalPP+"<br>";
-html+="予測費用 "+totalCost+"円";
-
-document.getElementById("routeResult").innerHTML=html;
-
-}
-
-
-/* =================================
-   PP HEATMAP
-================================= */
-
-function renderHeatmap(){
-
-const container=document.querySelector(".container");
-
-const card=document.createElement("div");
-
-card.className="card";
-
-let html="<h3>PP単価ヒートマップ</h3>";
-
-const days=["月","火","水","木","金","土","日"];
-
-days.forEach(d=>{
-
-let value=(8+Math.random()*6).toFixed(1);
-
-html+=`${d} : ${value} 円/PP<br>`;
-
-});
-
-card.innerHTML=html;
-
-container.appendChild(card);
-
-}
-
-
-/* =================================
-   ANA SALE CALENDAR
-================================= */
-
-function renderSaleCalendar(){
-
-const container=document.querySelector(".container");
-
-const card=document.createElement("div");
-
-card.className="card";
-
-card.innerHTML=`
-
-<h3>ANAセール予測</h3>
-
-3月 : SUPER VALUE SALE<br>
-6月 : 夏セール<br>
-9月 : 秋セール<br>
-12月 : 年末セール
-
-`;
-
-container.appendChild(card);
-
-}
-
-
-/* =================================
-   INITIALIZE
-================================= */
-
-document.addEventListener("DOMContentLoaded",()=>{
-
-attachAutocomplete();
-
-RouteEngine.render();
-
-renderHeatmap();
-
-renderSaleCalendar();
-
-});
-
-</script>
 <script>
 
-/* =================================
-   SFC COMPLETE ENGINE v1
-================================= */
+let flights=[]
 
-/* ROUTE DATABASE */
-
-const SFC_DB=[
-
-{route:"HND-OKA",from:"HND",to:"OKA",pp:2952,cost:23000,time:3},
-{route:"HND-CTS",from:"HND",to:"CTS",pp:1676,cost:18000,time:1.5},
-{route:"HND-TPE",from:"HND",to:"TPE",pp:2600,cost:35000,time:4},
-{route:"HND-BKK",from:"HND",to:"BKK",pp:5200,cost:70000,time:6},
-{route:"HND-SAN",from:"HND",to:"SAN",pp:9000,cost:120000,time:10}
-
-];
-
-
-/* =================================
-   LIVE PRICE ENGINE
-================================= */
-
-function getANARealPrice(route){
-
-let base=SFC_DB.find(r=>r.route===route);
-
-if(!base) return 0;
-
-/* 需要シミュレーション */
-
-let demand=Math.random()*0.25;
-
-/* 曜日補正 */
-
-let day=new Date().getDay();
-
-let dayFactor=[1.1,0.95,0.9,0.9,1.0,1.2,1.25][day];
-
-/* セール判定 */
-
-let sale=(Math.random()<0.15)?0.8:1;
-
-/* 最終価格 */
-
-let price=base.cost*(1+demand)*dayFactor*sale;
-
-return Math.floor(price);
-
+const airportMap={
+"羽田":"HND",
+"那覇":"OKA",
+"札幌":"CTS",
+"福岡":"FUK",
+"台北":"TPE",
+"バンコク":"BKK",
+"ホノルル":"HNL",
+"サンディエゴ":"SAN"
 }
 
+function convertAirport(name){
 
-/* =================================
-   PP EFFICIENCY
-================================= */
+if(airportMap[name]) return airportMap[name]
 
-function calcEfficiency(){
-
-let list=SFC_DB.map(r=>{
-
-let price=getANARealPrice(r.route);
-
-return{
-
-route:r.route,
-
-value:(price/r.pp).toFixed(2),
-
-price:price,
-
-pp:r.pp
-
-};
-
-});
-
-list.sort((a,b)=>a.value-b.value);
-
-return list;
+return name.toUpperCase()
 
 }
-
-
-/* =================================
-   SFC OPTIMIZER
-================================= */
-
-function optimizeRoute(targetPP,budget){
-
-let routes=calcEfficiency();
-
-let result=[];
-
-let totalPP=0;
-
-let totalCost=0;
-
-while(totalPP<targetPP){
-
-for(let r of routes){
-
-if(totalCost+r.price>budget) continue;
-
-result.push(r);
-
-totalPP+=r.pp;
-
-totalCost+=r.price;
-
-if(totalPP>=targetPP) break;
-
-}
-
-if(result.length>200) break;
-
-}
-
-return{
-
-routes:result,
-
-pp:totalPP,
-
-cost:totalCost
-
-};
-
-}
-
-
-/* =================================
-   SALE DETECTOR
-================================= */
-
-function detectANASale(){
-
-let sales=[
-
-"ANA SUPER VALUE SALE",
-"ANAタイムセール",
-"夏セール",
-"年末セール"
-
-];
-
-let active=sales[Math.floor(Math.random()*sales.length)];
-
-return active;
-
-}
-
-
-/* =================================
-   YEAR PROJECTION
-================================= */
-
-function yearlyProjection(){
-
-let months=[];
-
-for(let i=1;i<=12;i++){
-
-months.push({
-
-month:i,
-
-pp:Math.floor(Math.random()*6000)
-
-});
-
-}
-
-return months;
-
-}
-
-
-/* =================================
-   UI ENGINE
-================================= */
-
-function renderSFCApp(){
-
-const container=document.querySelector(".container");
-
-/* AI最適化 */
-
-let card1=document.createElement("div");
-
-card1.className="card";
-
-card1.innerHTML=`
-
-<h3>SFC修行AI最適化</h3>
-
-<input id="targetPP" placeholder="目標PP (例50000)">
-<input id="budgetPP" placeholder="予算 (例400000)">
-<button onclick="runSFCOptimizer()">最適ルート生成</button>
-
-<div id="sfcResult"></div>
-
-`;
-
-container.appendChild(card1);
-
-
-/* PPランキング */
-
-let card2=document.createElement("div");
-
-card2.className="card";
-
-let ranking=calcEfficiency();
-
-let html="<h3>PP効率ランキング</h3>";
-
-ranking.forEach(r=>{
-
-html+=`${r.route} : ${r.value} 円/PP<br>`;
-
-});
-
-card2.innerHTML=html;
-
-container.appendChild(card2);
-
-
-/* セール */
-
-let card3=document.createElement("div");
-
-card3.className="card";
-
-card3.innerHTML=`
-
-<h3>ANAセール検知</h3>
-
-現在検出セール : ${detectANASale()}
-
-`;
-
-container.appendChild(card3);
-
-
-/* 年間PP */
-
-let card4=document.createElement("div");
-
-card4.className="card";
-
-let projection=yearlyProjection();
-
-let phtml="<h3>年間PP予測</h3>";
-
-projection.forEach(p=>{
-
-phtml+=`${p.month}月 : ${p.pp}PP<br>`;
-
-});
-
-card4.innerHTML=phtml;
-
-container.appendChild(card4);
-
-}
-
-
-/* =================================
-   RUN OPTIMIZER
-================================= */
-
-function runSFCOptimizer(){
-
-let target=parseInt(document.getElementById("targetPP").value);
-
-let budget=parseInt(document.getElementById("budgetPP").value);
-
-let result=optimizeRoute(target,budget);
-
-let html="";
-
-result.routes.forEach(r=>{
-
-html+=`${r.route} / ${r.pp}PP / ${r.price}円<br>`;
-
-});
-
-html+=`<br>合計PP : ${result.pp}<br>`;
-
-html+=`総費用 : ${result.cost}円`;
-
-document.getElementById("sfcResult").innerHTML=html;
-
-}
-
-
-/* =================================
-   INIT
-================================= */
-
-document.addEventListener("DOMContentLoaded",()=>{
-
-renderSFCApp();
-
-});
-
-</script>
-<script>
-
-/* =============================
-SFC COMPLETE SYSTEM
-============================= */
-
-/* FLIGHT DATABASE */
-
-let flights=[];
-
-/* ROUTE PP DATABASE */
-
-const ROUTE_PP={
-
-"HND-OKA":2952,
-"OKA-HND":2952,
-"HND-CTS":1676,
-"CTS-HND":1676,
-"HND-TPE":2600,
-"TPE-HND":2600,
-"HND-BKK":5200,
-"BKK-HND":5200,
-"HND-SAN":9000,
-"SAN-HND":9000
-
-};
-
-
-/* PRICE SIMULATION */
-
-function simulatePrice(){
-
-return Math.floor(20000+Math.random()*60000)
-
-}
-
-
-/* ADD FLIGHT */
 
 function addFlight(){
 
-let route=document.getElementById("routeInput").value
+let from=convertAirport(
+document.getElementById("fromInput").value)
 
-let price=simulatePrice()
+let to=convertAirport(
+document.getElementById("toInput").value)
 
-let pp=ROUTE_PP[route] || 0
+let route=from+"-"+to
 
-flights.push({
+let pp=parseInt(
+document.getElementById("ppInput").value)
 
-date:new Date(),
+let price=parseInt(
+document.getElementById("priceInput").value)
 
-route:route,
+flights.push({route,pp,price})
 
-pp:pp,
-
-price:price
-
-})
-
-renderDashboard()
+update()
 
 }
 
+function addTemplate(f,t,pp,price){
 
-/* DASHBOARD */
+flights.push({
+route:f+"-"+t,
+pp:pp,
+price:price
+})
 
-function renderDashboard(){
+update()
+
+}
+
+function update(){
 
 let totalPP=0
-let totalCost=0
+let totalPrice=0
 
 flights.forEach(f=>{
 
 totalPP+=f.pp
-totalCost+=f.price
+totalPrice+=f.price
 
 })
 
-let remain=50000-totalPP
+let progress=(totalPP/50000)*100
 
-let html=""
+document.getElementById("progressBar").style.width=progress+"%"
 
-html+="現在PP : "+totalPP+"<br>"
-html+="残PP : "+remain+"<br>"
-html+="総費用 : "+totalCost+"円<br>"
+document.getElementById("ppText").innerText=
+totalPP+" / 50000 PP"
 
-document.getElementById("dashboard").innerHTML=html
+yearForecast(totalPP)
 
-renderPrediction()
+updateRanking()
 
-renderRanking()
-
-}
-
-
-/* YEARLY PREDICTION */
-
-function renderPrediction(){
-
-if(flights.length==0){
-
-document.getElementById("prediction").innerHTML="データなし"
-
-return
+updatePlan(totalPP)
 
 }
 
-let first=flights[0].date
+function yearForecast(pp){
 
-let now=new Date()
+let estimate=pp*3
 
-let months=(now-first)/(1000*60*60*24*30)
-
-if(months<1) months=1
-
-let totalPP=0
-
-flights.forEach(f=>totalPP+=f.pp)
-
-let monthly=totalPP/months
-
-let yearly=Math.floor(monthly*12)
-
-document.getElementById("prediction").innerHTML=
-
-"年間予測PP : "+yearly
+document.getElementById("yearForecast").innerText=
+"年間予測PP : "+estimate
 
 }
 
+function updateRanking(){
 
-/* PP EFFICIENCY RANKING */
+let routes={}
 
-function renderRanking(){
+flights.forEach(f=>{
 
-let list=[]
+let unit=f.price/f.pp
 
-for(let r in ROUTE_PP){
+if(!routes[f.route]||routes[f.route]>unit){
 
-let price=simulatePrice()
+routes[f.route]=unit
 
-list.push({
-
-route:r,
-
-value:(price/ROUTE_PP[r]).toFixed(2)
+}
 
 })
 
-}
-
-list.sort((a,b)=>a.value-b.value)
-
 let html=""
 
-list.slice(0,5).forEach(r=>{
+Object.keys(routes).forEach(r=>{
 
-html+=r.route+" "+r.value+"円/PP<br>"
+let unit=routes[r]
+
+let cls="mid"
+
+if(unit<9) cls="good"
+if(unit>13) cls="bad"
+
+html+=`<div class="${cls}">
+${r} : ${unit.toFixed(2)} 円/PP
+</div>`
 
 })
 
@@ -1494,290 +325,82 @@ document.getElementById("ranking").innerHTML=html
 
 }
 
+function updatePlan(currentPP){
 
-/* ROUTE OPTIMIZER */
+let remain=50000-currentPP
 
-function optimizeRoute(){
+let okapp=2200
 
-let routes=Object.keys(ROUTE_PP)
+let trips=Math.ceil(remain/okapp)
 
-let result=[]
+let cost=trips*23000
 
-let total=0
+document.getElementById("autoPlan").innerHTML=
+`
+残PP : ${remain}<br>
+推奨路線 : HND-OKA<br>
+必要往復 : ${trips}<br>
+予算 : ${cost.toLocaleString()}円
+`
 
-while(total<50000){
-
-let r=routes[Math.floor(Math.random()*routes.length)]
-
-result.push(r)
-
-total+=ROUTE_PP[r]
-
-}
-
-let html=""
-
-result.forEach(r=>{
-
-html+=r+" "+ROUTE_PP[r]+"PP<br>"
-
-})
-
-document.getElementById("optimizer").innerHTML=html
+document.getElementById("intlPlan").innerHTML=
+`
+国際線案<br>
+HND-HNL 1回<br>
+HND-OKA ${Math.max(0,trips-3)}回
+`
 
 }
 
+function generateRoute(){
 
-/* SALE DETECTOR */
+let target=parseInt(
+document.getElementById("targetPP").value)
 
-function detectSale(){
+let budget=parseInt(
+document.getElementById("budget").value)
 
-let sales=[
+let okapp=2200
+let cost=23000
 
-"ANA SUPER VALUE SALE",
-"ANAタイムセール",
-"夏セール",
-"年末セール"
+let trips=Math.ceil(target/okapp)
+
+let total=trips*cost
+
+document.getElementById("routeResult").innerHTML=
+`
+AI提案ルート<br>
+HND-OKA × ${trips}<br>
+予算 ${total.toLocaleString()}円
+`
+
+}
+
+function searchCheapest(){
+
+let routes=[
+
+{r:"HND-OKA",unit:9.5},
+{r:"HND-FUK",unit:10.3},
+{r:"HND-CTS",unit:11.1},
+{r:"HND-TPE",unit:12.4},
+{r:"HND-BKK",unit:13.5}
 
 ]
 
-return sales[Math.floor(Math.random()*sales.length)]
-
-}
-
-
-/* INIT UI */
-
-function initSFC(){
-
-let container=document.querySelector(".container")
-
-let card=document.createElement("div")
-
-card.className="card"
-
-card.innerHTML=`
-
-<h2>SFC修行ダッシュボード</h2>
-
-<div id="dashboard"></div>
-
-<h3>年間PP予測</h3>
-
-<div id="prediction"></div>
-
-<h3>PP効率ランキング</h3>
-
-<div id="ranking"></div>
-
-<h3>フライト追加</h3>
-
-<input id="routeInput" placeholder="HND-OKA">
-
-<button onclick="addFlight()">追加</button>
-
-<h3>AI修行ルート</h3>
-
-<button onclick="optimizeRoute()">生成</button>
-
-<div id="optimizer"></div>
-
-<h3>セール検知</h3>
-
-<div id="sale">${detectSale()}</div>
-
-`
-
-container.appendChild(card)
-
-}
-
-document.addEventListener("DOMContentLoaded",initSFC)
-
-</script>
-<script>
-
-/* ===============================
-SFC ADVANCED MODULE
-履歴管理 + 分析 + AI v2
-=============================== */
-
-
-/* ===============================
-履歴テーブル
-=============================== */
-
-function renderFlightHistory(){
-
-let html="<table border='1' style='width:100%;font-size:12px'>"
-
-html+="<tr><th>日付</th><th>Route</th><th>PP</th><th>Price</th><th>PP単価</th></tr>"
-
-flights.forEach(f=>{
-
-let unit=(f.price/f.pp).toFixed(2)
-
-html+="<tr>"
-
-html+="<td>"+f.date.toLocaleDateString()+"</td>"
-html+="<td>"+f.route+"</td>"
-html+="<td>"+f.pp+"</td>"
-html+="<td>"+f.price+"</td>"
-html+="<td>"+unit+"</td>"
-
-html+="</tr>"
-
-})
-
-html+="</table>"
-
-document.getElementById("history").innerHTML=html
-
-}
-
-
-/* ===============================
-PP単価分析
-=============================== */
-
-function renderAnalysis(){
-
-if(flights.length==0){
-
-document.getElementById("analysis").innerHTML="データなし"
-return
-
-}
-
-let totalPP=0
-let totalCost=0
-
-flights.forEach(f=>{
-
-totalPP+=f.pp
-totalCost+=f.price
-
-})
-
-let avg=(totalCost/totalPP).toFixed(2)
+routes.sort((a,b)=>a.unit-b.unit)
 
 let html=""
 
-html+="平均PP単価 : "+avg+"円/PP<br>"
-html+="総PP : "+totalPP+"<br>"
-html+="総費用 : "+totalCost+"円<br>"
+routes.forEach(r=>{
 
-document.getElementById("analysis").innerHTML=html
-
-}
-
-
-/* ===============================
-AI v2（最安探索）
-=============================== */
-
-function optimizeRouteV2(){
-
-let routes=Object.keys(ROUTE_PP)
-
-let bestCost=999999999
-let bestPlan=[]
-
-for(let i=0;i<2000;i++){
-
-let totalPP=0
-let totalCost=0
-let plan=[]
-
-while(totalPP<50000){
-
-let r=routes[Math.floor(Math.random()*routes.length)]
-
-let price=simulatePrice()
-
-plan.push({route:r,pp:ROUTE_PP[r],price:price})
-
-totalPP+=ROUTE_PP[r]
-totalCost+=price
-
-}
-
-if(totalCost<bestCost){
-
-bestCost=totalCost
-bestPlan=plan
-
-}
-
-}
-
-let html=""
-
-bestPlan.forEach(p=>{
-
-html+=p.route+" "+p.pp+"PP "+p.price+"円<br>"
+html+=`${r.r} : ${r.unit} 円/PP<br>`
 
 })
 
-html+="<br>推定最安費用 : "+bestCost+"円"
-
-document.getElementById("optimizerV2").innerHTML=html
+document.getElementById("cheapResult").innerHTML=html
 
 }
-
-
-/* ===============================
-既存関数拡張
-=============================== */
-
-const originalAddFlight=addFlight
-
-addFlight=function(){
-
-originalAddFlight()
-
-renderFlightHistory()
-
-renderAnalysis()
-
-}
-
-
-/* ===============================
-UI追加
-=============================== */
-
-function initAdvanced(){
-
-let container=document.querySelector(".container")
-
-let card=document.createElement("div")
-
-card.className="card"
-
-card.innerHTML=`
-
-<h3>修行履歴</h3>
-<div id="history"></div>
-
-<h3>PP分析</h3>
-<div id="analysis"></div>
-
-<h3>AI最安ルート探索 v2</h3>
-
-<button onclick="optimizeRouteV2()">
-最安ルート探索
-</button>
-
-<div id="optimizerV2"></div>
-
-`
-
-container.appendChild(card)
-
-}
-
-document.addEventListener("DOMContentLoaded",initAdvanced)
 
 </script>
 
