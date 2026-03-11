@@ -727,6 +727,7 @@ return { attach };
 
 document.addEventListener("DOMContentLoaded", ()=>{
 AirportConverter.attach();
+attachAutocomplete();
 });
 
 </script>
@@ -767,30 +768,10 @@ SEA:"シアトル",
 JFK:"ニューヨーク",
 SYD:"シドニー",
 
-BKK:"バンコク"
 
 };
 
 
-/* =================================
-   AIRPORT CONVERTER
-================================= */
-
-function convertAirport(value){
-
-if(!value) return value;
-
-value=value.trim();
-
-for(let code in AirportDB){
-
-if(value===AirportDB[code]) return code;
-
-}
-
-return value.toUpperCase();
-
-}
 
 
 /* =================================
