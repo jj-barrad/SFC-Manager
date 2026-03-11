@@ -1,7 +1,7 @@
 {
   "name": "SFC修行ポイント管理アプリ",
   "short_name": "SFC管理",
-  "start_url": "index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f4f7fb",
   "theme_color": "#0053a0",
