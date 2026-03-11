@@ -1046,6 +1046,132 @@ SalePredictor.render()
 
 })()
 
+// ===============================
+// SFC AI ROUTE ENGINE
+// ===============================
+
+const routeDB = [
+
+{route:"HND-OKA",pp:2200,price:23000,time:3},
+{route:"HND-CTS",pp:1500,price:17000,time:1.5},
+{route:"HND-FUK",pp:1400,price:16000,time:2},
+{route:"HND-ISG",pp:2800,price:32000,time:3.5},
+
+{route:"HND-TPE",pp:1800,price:24000,time:4},
+{route:"HND-BKK",pp:3200,price:52000,time:6},
+{route:"HND-SIN",pp:3500,price:56000,time:7},
+{route:"HND-HNL",pp:3800,price:72000,time:7}
+
+]
+
+// ===============================
+// AI修行ルート生成
+// ===============================
+
+function aiGenerateSFC(){
+
+let target = 50000
+let bestPlan = null
+
+for(let r of routeDB){
+
+let trips = Math.ceil(target / r.pp)
+
+let totalCost = trips * r.price
+let totalTime = trips * r.time
+
+let score = totalCost + totalTime*1000
+
+if(!bestPlan || score < bestPlan.score){
+
+bestPlan = {
+
+route:r.route,
+trips,
+cost:totalCost,
+time:totalTime,
+score
+
+}
+
+}
+
+}
+
+displayAIPlan(bestPlan)
+
+}
+
+// ===============================
+// 国際線混合AI
+// ===============================
+
+function aiMixInternational(){
+
+let target = 50000
+
+let oka = routeDB[0]
+let intl = routeDB[6]
+
+let intlTrips = 3
+let remainPP = target - (intlTrips * intl.pp)
+
+let okaTrips = Math.ceil(remainPP / oka.pp)
+
+let cost = intlTrips*intl.price + okaTrips*oka.price
+
+document.getElementById("intlPlan").innerHTML =
+
+`
+国際線混合プラン<br><br>
+
+HND-SIN × ${intlTrips}<br>
+HND-OKA × ${okaTrips}<br><br>
+
+総費用 ${cost.toLocaleString()}円
+`
+
+}
+
+// ===============================
+// 最短日程AI
+// ===============================
+
+function aiFastest(){
+
+let target = 50000
+
+let route = routeDB[0]
+
+let trips = Math.ceil(target / route.pp)
+
+let days = Math.ceil(trips / 2)
+
+document.getElementById("autoPlan").innerHTML =
+
+`
+最短修行プラン<br><br>
+
+路線 : ${route.route}<br>
+必要往復 : ${trips}<br>
+最短日数 : ${days}日
+`
+
+}
+
+// ===============================
+// AIボタン初期化
+// ===============================
+
+function initAI(){
+
+aiGenerateSFC()
+aiMixInternational()
+aiFastest()
+
+}
+
+window.addEventListener("load",initAI)
 </script>
 
 <script>
