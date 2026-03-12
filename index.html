@@ -131,6 +131,12 @@ border-radius:8px;
 </select>
 
 <input id="price" placeholder="価格">
+
+<select id="trip">
+<option value="oneway">片道</option>
+<option value="round">往復</option>
+</select>
+
 <input id="month" type="month">
 
 <button onclick="addFlight()">フライト追加</button>
@@ -145,7 +151,7 @@ border-radius:8px;
 <button class="routeBtn" onclick="quick('HND','CTS')">HND-CTS</button>
 <button class="routeBtn" onclick="quick('HND','ISG')">HND-ISG</button>
 <button class="routeBtn" onclick="quick('ITM','OKA')">ITM-OKA</button>
-<button onclick="addOKATouch()">OKAタッチ往復登録</button>
+<button onclick="addOKATouch()">OKAタッチ往復</button>
 
 </div>
 
@@ -468,7 +474,31 @@ alert("ルートデータ無し")
 return
 }
 
-flights.push({id:Date.now(),from,to,pp,price,month,done:false})
+let trip=document.getElementById("trip").value
+
+flights.push({
+id:Date.now(),
+from:from,
+to:to,
+pp:pp,
+price:price,
+month:month,
+done:false
+})
+
+if(trip=="round"){
+
+flights.push({
+id:Date.now()+1,
+from:to,
+to:from,
+pp:pp,
+price:price,
+month:month,
+done:false
+})
+
+}
 
 save()
 
@@ -489,8 +519,8 @@ function addOKATouch(){
 
 let rate=parseFloat(document.getElementById("rate").value)
 let seat=document.getElementById("seat").value
-let price=parseInt(document.getElementById("price").value)||0
 let month=document.getElementById("month").value
+let price=parseInt(document.getElementById("price").value)||0
 
 let pp=calcPP("HND","OKA",rate,seat)
 
@@ -499,7 +529,7 @@ id:Date.now(),
 from:"HND",
 to:"OKA",
 pp:pp,
-price:price,
+price:price/2,
 month:month,
 done:false
 })
@@ -509,7 +539,7 @@ id:Date.now()+1,
 from:"OKA",
 to:"HND",
 pp:pp,
-price:price,
+price:price/2,
 month:month,
 done:false
 })
@@ -589,22 +619,35 @@ ultimateEngine(remain)
 
 function ranking(){
 
-let routes={}
+let html=""
 
-flights.forEach(f=>{
+let list=[]
 
-let u=f.price/f.pp
-let r=f.from+"-"+f.to
+Object.keys(routePP).forEach(r=>{
 
-if(!routes[r]||routes[r]>u)routes[r]=u
+let parts=r.split("-")
+
+let from=parts[0]
+let to=parts[1]
+
+let pp=calcPP(from,to,1,"normal")
+
+let priceGuess=15000
+
+let unit=priceGuess/pp
+
+list.push({
+route:r,
+unit:unit
+})
 
 })
 
-let html=""
+list.sort((a,b)=>a.unit-b.unit)
 
-Object.keys(routes).forEach(r=>{
+list.slice(0,10).forEach(x=>{
 
-html+=r+" : "+routes[r].toFixed(1)+"円/PP<br>"
+html+=x.route+" : "+x.unit.toFixed(1)+"円/PP<br>"
 
 })
 
@@ -631,21 +674,36 @@ flights.forEach(f=>{
 
 if(!f.month)return
 
-if(!months[f.month])months[f.month]=0
+if(!months[f.month]){
 
-months[f.month]+=f.pp
+months[f.month]={
+pp:0,
+count:0
+}
+
+}
+
+months[f.month].pp+=f.pp
+months[f.month].count++
 
 })
 
-let html="<br><b>修行カレンダー</b><br>"
+let html="<table>"
+html+="<tr><th>月</th><th>フライト</th><th>PP</th></tr>"
 
 Object.keys(months).forEach(m=>{
 
-html+=m+" : "+months[m]+"PP<br>"
+html+="<tr>"
+html+="<td>"+m+"</td>"
+html+="<td>"+months[m].count+"</td>"
+html+="<td>"+months[m].pp+"</td>"
+html+="</tr>"
 
 })
 
-document.getElementById("calendar").innerHTML=html
+html+="</table>"
+
+document.getElementById("calendar2").innerHTML=html
 
 }
 
@@ -679,6 +737,7 @@ okaOptimize(remain)
 bestPP()
 sfcGoal(remain)
 okaDayPossible()
+sfcScheduler(remain)
 
 }
 
@@ -952,6 +1011,29 @@ document.getElementById("to").addEventListener("blur",function(){
 this.value=code(this.value)
 
 })
+
+document.getElementById("from").addEventListener("blur",function(){
+this.value=code(this.value)
+})
+
+document.getElementById("to").addEventListener("blur",function(){
+this.value=code(this.value)
+})
+
+function sfcScheduler(remain){
+
+let okaPP=2900
+
+let trips=Math.ceil(remain/okaPP)
+
+let months=Math.ceil(trips/2)
+
+document.getElementById("ai").innerHTML+=
+"<br><b>AI修行スケジュール</b><br>"+
+"OKAタッチ "+trips+"往復<br>"+
+"月2回修行 → "+months+"ヶ月"
+
+}
 
 </script>
 
