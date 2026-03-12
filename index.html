@@ -209,60 +209,129 @@ border-radius:8px;
 
 const airportMap={
 
+// 日本
 "羽田":"HND",
+"成田":"NRT",
 "那覇":"OKA",
+"石垣":"ISG",
+"宮古":"MMY",
 "札幌":"CTS",
 "新千歳":"CTS",
-"石垣":"ISG",
-"伊丹":"ITM",
-"関空":"KIX",
-"福岡":"FUK",
-"名古屋":"NGO",
+"旭川":"AKJ",
+"函館":"HKD",
+"釧路":"KUH",
 
+"仙台":"SDJ",
+"秋田":"AXT",
+"山形":"GAJ",
+"新潟":"KIJ",
+
+"名古屋":"NGO",
+"中部":"NGO",
+"伊丹":"ITM",
+"大阪":"ITM",
+"関空":"KIX",
+"神戸":"UKB",
+
+"広島":"HIJ",
+"岡山":"OKJ",
+"松山":"MYJ",
+"高松":"TAK",
+"徳島":"TKS",
+"高知":"KCZ",
+
+"福岡":"FUK",
+"長崎":"NGS",
+"熊本":"KMJ",
+"宮崎":"KMI",
+"鹿児島":"KOJ",
+"大分":"OIT",
+
+// アジア
+"ソウル":"ICN",
 "台北":"TPE",
 "香港":"HKG",
-"シンガポール":"SIN",
+"マニラ":"MNL",
 "バンコク":"BKK",
-"ソウル":"ICN",
+"シンガポール":"SIN",
+"クアラルンプール":"KUL",
+"ジャカルタ":"CGK",
+"デリー":"DEL",
 
+// オセアニア
+"シドニー":"SYD",
+"メルボルン":"MEL",
+
+// 北米
 "ホノルル":"HNL",
 "サンフランシスコ":"SFO",
 "ロサンゼルス":"LAX",
 "サンディエゴ":"SAN",
+"シアトル":"SEA",
+"ニューヨーク":"JFK",
+"ワシントン":"IAD",
+"シカゴ":"ORD",
 
+// 欧州
 "ロンドン":"LHR",
 "パリ":"CDG",
-"フランクフルト":"FRA"
+"フランクフルト":"FRA",
+"ミュンヘン":"MUC",
+"ブリュッセル":"BRU"
 
 }
 
 const routePP={
 
-// 国内
+// 国内主要
 "HND-OKA":984,
 "HND-CTS":510,
 "HND-ISG":1224,
-"ITM-OKA":739,
 "HND-FUK":567,
 "HND-NGO":193,
+"HND-KIX":280,
+"HND-ITM":280,
+"HND-HIJ":402,
+"HND-KMI":561,
+"HND-KOJ":601,
+"HND-NGS":602,
+"HND-OIT":548,
+"HND-KMJ":472,
+
+"ITM-OKA":739,
+"KIX-OKA":739,
+"NGO-OKA":863,
 
 // アジア
+"HND-ICN":758,
 "HND-TPE":1330,
 "HND-HKG":1800,
-"HND-SIN":3312,
+"HND-MNL":1840,
 "HND-BKK":2869,
-"HND-ICN":758,
+"HND-SIN":3312,
+"HND-KUL":3300,
+"HND-CGK":3600,
+
+// オセアニア
+"HND-SYD":4860,
+"HND-MEL":5050,
 
 // 北米
 "HND-HNL":3831,
 "HND-SFO":5124,
 "HND-LAX":5470,
 "HND-SAN":5458,
+"HND-SEA":4768,
+"HND-JFK":6740,
+"HND-IAD":6760,
+"HND-ORD":6280,
 
 // 欧州
 "HND-LHR":6212,
 "HND-CDG":6055,
-"HND-FRA":5974
+"HND-FRA":5974,
+"HND-MUC":5850,
+"HND-BRU":5900
 
 }
 
