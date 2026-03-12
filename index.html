@@ -334,6 +334,73 @@ const routePP={
 "HND-BRU":5900
 
 }
+/* =====================
+国際線距離DB
+===================== */
+
+const intlDistance={
+
+"HND-HNL":3831,
+"HND-LAX":5470,
+"HND-SFO":5124,
+"HND-SAN":5458,
+"HND-JFK":6740,
+
+"HND-TPE":1330,
+"HND-HKG":1800,
+"HND-BKK":2869,
+"HND-SIN":3312,
+
+"HND-LHR":6212,
+"HND-CDG":6055,
+"HND-FRA":5974
+
+}
+
+/* 国際線PP */
+
+function calcIntlPP(from,to,rate){
+
+let key=from+"-"+to
+
+if(!intlDistance[key])return 0
+
+let dist=intlDistance[key]
+
+return Math.floor((dist*rate*1.5)+400)
+
+}
+/* =====================
+ANA路線DB
+===================== */
+
+const anaRoutes=[
+
+"HND-OKA",
+"HND-CTS",
+"HND-ISG",
+"HND-FUK",
+"HND-NGO",
+
+"ITM-OKA",
+"KIX-OKA",
+"NGO-OKA",
+
+"HND-TPE",
+"HND-HKG",
+"HND-BKK",
+"HND-SIN",
+
+"HND-HNL",
+"HND-LAX",
+"HND-SFO",
+"HND-SAN",
+
+"HND-LHR",
+"HND-CDG",
+"HND-FRA"
+
+]
 
 let flights=JSON.parse(localStorage.getItem("sfcFlights"))||[]
 
@@ -631,6 +698,10 @@ roadmapAI(remain)
 saleAI()
 okaDayTripAI(remain)
 goalPredictAI(remain)
+okaOptimize(remain)
+bestPP()
+sfcGoal(remain)
+okaDayPossible()
 
 }
 
@@ -754,6 +825,138 @@ document.getElementById("ai").innerHTML+=
 "<br><b>SFC達成予測</b><br>"+
 "平均 "+Math.floor(avg)+"PP/月<br>"+
 "約 "+need+"ヶ月で達成"
+
+}
+/* =====================
+OKAタッチ最適化AI
+===================== */
+
+function okaOptimize(remain){
+
+let okaPP=2900
+let trips=Math.ceil(remain/okaPP)
+
+let months=Math.ceil(trips/2)
+
+let html=""
+
+html+="<br><b>OKA修行最適プラン</b><br>"
+html+="残り "+remain.toLocaleString()+"PP<br><br>"
+html+="OKAタッチ "+trips+"往復<br>"
+html+="月2回修行 → "+months+"ヶ月"
+
+document.getElementById("ai").innerHTML+=html
+
+}
+
+/* =====================
+最安PP探索AI
+===================== */
+
+function bestPP(){
+
+let bestRoute=""
+let best=999
+
+flights.forEach(f=>{
+
+if(!f.price)return
+
+let unit=f.price/f.pp
+
+if(unit<best){
+
+best=unit
+bestRoute=f.from+"-"+f.to
+
+}
+
+})
+
+if(!bestRoute)return
+
+document.getElementById("cheap").innerHTML=
+
+"<b>AI最安ルート</b><br>"+
+bestRoute+" "+best.toFixed(1)+"円/PP"
+
+}
+
+/* =====================
+SFC達成日AI
+===================== */
+
+function sfcGoal(remain){
+
+let months={}
+
+flights.forEach(f=>{
+
+if(!f.done)return
+if(!f.month)return
+
+if(!months[f.month])months[f.month]=0
+
+months[f.month]+=f.pp
+
+})
+
+let total=0
+let count=0
+
+Object.values(months).forEach(v=>{
+
+total+=v
+count++
+
+})
+
+if(count==0)return
+
+let avg=total/count
+
+let need=Math.ceil(remain/avg)
+
+let d=new Date()
+
+d.setMonth(d.getMonth()+need)
+
+document.getElementById("ai").innerHTML+=
+
+"<br><b>SFC達成予測</b><br>"+
+"平均 "+Math.floor(avg)+"PP/月<br>"+
+d.getFullYear()+"年"+(d.getMonth()+1)+"月 達成"
+
+}
+
+/* =====================
+OKAタッチ日帰り可否AI
+===================== */
+
+function okaDayPossible(){
+
+let depart=6
+let arrive=9
+
+let returnDepart=19
+let returnArrive=22
+
+let stay=returnDepart-arrive
+
+let html="<br><b>OKA日帰り判定</b><br>"
+
+if(stay>=3){
+
+html+="日帰り可能<br>"
+html+="滞在 "+stay+"時間"
+
+}else{
+
+html+="日帰り厳しい"
+
+}
+
+document.getElementById("okaAdvice").innerHTML+=html
 
 }
 
