@@ -1,4 +1,3 @@
-再作成版
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -148,7 +147,14 @@ HND-ISG
 </div>
 <div class="card">
 <h3>AI修行プラン</h3>
+
 <div id="ai"></div>
+
+<div id="okaAdvice" class="small"></div>
+
+<div id="calendar" class="small"></div>
+
+<div id="history" class="small"></div>
 </div>
 <div class="card">
 <h3>最安ルート探索</h3>
@@ -176,8 +182,25 @@ const routePP={
 
 "HND-OKA":984,
 "HND-CTS":510,
+"HND-FUK":567,
+"HND-KIX":280,
+"HND-ITM":280,
+"HND-NGO":193,
+"HND-HIJ":402,
+"HND-KMJ":472,
+"HND-KMI":561,
+"HND-KOJ":601,
+"HND-NGS":602,
+"HND-OIT":548,
+"HND-ISG":1224,
+
 "ITM-OKA":739,
-"HND-ISG":1224
+"KIX-OKA":739,
+"NGO-OKA":863,
+
+"HND-TPE":1330,
+"HND-HKG":1800,
+"HND-SIN":3312
 
 }
 
@@ -342,6 +365,11 @@ ranking()
 
 ai(remain)
 
+aiRoute(remain)
+calendarView()
+historyView()
+okaFeasible(remain)
+
 }
 
 
@@ -380,20 +408,55 @@ function ai(remain){
 
 if(remain<=0){
 
-document.getElementById("ai").innerText="SFC達成！"
+document.getElementById("ai").innerHTML="🎉 SFC達成！"
 
 return
 
 }
 
-let oka=2900
+/* OKAタッチ */
 
-let trips=Math.ceil(remain/oka)
+let okaPP=2900
+let okaTrips=Math.ceil(remain/okaPP)
 
-document.getElementById("ai").innerHTML=
+/* 石垣混合 */
 
-`残り ${remain} PP<br>
-OKAタッチなら 約 ${trips} 往復`
+let isgPP=3400
+let isgTrips=Math.ceil(remain/isgPP)
+
+/* 最安判断 */
+
+let bestRoute="不明"
+let bestUnit=999
+
+flights.forEach(f=>{
+
+let u=f.price/f.pp
+
+if(u<bestUnit){
+
+bestUnit=u
+bestRoute=f.from+"-"+f.to
+
+}
+
+})
+
+let html=""
+
+html+=`残り ${remain.toLocaleString()} PP<br><br>`
+
+html+=`OKAタッチ<br>
+約 ${okaTrips} 往復<br><br>`
+
+html+=`石垣修行<br>
+約 ${isgTrips} 往復<br><br>`
+
+html+=`現在の最安ルート<br>
+${bestRoute}<br>
+${bestUnit.toFixed(1)} 円/PP`
+
+document.getElementById("ai").innerHTML=html
 
 }
 
@@ -425,6 +488,105 @@ document.getElementById("cheap").innerHTML=html
 
 render()
 
+/* =====================
+AIルート生成
+===================== */
+
+function aiRoute(remain){
+
+let okaPP=2900
+let isgPP=3400
+
+let oka=Math.ceil(remain/okaPP)
+let isg=Math.ceil(remain/isgPP)
+
+let text="<br><b>AI修行提案</b><br>"
+
+if(oka<=isg){
+
+text+=`OKAタッチ ${oka}往復`
+
+}else{
+
+text+=`石垣修行 ${isg}往復`
+
+}
+
+document.getElementById("ai").innerHTML+=text
+
+}
+
+
+/* =====================
+OKA遂行判定
+===================== */
+
+function okaFeasible(remain){
+
+let okaPP=2900
+let trips=Math.ceil(remain/okaPP)
+
+let monthTrips=Math.ceil(trips/12)
+
+let html="<br><b>遂行可能性</b><br>"
+
+html+=`必要OKA往復 ${trips}<br>`
+
+html+=`月平均 ${monthTrips} 往復`
+
+document.getElementById("okaAdvice").innerHTML=html
+
+}
+
+
+/* =====================
+修行カレンダー
+===================== */
+
+function calendarView(){
+
+let months={}
+
+flights.forEach(f=>{
+
+if(!f.month)return
+
+if(!months[f.month])months[f.month]=0
+
+months[f.month]+=f.pp
+
+})
+
+let html="<br><b>修行カレンダー</b><br>"
+
+Object.keys(months).sort().forEach(m=>{
+
+html+=`${m} : ${months[m]}PP<br>`
+
+})
+
+document.getElementById("calendar").innerHTML=html
+
+}
+
+
+/* =====================
+修行履歴
+===================== */
+
+function historyView(){
+
+let html="<br><b>修行履歴</b><br>"
+
+flights.filter(f=>f.done).forEach(f=>{
+
+html+=`${f.month} ${f.from}-${f.to} ${f.pp}PP<br>`
+
+})
+
+document.getElementById("history").innerHTML=html
+
+}
 </script>
 </body>
 </html>
