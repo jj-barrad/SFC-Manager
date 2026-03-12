@@ -199,6 +199,16 @@ border-radius:8px;
 </div>
 
 <div class="card">
+<h3>修行カレンダー</h3>
+<div id="calendar"></div>
+</div>
+
+<div class="card">
+<h3>修行履歴</h3>
+<div id="history"></div>
+</div>
+
+<div class="card">
 <h3>最安ルート探索</h3>
 <div id="cheap"></div>
 </div>
@@ -510,11 +520,13 @@ document.getElementById("ppText").innerText=actual+" / 50000 PP"
 document.getElementById("progressBar").style.width=(actual/50000*100)+"%"
 
 ranking()
-ai(remain)
+
 okaFeasible(remain)
+
 calendarView()
+
 historyView()
-searchCheapest()
+
 ultimateEngine(remain)
 
 }
@@ -541,18 +553,6 @@ html+=r+" : "+routes[r].toFixed(1)+"円/PP<br>"
 })
 
 document.getElementById("ranking").innerHTML=html
-
-}
-
-function ai(remain){
-
-let okaPP=2900
-let trips=Math.ceil(remain/okaPP)
-
-document.getElementById("ai").innerHTML=
-
-"残り "+remain+" PP<br>"+
-"OKA修行 "+trips+"往復"
 
 }
 
@@ -606,31 +606,6 @@ html+=f.month+" "+f.from+"-"+f.to+" "+f.pp+"PP<br>"
 document.getElementById("history").innerHTML=html
 
 }
-
-function searchCheapest(){
-
-let data=[
-
-{r:"HND-OKA",unit:9.5},
-{r:"HND-CTS",unit:11},
-{r:"ITM-OKA",unit:10.5}
-
-]
-
-data.sort((a,b)=>a.unit-b.unit)
-
-let html=""
-
-data.forEach(d=>{
-
-html+=d.r+" : "+d.unit+"円/PP<br>"
-
-})
-
-document.getElementById("cheap").innerHTML=html
-
-}
-
 
 render()
 /* =====================
