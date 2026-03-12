@@ -620,6 +620,142 @@ document.getElementById("saleAI").innerHTML=
 }
 
 render()
+/* =====================
+SFC Ultimate AI Engine
+===================== */
+
+function ultimateEngine(remain){
+
+routeAI()
+roadmapAI(remain)
+saleAI()
+okaDayTripAI(remain)
+goalPredictAI(remain)
+
+}
+
+/* =====================
+AI最安ルート分析
+===================== */
+
+function routeAI(){
+
+let bestRoute=""
+let bestUnit=999
+
+flights.forEach(f=>{
+
+if(!f.price)return
+
+let unit=f.price/f.pp
+
+if(unit<bestUnit){
+
+bestUnit=unit
+bestRoute=f.from+"-"+f.to
+
+}
+
+})
+
+if(!bestRoute)return
+
+document.getElementById("routeAI").innerHTML=
+
+"<br><b>AI最安修行ルート</b><br>"+
+bestRoute+" "+bestUnit.toFixed(1)+"円/PP"
+
+}
+
+/* =====================
+修行ロードマップAI
+===================== */
+
+function roadmapAI(remain){
+
+let okaPP=2900
+let trips=Math.ceil(remain/okaPP)
+
+document.getElementById("roadmap").innerHTML=
+
+"<br><b>修行ロードマップ</b><br>"+
+"OKAタッチ "+trips+"往復で達成"
+
+}
+
+/* =====================
+セールAI
+===================== */
+
+function saleAI(){
+
+document.getElementById("saleAI").innerHTML=
+
+"<br><b>AIセール分析</b><br>"+
+"HND-OKA 8〜9円/PP が出たら買い"
+
+}
+
+/* =====================
+OKA日帰りAI
+===================== */
+
+function okaDayTripAI(remain){
+
+let okaPP=2900
+let trips=Math.ceil(remain/okaPP)
+
+let hours=trips*6
+
+document.getElementById("okaAdvice").innerHTML+=
+
+"<br><b>OKA日帰り試算</b><br>"+
+"必要 "+trips+" 往復<br>"+
+"飛行時間 約 "+hours+" 時間"
+
+}
+
+/* =====================
+達成予測AI
+===================== */
+
+function goalPredictAI(remain){
+
+let months={}
+
+flights.forEach(f=>{
+
+if(!f.month)return
+
+if(!months[f.month])months[f.month]=0
+
+if(f.done)months[f.month]+=f.pp
+
+})
+
+let total=0
+let mcount=0
+
+Object.values(months).forEach(v=>{
+
+total+=v
+mcount++
+
+})
+
+if(mcount==0)return
+
+let avg=total/mcount
+
+let need=Math.ceil(remain/avg)
+
+document.getElementById("ai").innerHTML+=
+
+"<br><b>SFC達成予測</b><br>"+
+"平均 "+Math.floor(avg)+"PP/月<br>"+
+"約 "+need+"ヶ月で達成"
+
+}
 
 </script>
 
