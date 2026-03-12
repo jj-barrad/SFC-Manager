@@ -631,60 +631,6 @@ document.getElementById("cheap").innerHTML=html
 
 }
 
-function ultimateEngine(remain){
-
-routeAI()
-roadmapAI(remain)
-saleAI()
-
-}
-
-function routeAI(){
-
-let bestRoute=""
-let bestUnit=999
-
-flights.forEach(f=>{
-
-let unit=f.price/f.pp
-
-if(unit<bestUnit){
-
-bestUnit=unit
-bestRoute=f.from+"-"+f.to
-
-}
-
-})
-
-if(!bestRoute)return
-
-document.getElementById("routeAI").innerHTML=
-
-"<br><b>AI最安ルート</b><br>"+
-bestRoute+" "+bestUnit.toFixed(1)+"円/PP"
-
-}
-
-function roadmapAI(remain){
-
-let trips=Math.ceil(remain/2900)
-
-document.getElementById("roadmap").innerHTML=
-
-"<br><b>修行ロードマップ</b><br>"+
-"OKA修行 "+trips+"往復"
-
-}
-
-function saleAI(){
-
-document.getElementById("saleAI").innerHTML=
-
-"<br><b>AIセール検出</b><br>"+
-"HND-OKA 8.7円/PP (推定)"
-
-}
 
 render()
 /* =====================
