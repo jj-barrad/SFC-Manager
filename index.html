@@ -120,10 +120,10 @@ margin:3px;
 <div class="card">
 <h3>固定ルート</h3>
 
-HND-OKA
-HND-CTS
-ITM-OKA
-HND-ISG
+<button class="routeBtn" onclick="quick('HND','OKA')">HND-OKA</button>
+<button class="routeBtn" onclick="quick('HND','CTS')">HND-CTS</button>
+<button class="routeBtn" onclick="quick('ITM','OKA')">ITM-OKA</button>
+<button class="routeBtn" onclick="quick('HND','ISG')">HND-ISG</button>
 </div>
 <div class="card">
 <h3>フライト一覧</h3>
@@ -171,7 +171,15 @@ const airportMap={
 "那覇":"OKA",
 "札幌":"CTS",
 "石垣":"ISG",
-"伊丹":"ITM"
+"伊丹":"ITM",
+"新千歳":"CTS",
+"関空":"KIX",
+"福岡":"FUK",
+"名古屋":"NGO",
+"広島":"HIJ",
+"宮崎":"KMI",
+"鹿児島":"KOJ",
+"長崎":"NGS"
 
 }
 
@@ -323,7 +331,7 @@ cost+=f.price
 
 if(f.done)actual+=f.pp
 
-let unit=(f.price/f.pp)||0
+let unit=f.price?f.price/f.pp:0
 
 html+=`<tr>
 
@@ -369,6 +377,8 @@ aiRoute(remain)
 calendarView()
 historyView()
 okaFeasible(remain)
+
+searchCheapest()
 
 }
 
