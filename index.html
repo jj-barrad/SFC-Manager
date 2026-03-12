@@ -145,6 +145,7 @@ border-radius:8px;
 <button class="routeBtn" onclick="quick('HND','CTS')">HND-CTS</button>
 <button class="routeBtn" onclick="quick('HND','ISG')">HND-ISG</button>
 <button class="routeBtn" onclick="quick('ITM','OKA')">ITM-OKA</button>
+<button onclick="addOKATouch()">OKAタッチ往復登録</button>
 
 </div>
 
@@ -200,7 +201,7 @@ border-radius:8px;
 
 <div class="card">
 <h3>修行カレンダー</h3>
-<div id="calendar"></div>
+<div id="calendar2"></div>
 </div>
 
 <div class="card">
@@ -288,6 +289,24 @@ const airportMap={
 "フランクフルト":"FRA",
 "ミュンヘン":"MUC",
 "ブリュッセル":"BRU"
+
+}
+
+/* =====================
+空港コード → 空港名変換
+===================== */
+
+function airportName(code){
+
+for(let key in airportMap){
+
+if(airportMap[key]===code){
+return key
+}
+
+}
+
+return code
 
 }
 
@@ -462,6 +481,43 @@ document.getElementById("to").value=t
 
 }
 
+/* =====================
+OKAタッチ自動登録
+===================== */
+
+function addOKATouch(){
+
+let rate=parseFloat(document.getElementById("rate").value)
+let seat=document.getElementById("seat").value
+let price=parseInt(document.getElementById("price").value)||0
+let month=document.getElementById("month").value
+
+let pp=calcPP("HND","OKA",rate,seat)
+
+flights.push({
+id:Date.now(),
+from:"HND",
+to:"OKA",
+pp:pp,
+price:price,
+month:month,
+done:false
+})
+
+flights.push({
+id:Date.now()+1,
+from:"OKA",
+to:"HND",
+pp:pp,
+price:price,
+month:month,
+done:false
+})
+
+save()
+
+}
+
 function toggle(id){
 
 let f=flights.find(x=>x.id==id)
@@ -502,7 +558,7 @@ let unit=f.price?f.price/f.pp:0
 
 html+=`<tr>
 <td>${(f.month||"").slice(5)}</td>
-<td>${f.from}-${f.to}</td>
+<td>${airportName(f.from)}-${airportName(f.to)}</td>
 <td>${f.pp}</td>
 <td>${unit.toFixed(1)}</td>
 <td><input type="checkbox" ${f.done?"checked":""} onclick="toggle(${f.id})"></td>
@@ -880,6 +936,22 @@ html+="日帰り厳しい"
 document.getElementById("okaAdvice").innerHTML+=html
 
 }
+
+/* =====================
+3レター自動変換
+===================== */
+
+document.getElementById("from").addEventListener("blur",function(){
+
+this.value=code(this.value)
+
+})
+
+document.getElementById("to").addEventListener("blur",function(){
+
+this.value=code(this.value)
+
+})
 
 </script>
 
