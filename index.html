@@ -195,8 +195,6 @@ border-radius:8px;
 
 <div id="calendar" class="small"></div>
 
-<div id="history" class="small"></div>
-
 <div id="roadmap" class="small"></div>
 
 <div id="saleAI" class="small"></div>
@@ -571,6 +569,8 @@ render()
 }
 
 function render(){
+
+document.getElementById("ai").innerHTML=""
 
 let html=""
 let total=0
@@ -999,18 +999,6 @@ document.getElementById("okaAdvice").innerHTML+=html
 /* =====================
 3レター自動変換
 ===================== */
-
-document.getElementById("from").addEventListener("blur",function(){
-
-this.value=code(this.value)
-
-})
-
-document.getElementById("to").addEventListener("blur",function(){
-
-this.value=code(this.value)
-
-})
 
 document.getElementById("from").addEventListener("blur",function(){
 this.value=code(this.value)
