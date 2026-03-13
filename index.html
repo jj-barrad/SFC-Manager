@@ -132,6 +132,9 @@ border-radius:8px;
 
 <input id="price" placeholder="価格">
 
+<input id="departTime" type="time">
+<input id="arriveTime" type="time">
+
 <select id="trip">
 <option value="oneway">片道</option>
 <option value="round">往復</option>
@@ -443,12 +446,29 @@ return airportMap[a]||a.toUpperCase()
 
 function calcPP(from,to,rate,seat){
 
-let base=routePP[from+"-"+to]||0
-if(base==0)return 0
+let key=from+"-"+to
+
+let base=routePP[key]
+
+/* routePP に無い場合は距離DBを使う */
+
+if(!base){
+
+let dist=airportDistance[key]
+
+if(!dist) return 0
+
+base=dist
+
+}
 
 let pp=(base*2*rate)+400
 
-if(seat=="premium")pp+=base*0.5
+if(seat=="premium"){
+
+pp+=base*0.5
+
+}
 
 return Math.floor(pp)
 
@@ -463,6 +483,10 @@ let rate=parseFloat(document.getElementById("rate").value)
 let seat=document.getElementById("seat").value
 
 let price=parseInt(document.getElementById("price").value)||0
+
+let departTime=document.getElementById("departTime").value
+let arriveTime=document.getElementById("arriveTime").value
+
 let month=document.getElementById("month").value
 
 let pp=calcPP(from,to,rate,seat)
@@ -481,6 +505,8 @@ to:to,
 pp:pp,
 price:price,
 month:month,
+depart:departTime,
+arrive:arriveTime,
 done:false
 })
 
@@ -493,6 +519,8 @@ to:from,
 pp:pp,
 price:price,
 month:month,
+depart:departTime,
+arrive:arriveTime,
 done:false
 })
 
@@ -571,6 +599,8 @@ render()
 function render(){
 
 document.getElementById("ai").innerHTML=""
+document.getElementById("okaAdvice").innerHTML=""
+document.getElementById("cheap").innerHTML=""
 
 let html=""
 let total=0
@@ -619,35 +649,44 @@ ultimateEngine(remain)
 
 function ranking(){
 
-let html=""
+let routes={}
+
+flights.forEach(f=>{
+
+if(!f.price || !f.pp) return
+
+let unit=f.price/f.pp
+let key=f.from+"-"+f.to
+
+if(!routes[key] || routes[key]>unit){
+
+routes[key]=unit
+
+}
+
+})
 
 let list=[]
 
-Object.keys(routePP).forEach(r=>{
-
-let parts=r.split("-")
-
-let from=parts[0]
-let to=parts[1]
-
-let pp=calcPP(from,to,1,"normal")
-
-let priceGuess=15000
-
-let unit=priceGuess/pp
+Object.keys(routes).forEach(r=>{
 
 list.push({
 route:r,
-unit:unit
+unit:routes[r]
 })
 
 })
 
 list.sort((a,b)=>a.unit-b.unit)
 
-list.slice(0,10).forEach(x=>{
+let html=""
 
-html+=x.route+" : "+x.unit.toFixed(1)+"円/PP<br>"
+list.forEach(x=>{
+
+let r=x.route.split("-")
+
+html+=airportName(r[0])+"-"+airportName(r[1])
++" : "+x.unit.toFixed(1)+"円/PP<br>"
 
 })
 
@@ -735,9 +774,7 @@ okaDayTripAI(remain)
 goalPredictAI(remain)
 okaOptimize(remain)
 bestPP()
-sfcGoal(remain)
 okaDayPossible()
-sfcScheduler(remain)
 
 }
 
@@ -918,81 +955,42 @@ bestRoute+" "+best.toFixed(1)+"円/PP"
 
 }
 
-/* =====================
-SFC達成日AI
-===================== */
+function timeDiff(t1,t2){
 
-function sfcGoal(remain){
+let a=t1.split(":")
+let b=t2.split(":")
 
-let months={}
+let m1=parseInt(a[0])*60+parseInt(a[1])
+let m2=parseInt(b[0])*60+parseInt(b[1])
 
-flights.forEach(f=>{
-
-if(!f.done)return
-if(!f.month)return
-
-if(!months[f.month])months[f.month]=0
-
-months[f.month]+=f.pp
-
-})
-
-let total=0
-let count=0
-
-Object.values(months).forEach(v=>{
-
-total+=v
-count++
-
-})
-
-if(count==0)return
-
-let avg=total/count
-
-let need=Math.ceil(remain/avg)
-
-let d=new Date()
-
-d.setMonth(d.getMonth()+need)
-
-document.getElementById("ai").innerHTML+=
-
-"<br><b>SFC達成予測</b><br>"+
-"平均 "+Math.floor(avg)+"PP/月<br>"+
-d.getFullYear()+"年"+(d.getMonth()+1)+"月 達成"
+return m2-m1
 
 }
-
-/* =====================
-OKAタッチ日帰り可否AI
-===================== */
 
 function okaDayPossible(){
 
-let depart=6
-let arrive=9
+let out=flights.find(f=>f.from=="HND" && f.to=="OKA")
+let back=flights.find(f=>f.from=="OKA" && f.to=="HND")
 
-let returnDepart=19
-let returnArrive=22
+if(!out || !back) return
+if(!out.arrive || !back.depart) return
 
-let stay=returnDepart-arrive
+let stay=timeDiff(out.arrive,back.depart)
 
 let html="<br><b>OKA日帰り判定</b><br>"
 
-if(stay>=3){
+if(stay>=120){
 
 html+="日帰り可能<br>"
-html+="滞在 "+stay+"時間"
+html+="滞在 "+Math.floor(stay/60)+"時間"
 
 }else{
 
-html+="日帰り厳しい"
+html+="日帰り不可"
 
 }
 
-document.getElementById("okaAdvice").innerHTML+=html
+document.getElementById("okaAdvice").innerHTML=html
 
 }
 
@@ -1008,18 +1006,66 @@ document.getElementById("to").addEventListener("blur",function(){
 this.value=code(this.value)
 })
 
-function sfcScheduler(remain){
+function goalPredictAI(remain){
 
-let okaPP=2900
+let monthsData={}
 
-let trips=Math.ceil(remain/okaPP)
+flights.forEach(f=>{
 
-let months=Math.ceil(trips/2)
+if(!f.month || !f.done) return
+
+if(!monthsData[f.month]) monthsData[f.month]=0
+
+monthsData[f.month]+=f.pp
+
+})
+
+let values=Object.values(monthsData)
+
+if(values.length==0) return
+
+let avg=values.reduce((a,b)=>a+b)/values.length
+
+let months=Math.ceil(remain/avg)
 
 document.getElementById("ai").innerHTML+=
-"<br><b>AI修行スケジュール</b><br>"+
-"OKAタッチ "+trips+"往復<br>"+
-"月2回修行 → "+months+"ヶ月"
+"<br><b>SFC達成予測</b><br>"+
+"平均 "+Math.floor(avg)+"PP/月<br>"+
+months+"ヶ月で達成"
+
+}
+
+const airportDistance={
+
+"HND-OKA":984,
+"OKA-HND":984,
+
+"HND-CTS":510,
+"CTS-HND":510,
+
+"HND-FUK":567,
+"FUK-HND":567,
+
+"HND-ISG":1224,
+"ISG-HND":1224,
+
+"HND-ICN":758,
+"ICN-HND":758,
+
+"HND-TPE":1305,
+"TPE-HND":1305,
+
+"HND-BKK":2886,
+"BKK-HND":2886,
+
+"HND-SIN":3312,
+"SIN-HND":3312,
+
+"HND-HNL":3850,
+"HNL-HND":3850,
+
+"HND-LAX":5476,
+"LAX-HND":5476
 
 }
 
