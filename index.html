@@ -134,6 +134,8 @@ border-radius:8px;
 
 <input id="departTime" type="time">
 <input id="arriveTime" type="time">
+<input id="returnDepart" type="time" placeholder="OKA出発">
+<input id="returnArrive" type="time" placeholder="HND到着">
 
 <select id="trip">
 <option value="oneway">片道</option>
@@ -519,10 +521,12 @@ to:from,
 pp:pp,
 price:price,
 month:month,
-depart:departTime,
-arrive:arriveTime,
+depart:arriveTime,
+arrive:departTime,
 done:false
 })
+
+}
 
 }
 
@@ -547,7 +551,10 @@ let rate=parseFloat(document.getElementById("rate").value)
 let seat=document.getElementById("seat").value
 let month=document.getElementById("month").value
 let price=parseInt(document.getElementById("price").value)||0
-
+let departTime=document.getElementById("departTime").value
+let arriveTime=document.getElementById("arriveTime").value
+let returnDepart=document.getElementById("returnDepart").value
+let returnArrive=document.getElementById("returnArrive").value
 let pp=calcPP("HND","OKA",rate,seat)
 
 flights.push({
@@ -557,6 +564,8 @@ to:"OKA",
 pp:pp,
 price:price/2,
 month:month,
+depart:departTime,
+arrive:arriveTime
 done:false
 })
 
@@ -567,6 +576,8 @@ to:"HND",
 pp:pp,
 price:price/2,
 month:month,
+depart:returnDepart,
+arrive:returnArrive
 done:false
 })
 
@@ -860,47 +871,6 @@ document.getElementById("okaAdvice").innerHTML+=
 }
 
 /* =====================
-達成予測AI
-===================== */
-
-function goalPredictAI(remain){
-
-let months={}
-
-flights.forEach(f=>{
-
-if(!f.month)return
-
-if(!months[f.month])months[f.month]=0
-
-if(f.done)months[f.month]+=f.pp
-
-})
-
-let total=0
-let mcount=0
-
-Object.values(months).forEach(v=>{
-
-total+=v
-mcount++
-
-})
-
-if(mcount==0)return
-
-let avg=total/mcount
-
-let need=Math.ceil(remain/avg)
-
-document.getElementById("ai").innerHTML+=
-
-"<br><b>SFC達成予測</b><br>"+
-"平均 "+Math.floor(avg)+"PP/月<br>"+
-"約 "+need+"ヶ月で達成"
-
-}
-/* =====================
 OKAタッチ最適化AI
 ===================== */
 
@@ -969,10 +939,14 @@ return m2-m1
 
 function okaDayPossible(){
 
-let out=flights.find(f=>f.from=="HND" && f.to=="OKA")
-let back=flights.find(f=>f.from=="OKA" && f.to=="HND")
+let outs=flights.filter(f=>f.from=="HND" && f.to=="OKA")
+let backs=flights.filter(f=>f.from=="OKA" && f.to=="HND")
 
-if(!out || !back) return
+if(outs.length==0 || backs.length==0) return
+
+let out=outs[0]
+let back=backs[0]
+
 if(!out.arrive || !back.depart) return
 
 let stay=timeDiff(out.arrive,back.depart)
@@ -990,7 +964,7 @@ html+="日帰り不可"
 
 }
 
-document.getElementById("okaAdvice").innerHTML=html
+document.getElementById("okaAdvice").innerHTML+=html
 
 }
 
