@@ -129,7 +129,7 @@ border-radius:8px;
 <option value="premium">プレミアム</option>
 </select>
 
-<input id="price" placeholder="価格">
+<input id="price" type="number" placeholder="価格">
 
 行き出発
 <input type="time" id="departTime">
@@ -470,11 +470,11 @@ base=dist
 
 }
 
-let pp=(base*2*rate)+400
+let pp=(base*rate*2)+400
 
 if(seat=="premium"){
 
-pp+=base*0.5
+pp+=400
 
 }
 
@@ -494,6 +494,9 @@ let price=parseInt(document.getElementById("price").value)||0
 
 let departTime=document.getElementById("departTime").value
 let arriveTime=document.getElementById("arriveTime").value
+
+let returnDepart=document.getElementById("returnDepart").value
+let returnArrive=document.getElementById("returnArrive").value
 
 let month=document.getElementById("month").value
 
@@ -527,12 +530,10 @@ to:from,
 pp:pp,
 price:price,
 month:month,
-depart:arriveTime,
-arrive:departTime,
+depart:returnDepart,
+arrive:returnArrive,
 done:false
 })
-
-}
 
 }
 
@@ -571,7 +572,7 @@ pp:pp,
 price:price/2,
 month:month,
 depart:departTime,
-arrive:arriveTime
+arrive:arriveTime,
 done:false
 })
 
@@ -583,9 +584,11 @@ pp:pp,
 price:price/2,
 month:month,
 depart:returnDepart,
-arrive:returnArrive
+arrive:returnArrive,
 done:false
 })
+
+}
 
 save()
 
@@ -834,7 +837,7 @@ bestRoute+" "+bestUnit.toFixed(1)+"円/PP"
 
 function roadmapAI(remain){
 
-let okaPP=2900
+let okaPP=3752
 let trips=Math.ceil(remain/okaPP)
 
 document.getElementById("roadmap").innerHTML=
@@ -863,7 +866,7 @@ OKA日帰りAI
 
 function okaDayTripAI(remain){
 
-let okaPP=2900
+let okaPP=3752
 let trips=Math.ceil(remain/okaPP)
 
 let hours=trips*6
@@ -882,7 +885,7 @@ OKAタッチ最適化AI
 
 function okaOptimize(remain){
 
-let okaPP=2900
+let okaPP=3752
 let trips=Math.ceil(remain/okaPP)
 
 let months=Math.ceil(trips/2)
@@ -905,29 +908,31 @@ document.getElementById("ai").innerHTML+=html
 function bestPP(){
 
 let bestRoute=""
-let best=999
+let bestUnit=999
 
-flights.forEach(f=>{
+anaRoutes.forEach(r=>{
 
-if(!f.price)return
+let p=r.split("-")
 
-let unit=f.price/f.pp
+let pp=calcPP(p[0],p[1],0.75,"normal")
 
-if(unit<best){
+let avgPrice=12000
 
-best=unit
-bestRoute=f.from+"-"+f.to
+let unit=avgPrice/pp
+
+if(unit<bestUnit){
+
+bestUnit=unit
+bestRoute=r
 
 }
 
 })
 
-if(!bestRoute)return
-
 document.getElementById("cheap").innerHTML=
 
-"<b>AI最安ルート</b><br>"+
-bestRoute+" "+best.toFixed(1)+"円/PP"
+"<b>AI推定最安ルート</b><br>"+
+bestRoute+" 約 "+bestUnit.toFixed(1)+"円/PP"
 
 }
 
@@ -950,19 +955,32 @@ let backs=flights.filter(f=>f.from=="OKA" && f.to=="HND")
 
 if(outs.length==0 || backs.length==0) return
 
-let out=outs[0]
-let back=backs[0]
+let bestStay=0
 
-if(!out.arrive || !back.depart) return
+outs.forEach(o=>{
 
-let stay=timeDiff(out.arrive,back.depart)
+backs.forEach(b=>{
+
+if(!o.arrive || !b.depart) return
+
+let stay=timeDiff(o.arrive,b.depart)
+
+if(stay>bestStay){
+
+bestStay=stay
+
+}
+
+})
+
+})
 
 let html="<br><b>OKA日帰り判定</b><br>"
 
-if(stay>=120){
+if(bestStay>=120){
 
 html+="日帰り可能<br>"
-html+="滞在 "+Math.floor(stay/60)+"時間"
+html+="最大滞在 "+Math.floor(bestStay/60)+"時間"
 
 }else{
 
