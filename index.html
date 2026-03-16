@@ -456,19 +456,27 @@ function calcPP(from,to,rate,seat){
 
 let key=from+"-"+to
 
-let base=routePP[key]
+if(!routePP[key]){
 
-/* routePP に無い場合は距離DBを使う */
+key=to+"-"+from
+
+}
+
+let base=routePP[key]
 
 if(!base){
 
-let dist=airportDistance[key]
-
-if(!dist) return 0
-
-base=dist
+base=intlDistance[key]
 
 }
+
+if(!base){
+
+base=airportDistance[key]
+
+}
+
+if(!base) return 0
 
 let pp=(base*rate*2)+400
 
