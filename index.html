@@ -115,14 +115,13 @@ border-radius:8px;
 
 <h3>フライト追加</h3>
 
-<input id="from" placeholder="出発 (羽田 / HND)">
-<input id="to" placeholder="到着 (那覇 / OKA)">
+<input id="from" placeholder="出発">
+
+<input id="to" placeholder="到着">
 
 <select id="rate">
 <option value="0.75">国内75%</option>
-<option value="1">国内100%</option>
-<option value="1.25">国内125%</option>
-<option value="1.5">国際線150%</option>
+<option value="1.0">国内100%</option>
 </select>
 
 <select id="seat">
@@ -132,17 +131,24 @@ border-radius:8px;
 
 <input id="price" placeholder="価格">
 
-<input id="departTime" type="time">
-<input id="arriveTime" type="time">
-<input id="returnDepart" type="time" placeholder="OKA出発">
-<input id="returnArrive" type="time" placeholder="HND到着">
+行き出発
+<input type="time" id="departTime">
+
+行き到着
+<input type="time" id="arriveTime">
+
+帰り出発
+<input type="time" id="returnDepart">
+
+帰り到着
+<input type="time" id="returnArrive">
 
 <select id="trip">
 <option value="oneway">片道</option>
 <option value="round">往復</option>
 </select>
 
-<input id="month" type="month">
+<input type="month" id="month">
 
 <button onclick="addFlight()">フライト追加</button>
 
