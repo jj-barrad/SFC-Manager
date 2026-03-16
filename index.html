@@ -120,8 +120,13 @@ border-radius:8px;
 <input id="to" placeholder="到着">
 
 <select id="rate">
+
+<option value="0.5">国際50%</option>
+<option value="0.7">国際70%</option>
+
 <option value="0.75">国内75%</option>
 <option value="1.0">国内100%</option>
+
 </select>
 
 <select id="seat">
@@ -325,82 +330,6 @@ return code
 
 }
 
-const routePP={
-
-// 国内主要
-"HND-OKA":984,
-"HND-CTS":510,
-"HND-ISG":1224,
-"HND-FUK":567,
-"HND-NGO":193,
-"HND-KIX":280,
-"HND-ITM":280,
-"HND-HIJ":402,
-"HND-KMI":561,
-"HND-KOJ":601,
-"HND-NGS":602,
-"HND-OIT":548,
-"HND-KMJ":472,
-
-"ITM-OKA":739,
-"KIX-OKA":739,
-"NGO-OKA":863,
-
-// アジア
-"HND-ICN":758,
-"HND-TPE":1330,
-"HND-HKG":1800,
-"HND-MNL":1840,
-"HND-BKK":2869,
-"HND-SIN":3312,
-"HND-KUL":3300,
-"HND-CGK":3600,
-
-// オセアニア
-"HND-SYD":4860,
-"HND-MEL":5050,
-
-// 北米
-"HND-HNL":3831,
-"HND-SFO":5124,
-"HND-LAX":5470,
-"HND-SAN":5458,
-"HND-SEA":4768,
-"HND-JFK":6740,
-"HND-IAD":6760,
-"HND-ORD":6280,
-
-// 欧州
-"HND-LHR":6212,
-"HND-CDG":6055,
-"HND-FRA":5974,
-"HND-MUC":5850,
-"HND-BRU":5900
-
-}
-/* =====================
-国際線距離DB
-===================== */
-
-const intlDistance={
-
-"HND-HNL":3831,
-"HND-LAX":5470,
-"HND-SFO":5124,
-"HND-SAN":5458,
-"HND-JFK":6740,
-
-"HND-TPE":1330,
-"HND-HKG":1800,
-"HND-BKK":2869,
-"HND-SIN":3312,
-
-"HND-LHR":6212,
-"HND-CDG":6055,
-"HND-FRA":5974
-
-}
-
 /* 国際線PP */
 
 function calcIntlPP(from,to,rate){
@@ -449,41 +378,43 @@ const anaRoutes=[
 let flights=JSON.parse(localStorage.getItem("sfcFlights"))||[]
 
 function code(a){
-return airportMap[a]||a.toUpperCase()
+
+if(!a) return ""
+
+a=a.trim()
+
+return airportMap[a] || a.toUpperCase()
+
 }
 
 function calcPP(from,to,rate,seat){
 
 let key=from+"-"+to
 
-if(!routePP[key]){
+let dist=airportDistance[key]
 
-key=to+"-"+from
+if(!dist){
+dist=airportDistance[to+"-"+from]
+}
+
+if(!dist) return 0
+
+let domestic=dist<2000
+
+let pp
+
+if(domestic){
+
+pp=(dist*rate*2)+400
+
+}else{
+
+pp=(dist*rate*1.5)
 
 }
 
-let base=routePP[key]
-
-if(!base){
-
-base=intlDistance[key]
-
-}
-
-if(!base){
-
-base=airportDistance[key]
-
-}
-
-if(!base) return 0
-
-let pp=(base*rate*2)+400
-
-if(seat=="premium"){
-
+if(seat=="premium" && domestic){
 pp+=400
-
 }
 
 return Math.floor(pp)
@@ -495,7 +426,7 @@ function addFlight(){
 let from=code(document.getElementById("from").value)
 let to=code(document.getElementById("to").value)
 
-let rate=parseFloat(document.getElementById("rate").value)
+let rate=parseFloat(document.getElementById("rate").value)||0.75
 let seat=document.getElementById("seat").value
 
 let price=parseInt(document.getElementById("price").value)||0
@@ -518,11 +449,11 @@ return
 let trip=document.getElementById("trip").value
 
 flights.push({
-id:Date.now(),
+id:newID(),
 from:from,
 to:to,
 pp:pp,
-price:price,
+price:price/2,
 month:month,
 depart:departTime,
 arrive:arriveTime,
@@ -531,12 +462,14 @@ done:false
 
 if(trip=="round"){
 
+let returnPP=calcPP(to,from,rate,seat)
+
 flights.push({
-id:Date.now()+1,
+id:newID(),
 from:to,
 to:from,
-pp:pp,
-price:price,
+pp:returnPP,
+price:price/2,
 month:month,
 depart:returnDepart,
 arrive:returnArrive,
@@ -551,8 +484,10 @@ save()
 
 function quick(f,t){
 
-document.getElementById("from").value=f
-document.getElementById("to").value=t
+document.getElementById("from").value=code(f)
+document.getElementById("to").value=code(t)
+
+addFlight()
 
 }
 
@@ -562,7 +497,7 @@ OKAタッチ自動登録
 
 function addOKATouch(){
 
-let rate=parseFloat(document.getElementById("rate").value)
+let rate=parseFloat(document.getElementById("rate").value)||0.75
 let seat=document.getElementById("seat").value
 let month=document.getElementById("month").value
 let price=parseInt(document.getElementById("price").value)||0
@@ -570,10 +505,10 @@ let departTime=document.getElementById("departTime").value
 let arriveTime=document.getElementById("arriveTime").value
 let returnDepart=document.getElementById("returnDepart").value
 let returnArrive=document.getElementById("returnArrive").value
-let pp=calcPP("HND","OKA",rate,seat)
+let pp=calcPP(code("HND"),code("OKA"),rate,seat)
 
 flights.push({
-id:Date.now(),
+id:newID(),
 from:"HND",
 to:"OKA",
 pp:pp,
@@ -585,7 +520,7 @@ done:false
 })
 
 flights.push({
-id:Date.now()+1,
+id:newID(),
 from:"OKA",
 to:"HND",
 pp:pp,
@@ -595,8 +530,6 @@ depart:returnDepart,
 arrive:returnArrive,
 done:false
 })
-
-}
 
 save()
 
@@ -924,7 +857,7 @@ let p=r.split("-")
 
 let pp=calcPP(p[0],p[1],0.75,"normal")
 
-let avgPrice=12000
+let avgPrice=r.includes("OKA")?9000:15000
 
 let unit=avgPrice/pp
 
@@ -969,7 +902,7 @@ outs.forEach(o=>{
 
 backs.forEach(b=>{
 
-if(!o.arrive || !b.depart) return
+if(!o.arrive || !b.depart || o.arrive=="" || b.depart=="") return
 
 let stay=timeDiff(o.arrive,b.depart)
 
@@ -1004,11 +937,11 @@ document.getElementById("okaAdvice").innerHTML+=html
 3レター自動変換
 ===================== */
 
-document.getElementById("from").addEventListener("blur",function(){
+document.getElementById("from").addEventListener("change",function(){
 this.value=code(this.value)
 })
 
-document.getElementById("to").addEventListener("blur",function(){
+document.getElementById("to").addEventListener("change",function(){
 this.value=code(this.value)
 })
 
@@ -1043,36 +976,100 @@ months+"ヶ月で達成"
 
 const airportDistance={
 
-"HND-OKA":984,
-"OKA-HND":984,
-
+// 東京
 "HND-CTS":510,
-"CTS-HND":510,
-
+"HND-OKA":984,
 "HND-FUK":567,
-"FUK-HND":567,
-
+"HND-ITM":280,
+"HND-KIX":280,
+"HND-NGO":175,
+"HND-HIJ":414,
+"HND-SDJ":164,
+"HND-KMJ":556,
+"HND-NGS":609,
+"HND-KMI":593,
+"HND-KOJ":601,
+"HND-MMY":1158,
 "HND-ISG":1224,
-"ISG-HND":1224,
 
+// 大阪
+"KIX-CTS":666,
+"KIX-OKA":739,
+"KIX-FUK":302,
+"KIX-NGO":93,
+"KIX-SDJ":463,
+
+// 名古屋
+"NGO-CTS":449,
+"NGO-OKA":758,
+"NGO-FUK":378,
+
+// 福岡
+"FUK-OKA":537,
+"FUK-CTS":882,
+"FUK-SDJ":476,
+"FUK-KMI":145,
+
+// 沖縄
+"OKA-MMY":204,
+"OKA-ISG":255,
+
+// 札幌
+"CTS-SDJ":335,
+"CTS-HKD":93,
+
+// ---- 国際線 ----
+
+// アジア
 "HND-ICN":758,
-"ICN-HND":758,
-
-"HND-TPE":1305,
-"TPE-HND":1305,
-
-"HND-BKK":2886,
-"BKK-HND":2886,
-
+"HND-GMP":758,
+"HND-PUS":621,
+"HND-TPE":1330,
+"HND-HKG":1803,
+"HND-SHA":1088,
+"HND-PVG":1090,
+"HND-PEK":1300,
+"HND-CAN":1800,
 "HND-SIN":3312,
-"SIN-HND":3312,
+"HND-BKK":2889,
+"HND-KUL":3300,
 
-"HND-HNL":3850,
-"HNL-HND":3850,
+// 関西国際
+"KIX-ICN":522,
+"KIX-TPE":1060,
+"KIX-HKG":1530,
+"KIX-BKK":2590,
+"KIX-SIN":3040,
 
-"HND-LAX":5476,
-"LAX-HND":5476
+// 名古屋
+"NGO-ICN":516,
+"NGO-TPE":1240,
+"NGO-HKG":1620,
 
+// 北米
+"HND-HNL":3840,
+"HND-LAX":5458,
+"HND-SFO":5130,
+"HND-SAN":5450,
+"HND-SEA":4780,
+"HND-YVR":4670,
+"HND-JFK":6740,
+"HND-EWR":6720,
+
+// ヨーロッパ
+"HND-LHR":5950,
+"HND-CDG":6020,
+"HND-FRA":5850,
+"HND-MUC":5800,
+
+// オセアニア
+"HND-SYD":4860,
+"HND-MEL":5020,
+
+}
+
+function newID(){
+return Date.now()+Math.floor(Math.random()*10000)
 }
 
 </script>
