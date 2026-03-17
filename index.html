@@ -330,19 +330,6 @@ return code
 
 }
 
-/* 国際線PP */
-
-function calcIntlPP(from,to,rate){
-
-let key=from+"-"+to
-
-if(!intlDistance[key])return 0
-
-let dist=intlDistance[key]
-
-return Math.floor((dist*rate*1.5)+400)
-
-}
 /* =====================
 ANA路線DB
 ===================== */
@@ -442,6 +429,16 @@ let returnArrive=document.getElementById("returnArrive").value
 
 let month=document.getElementById("month").value
 
+if(!departTime || !arriveTime){
+alert("行きの時刻を入力してください")
+return
+}
+
+if(trip=="round" && (!returnDepart || !returnArrive)){
+alert("帰りの時刻を入力してください")
+return
+}
+
 let pp=calcPP(from,to,rate,seat)
 
 if(pp==0){
@@ -490,8 +487,6 @@ function quick(f,t){
 document.getElementById("from").value=code(f)
 document.getElementById("to").value=code(t)
 
-addFlight()
-
 }
 
 /* =====================
@@ -508,6 +503,10 @@ let departTime=document.getElementById("departTime").value
 let arriveTime=document.getElementById("arriveTime").value
 let returnDepart=document.getElementById("returnDepart").value
 let returnArrive=document.getElementById("returnArrive").value
+if(!departTime || !arriveTime || !returnDepart || !returnArrive){
+alert("時刻を入力してください")
+return
+}
 let pp=calcPP(code("HND"),code("OKA"),rate,seat)
 
 flights.push({
@@ -660,7 +659,8 @@ document.getElementById("ranking").innerHTML=html
 
 function okaFeasible(remain){
 
-let trips=Math.ceil(remain/2900)
+let okaPP=calcPP("HND","OKA",0.75,"normal")*2
+let trips=Math.ceil(remain/okaPP)
 
 document.getElementById("okaAdvice").innerHTML=
 
@@ -724,7 +724,6 @@ document.getElementById("history").innerHTML=html
 
 }
 
-render()
 /* =====================
 SFC Ultimate AI Engine
 ===================== */
@@ -961,7 +960,7 @@ let bestStay=0
 outs.forEach(o=>{
 backs.forEach(b=>{
 
-if(!o.arrive || !b.depart) return
+if(!o.arrive || !b.depart || o.arrive=="" || b.depart=="") return
 
 let stay=timeDiff(o.arrive,b.depart)
 
@@ -1138,6 +1137,8 @@ const airportDistance={
 function newID(){
 return Date.now().toString()+Math.floor(Math.random()*10000)
 }
+
+render()
 
 </script>
 
