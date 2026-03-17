@@ -4,1147 +4,316 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SFC Manager Ultimate</title>
-<link rel="manifest" href="manifest.json">
-
 <style>
-
-body{
-font-family:-apple-system;
-background:#f3f6fa;
-margin:0;
-}
-
-header{
-background:#003f88;
-color:white;
-padding:15px;
-text-align:center;
-font-weight:bold;
-}
-
-.container{
-padding:15px;
-max-width:720px;
-margin:auto;
-}
-
-.card{
-background:white;
-border-radius:14px;
-padding:14px;
-margin-bottom:14px;
-box-shadow:0 4px 12px rgba(0,0,0,0.08);
-}
-
-input,select,button{
-width:100%;
-padding:8px;
-margin:6px 0;
-border-radius:8px;
-border:1px solid #ccc;
-}
-
-button{
-background:#003f88;
-color:white;
-font-weight:bold;
-border:none;
-}
-
-.routeBtn{
-width:auto;
-padding:6px 10px;
-margin:3px;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-font-size:12px;
-}
-
-th,td{
-border-bottom:1px solid #eee;
-padding:6px;
-text-align:center;
-}
-
-.progress{
-background:#ddd;
-height:14px;
-border-radius:8px;
-margin:5px 0;
-}
-
-.progress-inner{
-background:#003f88;
-height:100%;
-width:0%;
-border-radius:8px;
-}
-
+body{font-family:-apple-system;background:#f3f6fa;margin:0;}
+header{background:#003f88;color:white;padding:15px;text-align:center;font-weight:bold;}
+.container{padding:15px;max-width:720px;margin:auto;}
+.card{background:white;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+input,select,button{width:100%;padding:8px;margin:6px 0;border-radius:8px;border:1px solid #ccc;box-sizing: border-box;}
+button{background:#003f88;color:white;font-weight:bold;border:none;cursor: pointer;}
+button:active{opacity: 0.7;}
+.routeBtn{width:auto;padding:6px 10px;margin:3px;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th,td{border-bottom:1px solid #eee;padding:6px;text-align:center;}
+.progress{background:#ddd;height:14px;border-radius:8px;margin:5px 0;}
+.progress-inner{background:#003f88;height:100%;width:0%;border-radius:8px;transition: width 0.3s;}
 .good{background:#d4edda;padding:10px;border-radius:8px}
-.mid{background:#fff3cd;padding:10px;border-radius:8px}
-.bad{background:#f8d7da;padding:10px;border-radius:8px}
-
-.small{font-size:12px;color:#666}
-
+.small{font-size:12px;color:#666;line-height: 1.5;}
+h3{margin: 10px 0; font-size: 1.1em; color: #003f88;}
 </style>
 </head>
-
 <body>
 
 <header>SFC修行管理アプリ Ultimate</header>
 
 <div class="container">
+    <div class="card">
+        <h3>進捗</h3>
+        <div class="progress"><div id="progressBar" class="progress-inner"></div></div>
+        <div id="ppText">0 / 50000 PP</div>
+        <div id="heatBox"></div>
+    </div>
 
-<div class="card">
-<h3>進捗</h3>
+    <div class="card">
+        <h3>フライト追加</h3>
+        <input id="from" placeholder="出発 (例: 羽田 または HND)">
+        <input id="to" placeholder="到着 (例: 那覇 または OKA)">
+        <select id="rate">
+            <option value="1.0">国内100% (運賃1・2/プレミアム)</option>
+            <option value="0.75" selected>国内75% (SUPER VALUE等)</option>
+            <option value="1.0">国際100% (Y/B/M等)</option>
+            <option value="0.7">国際70% (E/G等)</option>
+            <option value="0.5">国際50% (格安運賃)</option>
+        </select>
+        <select id="seat">
+            <option value="normal">普通席</option>
+            <option value="premium">プレミアムクラス</option>
+        </select>
+        <input id="price" type="number" placeholder="合計価格 (円)">
+        
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1">行き出発<input type="time" id="departTime"></div>
+            <div style="flex:1">行き到着<input type="time" id="arriveTime"></div>
+        </div>
+        <div id="returnTimes" style="display:none;">
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1">帰り出発<input type="time" id="returnDepart"></div>
+                <div style="flex:1">帰り到着<input type="time" id="returnArrive"></div>
+            </div>
+        </div>
 
-<div class="progress">
-<div id="progressBar" class="progress-inner"></div>
-</div>
+        <select id="trip" onchange="document.getElementById('returnTimes').style.display = (this.value=='round'?'block':'none')">
+            <option value="oneway">片道</option>
+            <option value="round">往復</option>
+        </select>
+        <input type="month" id="month">
+        <button onclick="addFlight()">フライト追加</button>
+    </div>
 
-<div id="ppText">0 / 50000 PP</div>
+    <div class="card">
+        <h3>クイック入力</h3>
+        <button class="routeBtn" onclick="quick('HND','OKA')">羽田-那覇</button>
+        <button class="routeBtn" onclick="quick('HND','CTS')">羽田-札幌</button>
+        <button class="routeBtn" onclick="quick('HND','ISG')">羽田-石垣</button>
+        <button class="routeBtn" onclick="quick('ITM','OKA')">伊丹-那覇</button>
+        <button onclick="addOKATouch()">HND-OKA 往復(OKAタッチ)を即追加</button>
+    </div>
 
-<div id="heatBox"></div>
+    <div class="card">
+        <h3>フライト一覧</h3>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr><th>月</th><th>区間</th><th>PP</th><th>単価</th><th>済</th><th>消</th></tr>
+                </thead>
+                <tbody id="table"></tbody>
+            </table>
+        </div>
+    </div>
 
-</div>
+    <div class="card">
+        <h3>AI分析 & 修行アドバイス</h3>
+        <div id="ai" class="small"></div>
+        <div id="okaAdvice" class="small"></div>
+        <div id="cheap" class="small"></div>
+    </div>
 
-<div class="card">
-
-<h3>フライト追加</h3>
-
-<input id="from" placeholder="出発">
-
-<input id="to" placeholder="到着">
-
-<select id="rate">
-
-<option value="0.5">国際50%</option>
-<option value="0.7">国際70%</option>
-
-<option value="0.75">国内75%</option>
-<option value="1.0">国内100%</option>
-
-</select>
-
-<select id="seat">
-<option value="normal">普通席</option>
-<option value="premium">プレミアム</option>
-</select>
-
-<input id="price" type="number" placeholder="価格">
-
-行き出発
-<input type="time" id="departTime">
-
-行き到着
-<input type="time" id="arriveTime">
-
-帰り出発
-<input type="time" id="returnDepart">
-
-帰り到着
-<input type="time" id="returnArrive">
-
-<select id="trip">
-<option value="oneway">片道</option>
-<option value="round">往復</option>
-</select>
-
-<input type="month" id="month">
-
-<button onclick="addFlight()">フライト追加</button>
-
-</div>
-
-<div class="card">
-
-<h3>固定ルート</h3>
-
-<button class="routeBtn" onclick="quick('HND','OKA')">HND-OKA</button>
-<button class="routeBtn" onclick="quick('HND','CTS')">HND-CTS</button>
-<button class="routeBtn" onclick="quick('HND','ISG')">HND-ISG</button>
-<button class="routeBtn" onclick="quick('ITM','OKA')">ITM-OKA</button>
-<button onclick="addOKATouch()">OKAタッチ往復</button>
-
-</div>
-
-<div class="card">
-
-<h3>フライト一覧</h3>
-
-<table>
-
-<thead>
-
-<tr>
-<th>月</th>
-<th>区間</th>
-<th>PP</th>
-<th>単価</th>
-<th>済</th>
-<th>削除</th>
-</tr>
-
-</thead>
-
-<tbody id="table"></tbody>
-
-</table>
-
-</div>
-
-<div class="card">
-<h3>PP効率ランキング</h3>
-<div id="ranking"></div>
-</div>
-
-<div class="card">
-
-<h3>AI修行プラン</h3>
-
-<div id="ai"></div>
-
-<div id="okaAdvice" class="small"></div>
-
-<div id="calendar" class="small"></div>
-
-<div id="roadmap" class="small"></div>
-
-<div id="saleAI" class="small"></div>
-
-<div id="routeAI" class="small"></div>
-
-</div>
-
-<div class="card">
-<h3>修行カレンダー</h3>
-<div id="calendar2"></div>
-</div>
-
-<div class="card">
-<h3>修行履歴</h3>
-<div id="history"></div>
-</div>
-
-<div class="card">
-<h3>最安ルート探索</h3>
-<div id="cheap"></div>
-</div>
-
+    <div class="card">
+        <h3>月別集計</h3>
+        <div id="calendar2"></div>
+    </div>
 </div>
 
 <script>
-alert("JSスタート")
+/* =====================
+   基本データ
+   ===================== */
+const airportMap = {
+    "羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","札幌":"CTS","新千歳":"CTS","旭川":"AKJ","函館":"HKD","釧路":"KUH",
+    "仙台":"SDJ","秋田":"AXT","山形":"GAJ","新潟":"KIJ","名古屋":"NGO","中部":"NGO","伊丹":"ITM","大阪":"ITM","関空":"KIX","神戸":"UKB",
+    "広島":"HIJ","岡山":"OKJ","松山":"MYJ","高松":"TAK","徳島":"TKS","高知":"KCZ","福岡":"FUK","長崎":"NGS","熊本":"KMJ","宮崎":"KMI","鹿児島":"KOJ","大分":"OIT",
+    "ソウル":"ICN","台北":"TPE","香港":"HKG","マニラ":"MNL","バンコク":"BKK","シンガポール":"SIN","クアラルンプール":"KUL","ジャカルタ":"CGK","デリー":"DEL","シドニー":"SYD","メルボルン":"MEL","ホノルル":"HNL","サンフランシスコ":"SFO","ロサンゼルス":"LAX","サンディエゴ":"SAN","シアトル":"SEA","ニューヨーク":"JFK","ワシントン":"IAD","シカゴ":"ORD","ロンドン":"LHR","パリ":"CDG","フランクフルト":"FRA","ミュンヘン":"MUC","ブリュッセル":"BRU"
+};
 
-const airportMap={
+const airportDistance = {
+    "HND-CTS":510,"HND-OKA":984,"HND-FUK":567,"HND-ITM":280,"HND-KIX":280,"HND-NGO":175,"HND-HIJ":414,"HND-SDJ":164,"HND-KMJ":556,"HND-NGS":609,"HND-KMI":593,"HND-KOJ":601,"HND-MMY":1158,"HND-ISG":1224,"KIX-CTS":666,"KIX-OKA":739,"KIX-FUK":302,"KIX-NGO":93,"KIX-SDJ":463,"NGO-CTS":449,"NGO-OKA":758,"NGO-FUK":378,"FUK-OKA":537,"FUK-CTS":882,"FUK-SDJ":476,"FUK-KMI":145,"OKA-MMY":204,"OKA-ISG":255,"CTS-SDJ":335,"CTS-HKD":93,"HND-ICN":758,"HND-TPE":1330,"HND-HKG":1803,"HND-SIN":3312,"HND-BKK":2889,"HND-KUL":3300,"KIX-TPE":1060,"KIX-BKK":2590,"HND-HNL":3840,"HND-LAX":5458,"HND-SFO":5130,"HND-LHR":5950,"HND-CDG":6020,"HND-FRA":5850
+};
 
-// 日本
-"羽田":"HND",
-"成田":"NRT",
-"那覇":"OKA",
-"石垣":"ISG",
-"宮古":"MMY",
-"札幌":"CTS",
-"新千歳":"CTS",
-"旭川":"AKJ",
-"函館":"HKD",
-"釧路":"KUH",
+const domesticAirports = ["HND","NRT","CTS","OKA","FUK","ITM","KIX","NGO","SDJ","HIJ","KMJ","NGS","KMI","KOJ","MMY","ISG","HKD","AKJ","KUH","OKJ","MYJ","TAK","TKS","KCZ","OIT","UKB"];
 
-"仙台":"SDJ",
-"秋田":"AXT",
-"山形":"GAJ",
-"新潟":"KIJ",
-
-"名古屋":"NGO",
-"中部":"NGO",
-"伊丹":"ITM",
-"大阪":"ITM",
-"関空":"KIX",
-"神戸":"UKB",
-
-"広島":"HIJ",
-"岡山":"OKJ",
-"松山":"MYJ",
-"高松":"TAK",
-"徳島":"TKS",
-"高知":"KCZ",
-
-"福岡":"FUK",
-"長崎":"NGS",
-"熊本":"KMJ",
-"宮崎":"KMI",
-"鹿児島":"KOJ",
-"大分":"OIT",
-
-// アジア
-"ソウル":"ICN",
-"台北":"TPE",
-"香港":"HKG",
-"マニラ":"MNL",
-"バンコク":"BKK",
-"シンガポール":"SIN",
-"クアラルンプール":"KUL",
-"ジャカルタ":"CGK",
-"デリー":"DEL",
-
-// オセアニア
-"シドニー":"SYD",
-"メルボルン":"MEL",
-
-// 北米
-"ホノルル":"HNL",
-"サンフランシスコ":"SFO",
-"ロサンゼルス":"LAX",
-"サンディエゴ":"SAN",
-"シアトル":"SEA",
-"ニューヨーク":"JFK",
-"ワシントン":"IAD",
-"シカゴ":"ORD",
-
-// 欧州
-"ロンドン":"LHR",
-"パリ":"CDG",
-"フランクフルト":"FRA",
-"ミュンヘン":"MUC",
-"ブリュッセル":"BRU"
-
-}
+let flights = JSON.parse(localStorage.getItem("sfcFlights")) || [];
 
 /* =====================
-空港コード → 空港名変換
-===================== */
-
+   ロジック
+   ===================== */
 function airportName(code){
-
-for(let key in airportMap){
-
-if(airportMap[key]===code){
-return key
-}
-
-}
-
-return code
-
-}
-
-/* =====================
-ANA路線DB
-===================== */
-
-const anaRoutes=[
-
-"HND-OKA",
-"HND-CTS",
-"HND-ISG",
-"HND-FUK",
-"HND-NGO",
-
-"ITM-OKA",
-"KIX-OKA",
-"NGO-OKA",
-
-"HND-TPE",
-"HND-HKG",
-"HND-BKK",
-"HND-SIN",
-
-"HND-HNL",
-"HND-LAX",
-"HND-SFO",
-"HND-SAN",
-
-"HND-LHR",
-"HND-CDG",
-"HND-FRA"
-
-]
-
-let flights=JSON.parse(localStorage.getItem("sfcFlights"))||[]
-
-const domesticAirports=[
-"HND","CTS","OKA","FUK","ITM","KIX","NGO","SDJ","HIJ","KMJ","NGS","KMI","KOJ","MMY","ISG"
-]
-
-function isDomestic(from,to){
-return domesticAirports.includes(from) && domesticAirports.includes(to)
+    for(let key in airportMap){ if(airportMap[key]===code) return key; }
+    return code;
 }
 
 function code(a){
-
-if(!a || typeof a !== "string") return ""
-
-a=a.trim()
-
-if(a==="") return ""
-
-return airportMap[a] || a.toUpperCase()
-
+    if(!a) return "";
+    a = a.trim();
+    return airportMap[a] || a.toUpperCase();
 }
 
-function calcPP(from,to,rate,seat){
-
-let key=from+"-"+to
-let dist=airportDistance[key]
-
-if(!dist){
-dist=airportDistance[to+"-"+from]
+function isDomestic(from, to){
+    return domesticAirports.includes(from) && domesticAirports.includes(to);
 }
 
-if(!dist) return 0
+function calcPP(from, to, rate, seat){
+    let key = from + "-" + to;
+    let revKey = to + "-" + from;
+    let dist = airportDistance[key] || airportDistance[revKey];
+    if(!dist) return 0;
 
-let domestic=isDomestic(from,to)
+    let domestic = isDomestic(from, to);
+    let pp = 0;
 
-let pp
-
-if(domestic){
-pp = (dist * rate * 2) + 400
-}else{
-pp = (dist * rate * 1.5)
+    if(domestic){
+        pp = (dist * rate * 2) + 400;
+        if(seat == "premium") pp += (dist * 0.5); // プレミアム積算率プラス分
+    } else {
+        // アジア・オセアニア路線を想定した1.5倍
+        pp = (dist * rate * 1.5) + 400;
+    }
+    return Math.floor(pp);
 }
 
-if(seat=="premium" && domestic){
-pp += 400
-}
-
-return Math.floor(pp)
-
-}
-
-alert("addFlight定義前")
 function addFlight(){
+    const from = code(document.getElementById("from").value);
+    const to = code(document.getElementById("to").value);
+    const rate = parseFloat(document.getElementById("rate").value);
+    const seat = document.getElementById("seat").value;
+    const price = parseInt(document.getElementById("price").value) || 0;
+    const month = document.getElementById("month").value;
+    const tripType = document.getElementById("trip").value;
 
-let from=code(document.getElementById("from").value)
-let to=code(document.getElementById("to").value)
+    const departTime = document.getElementById("departTime").value;
+    const arriveTime = document.getElementById("arriveTime").value;
 
-let rate=parseFloat(document.getElementById("rate").value)||0.75
-let seat=document.getElementById("seat").value
+    if(!from || !to) { alert("出発地と到着地を入力してください"); return; }
+    if(!departTime || !arriveTime){ alert("行きの時刻を入力してください"); return; }
+    if(!month) { alert("搭乗月を選択してください"); return; }
 
-let price=parseInt(document.getElementById("price").value)||0
+    let pp = calcPP(from, to, rate, seat);
+    if(pp == 0){ alert("区間データが見つかりません"); return; }
 
-let departTime=document.getElementById("departTime").value
-let arriveTime=document.getElementById("arriveTime").value
+    // 行きの追加
+    flights.push({
+        id: Date.now().toString() + "1",
+        from: from, to: to, pp: pp, 
+        price: (tripType == "round" ? price/2 : price),
+        month: month, depart: departTime, arrive: arriveTime, done: false
+    });
 
-let returnDepart=document.getElementById("returnDepart").value
-let returnArrive=document.getElementById("returnArrive").value
-
-let month=document.getElementById("month").value
-
-if(!departTime || !arriveTime){
-alert("行きの時刻を入力してください")
-return
+    if(tripType == "round"){
+        const returnDepart = document.getElementById("returnDepart").value;
+        const returnArrive = document.getElementById("returnArrive").value;
+        if(!returnDepart || !returnArrive){ alert("帰りの時刻を入力してください"); return; }
+        
+        flights.push({
+            id: Date.now().toString() + "2",
+            from: to, to: from, pp: pp, 
+            price: price/2, month: month, 
+            depart: returnDepart, arrive: returnArrive, done: false
+        });
+    }
+    save();
 }
-
-if(trip=="round" && (!returnDepart || !returnArrive)){
-alert("帰りの時刻を入力してください")
-return
-}
-
-let pp=calcPP(from,to,rate,seat)
-
-if(pp==0){
-alert("ルートデータ無し")
-return
-}
-
-let trip=document.getElementById("trip").value
-
-flights.push({
-id:newID(),
-from:from,
-to:to,
-pp:pp,
-price:price/2,
-month:month,
-depart:departTime,
-arrive:arriveTime,
-done:false
-})
-
-if(trip=="round"){
-
-let returnPP=calcPP(to,from,rate,seat)
-
-flights.push({
-id:newID(),
-from:to,
-to:from,
-pp:returnPP,
-price:price/2,
-month:month,
-depart:returnDepart,
-arrive:returnArrive,
-done:false
-})
-
-}
-
-save()
-
-}
-
-function quick(f,t){
-
-document.getElementById("from").value=code(f)
-document.getElementById("to").value=code(t)
-
-}
-
-/* =====================
-OKAタッチ自動登録
-===================== */
 
 function addOKATouch(){
+    const month = document.getElementById("month").value;
+    if(!month) { alert("先に搭乗月を選択してください"); return; }
+    
+    // 時刻が入力されていない場合のデフォルト
+    const d1 = document.getElementById("departTime").value || "06:15";
+    const a1 = document.getElementById("arriveTime").value || "09:00";
+    const d2 = document.getElementById("returnDepart").value || "10:00";
+    const a2 = document.getElementById("returnArrive").value || "12:30";
 
-let rate=parseFloat(document.getElementById("rate").value)||0.75
-let seat=document.getElementById("seat").value
-let month=document.getElementById("month").value
-let price=parseInt(document.getElementById("price").value)||0
-let departTime=document.getElementById("departTime").value
-let arriveTime=document.getElementById("arriveTime").value
-let returnDepart=document.getElementById("returnDepart").value
-let returnArrive=document.getElementById("returnArrive").value
-if(!departTime || !arriveTime || !returnDepart || !returnArrive){
-alert("時刻を入力してください")
-return
+    const pp = calcPP("HND", "OKA", 0.75, "normal");
+    const idBase = Date.now().toString();
+
+    flights.push({ id: idBase+"1", from:"HND", to:"OKA", pp:pp, price:10000, month:month, depart:d1, arrive:a1, done:false });
+    flights.push({ id: idBase+"2", from:"OKA", to:"HND", pp:pp, price:10000, month:month, depart:d2, arrive:a2, done:false });
+    save();
 }
-let pp=calcPP(code("HND"),code("OKA"),rate,seat)
 
-flights.push({
-id:newID(),
-from:"HND",
-to:"OKA",
-pp:pp,
-price:price/2,
-month:month,
-depart:departTime,
-arrive:arriveTime,
-done:false
-})
-
-flights.push({
-id:newID(),
-from:"OKA",
-to:"HND",
-pp:pp,
-price:price/2,
-month:month,
-depart:returnDepart,
-arrive:returnArrive,
-done:false
-})
-
-save()
-
+function quick(f, t){
+    document.getElementById("from").value = f;
+    document.getElementById("to").value = t;
 }
 
 function toggle(id){
-
-let f=flights.find(x=>x.id==id)
-f.done=!f.done
-save()
-
+    let f = flights.find(x => x.id == id);
+    if(f) f.done = !f.done;
+    save();
 }
 
 function del(id){
-
-flights=flights.filter(x=>x.id!=id)
-save()
-
+    if(!confirm("削除しますか？")) return;
+    flights = flights.filter(x => x.id != id);
+    save();
 }
 
 function save(){
-
-localStorage.setItem("sfcFlights",JSON.stringify(flights))
-render()
-
+    localStorage.setItem("sfcFlights", JSON.stringify(flights));
+    render();
 }
 
+/* =====================
+   描画
+   ===================== */
 function render(){
+    let tableBody = document.getElementById("table");
+    tableBody.innerHTML = "";
+    let actual = 0;
 
-document.getElementById("ai").innerHTML=""
-document.getElementById("okaAdvice").innerHTML=""
-document.getElementById("cheap").innerHTML=""
+    flights.sort((a,b) => (a.month + a.depart).localeCompare(b.month + b.depart));
 
-let html=""
-let total=0
-let actual=0
-let cost=0
+    flights.forEach(f => {
+        if(f.done) actual += f.pp;
+        let unit = f.price ? (f.price / f.pp) : 0;
+        
+        let row = `<tr>
+            <td>${f.month.slice(5)}</td>
+            <td>${f.from}-${f.to}</td>
+            <td>${f.pp}</td>
+            <td>${unit.toFixed(1)}</td>
+            <td><input type="checkbox" ${f.done?"checked":""} onchange="toggle('${f.id}')"></td>
+            <td><button style="background:red; width:auto; padding:2px 8px;" onclick="del('${f.id}')">×</button></td>
+        </tr>`;
+        tableBody.innerHTML += row;
+    });
 
-flights.forEach(f=>{
+    document.getElementById("ppText").innerText = actual.toLocaleString() + " / 50,000 PP";
+    document.getElementById("progressBar").style.width = Math.min(100, (actual / 50000 * 100)) + "%";
 
-total+=f.pp
-cost+=f.price
-
-if(f.done)actual+=f.pp
-
-let unit=f.price?f.price/f.pp:0
-
-html+=`<tr>
-<td>${(f.month||"").slice(5)}</td>
-<td>${airportName(f.from)}-${airportName(f.to)}</td>
-<td>${f.pp}</td>
-<td>${unit.toFixed(1)}</td>
-<td><input type="checkbox" ${f.done?"checked":""} onclick="toggle(${f.id})"></td>
-<td><button onclick="del(${f.id})">×</button></td>
-</tr>`
-
-})
-
-document.getElementById("table").innerHTML=html
-
-let remain=50000-actual
-
-document.getElementById("ppText").innerText=actual+" / 50000 PP"
-
-document.getElementById("progressBar").style.width=(actual/50000*100)+"%"
-
-ranking()
-
-okaFeasible(remain)
-
-calendarView()
-
-historyView()
-
-ultimateEngine(remain)
-
+    updateAI(50000 - actual);
 }
 
-function ranking(){
+function updateAI(remain){
+    let aiBox = document.getElementById("ai");
+    let okaBox = document.getElementById("okaAdvice");
+    let cheapBox = document.getElementById("cheap");
 
-let routes={}
+    if(remain <= 0){
+        aiBox.innerHTML = "<b>解脱おめでとうございます！</b> SFCへの扉が開きました。";
+        return;
+    }
 
-flights.forEach(f=>{
+    let hndOkaPP = calcPP("HND","OKA", 0.75, "normal") * 2;
+    let trips = Math.ceil(remain / hndOkaPP);
 
-if(!f.price || f.price<=0 || !f.pp) return
+    aiBox.innerHTML = `<b>SFC達成まであと ${remain.toLocaleString()} PP</b><br>
+    羽田-那覇(SV75%) 往復なら約 <b>${trips} 往復</b> で達成可能です。`;
 
-let unit=f.price/f.pp
-let key=f.from+"-"+f.to
+    // 最安ルート推定（データがある場合）
+    let bestUnit = 999;
+    let bestRoute = "";
+    flights.forEach(f => {
+        let u = f.price / f.pp;
+        if(u > 0 && u < bestUnit) { bestUnit = u; bestRoute = f.from + "-" + f.to; }
+    });
+    
+    if(bestRoute) {
+        cheapBox.innerHTML = `<b>あなたの過去最安単価:</b> ${airportName(bestRoute.split("-")[0])}-${airportName(bestRoute.split("-")[1])} (${bestUnit.toFixed(1)}円/PP)`;
+    }
 
-if(!routes[key] || routes[key]>unit){
-
-routes[key]=unit
-
+    // 月別集計
+    let months = {};
+    flights.forEach(f => {
+        if(!months[f.month]) months[f.month] = 0;
+        months[f.month] += f.pp;
+    });
+    let calHTML = "<b>月別獲得予定PP:</b><br>";
+    for(let m in months) { calHTML += `${m}: ${months[m]} PP<br>`; }
+    document.getElementById("calendar2").innerHTML = calHTML;
 }
 
-})
-
-let list=[]
-
-Object.keys(routes).forEach(r=>{
-
-list.push({
-route:r,
-unit:routes[r]
-})
-
-})
-
-list.sort((a,b)=>a.unit-b.unit)
-
-let html=""
-
-list.forEach(x=>{
-
-let r=x.route.split("-")
-
-html+=airportName(r[0])+"-"+airportName(r[1])
-+" : "+x.unit.toFixed(1)+"円/PP<br>"
-
-})
-
-document.getElementById("ranking").innerHTML=html
-
-}
-
-function okaFeasible(remain){
-
-let okaPP=calcPP("HND","OKA",0.75,"normal")*2
-let trips=Math.ceil(remain/okaPP)
-
-document.getElementById("okaAdvice").innerHTML=
-
-"<br><b>遂行可能性</b><br>"+
-"必要OKA往復 "+trips
-
-}
-
-function calendarView(){
-
-let months={}
-
-flights.forEach(f=>{
-
-if(!f.month)return
-
-if(!months[f.month]){
-
-months[f.month]={
-pp:0,
-count:0
-}
-
-}
-
-months[f.month].pp+=f.pp
-months[f.month].count++
-
-})
-
-let html="<table>"
-html+="<tr><th>月</th><th>フライト</th><th>PP</th></tr>"
-
-Object.keys(months).forEach(m=>{
-
-html+="<tr>"
-html+="<td>"+m+"</td>"
-html+="<td>"+months[m].count+"</td>"
-html+="<td>"+months[m].pp+"</td>"
-html+="</tr>"
-
-})
-
-html+="</table>"
-
-document.getElementById("calendar2").innerHTML=html
-
-}
-
-function historyView(){
-
-let html=""
-
-flights.filter(f=>f.done).forEach(f=>{
-
-html+=f.month+" "+f.from+"-"+f.to+" "+f.pp+"PP<br>"
-
-})
-
-document.getElementById("history").innerHTML=html
-
-}
-
-/* =====================
-SFC Ultimate AI Engine
-===================== */
-
-function ultimateEngine(remain){
-
-routeAI()
-roadmapAI(remain)
-saleAI()
-okaDayTripAI(remain)
-goalPredictAI(remain)
-okaOptimize(remain)
-bestPP()
-okaDayPossible()
-okaBestPair()
-
-}
-
-/* =====================
-AI最安ルート分析
-===================== */
-
-function routeAI(){
-
-let bestRoute=""
-let bestUnit=999
-
-flights.forEach(f=>{
-
-if(!f.price)return
-
-let unit=f.price/f.pp
-
-if(unit<bestUnit){
-
-bestUnit=unit
-bestRoute=f.from+"-"+f.to
-
-}
-
-})
-
-if(!bestRoute)return
-
-document.getElementById("routeAI").innerHTML=
-
-"<br><b>AI最安修行ルート</b><br>"+
-bestRoute+" "+bestUnit.toFixed(1)+"円/PP"
-
-}
-
-/* =====================
-修行ロードマップAI
-===================== */
-
-function roadmapAI(remain){
-
-let okaPP=calcPP("HND","OKA",0.75,"normal")*2
-let trips=Math.ceil(remain/okaPP)
-
-document.getElementById("roadmap").innerHTML=
-
-"<br><b>修行ロードマップ</b><br>"+
-"OKAタッチ "+trips+"往復で達成"
-
-}
-
-/* =====================
-セールAI
-===================== */
-
-function saleAI(){
-
-document.getElementById("saleAI").innerHTML=
-
-"<br><b>AIセール分析</b><br>"+
-"HND-OKA 8〜9円/PP が出たら買い"
-
-}
-
-/* =====================
-OKA日帰りAI
-===================== */
-
-function okaDayTripAI(remain){
-
-let okaPP=calcPP("HND","OKA",0.75,"normal")*2
-let trips=Math.ceil(remain/okaPP)
-
-let hours=trips*6
-
-document.getElementById("okaAdvice").innerHTML+=
-
-"<br><b>OKA日帰り試算</b><br>"+
-"必要 "+trips+" 往復<br>"+
-"飛行時間 約 "+hours+" 時間"
-
-}
-
-/* =====================
-OKAタッチ最適化AI
-===================== */
-
-function okaOptimize(remain){
-
-let okaPP=calcPP("HND","OKA",0.75,"normal")*2
-let trips=Math.ceil(remain/okaPP)
-
-let months=Math.ceil(trips/2)
-
-let html=""
-
-html+="<br><b>OKA修行最適プラン</b><br>"
-html+="残り "+remain.toLocaleString()+"PP<br><br>"
-html+="OKAタッチ "+trips+"往復<br>"
-html+="月2回修行 → "+months+"ヶ月"
-
-document.getElementById("ai").innerHTML+=html
-
-}
-
-/* =====================
-最安PP探索AI
-===================== */
-
-function bestPP(){
-
-let bestRoute=""
-let bestUnit=999
-
-anaRoutes.forEach(r=>{
-
-let p=r.split("-")
-
-let pp=calcPP(p[0],p[1],0.75,"normal")
-
-let actuals=flights.filter(f=> (f.from+"-"+f.to)==r && f.price>0)
-
-let avgPrice
-
-if(actuals.length>0){
-avgPrice=actuals.reduce((a,b)=>a+b.price,0)/actuals.length
-}else{
-avgPrice=r.includes("OKA")?9000:15000
-}
-
-let unit=avgPrice/pp
-
-if(unit<bestUnit){
-
-bestUnit=unit
-bestRoute=r
-
-}
-
-})
-
-document.getElementById("cheap").innerHTML=
-
-"<b>AI推定最安ルート</b><br>"+
-bestRoute+" 約 "+bestUnit.toFixed(1)+"円/PP"
-
-}
-
-function timeDiff(t1,t2){
-
-let a=t1.split(":")
-let b=t2.split(":")
-
-let m1=parseInt(a[0])*60+parseInt(a[1])
-let m2=parseInt(b[0])*60+parseInt(b[1])
-
-return m2-m1
-
-}
-
-function okaDayPossible(){
-
-let outs=flights.filter(f=>f.from=="HND" && f.to=="OKA")
-let backs=flights.filter(f=>f.from=="OKA" && f.to=="HND")
-
-if(outs.length==0 || backs.length==0) return
-
-let bestStay=0
-
-outs.forEach(o=>{
-
-backs.forEach(b=>{
-
-if(!o.arrive || !b.depart || o.arrive=="" || b.depart=="") return
-
-let stay=timeDiff(o.arrive,b.depart)
-
-if(stay>bestStay){
-
-bestStay=stay
-
-}
-
-})
-
-})
-
-let html="<br><b>OKA日帰り判定</b><br>"
-
-let stayHour=Math.floor(bestStay/60)
-
-html+="最大滞在 "+stayHour+"時間<br>"
-
-if(stayHour>=3){
-html+="余裕あり日帰り可能<br>"
-html+="→ ラウンジ・食事も余裕"
-}else if(stayHour>=2){
-html+="日帰り可能（タイト）<br>"
-html+="→ 空港内のみが現実的"
-}else{
-html+="日帰り不可"
-}
-
-document.getElementById("okaAdvice").innerHTML+=html
-
-}
-
-function okaBestPair(){
-
-let outs=flights.filter(f=>f.from=="HND" && f.to=="OKA")
-let backs=flights.filter(f=>f.from=="OKA" && f.to=="HND")
-
-if(outs.length==0 || backs.length==0) return
-
-let best=null
-let bestStay=0
-
-outs.forEach(o=>{
-backs.forEach(b=>{
-
-if(!o.arrive || !b.depart || o.arrive=="" || b.depart=="") return
-
-let stay=timeDiff(o.arrive,b.depart)
-
-if(stay>bestStay){
-bestStay=stay
-best={out:o,back:b}
-}
-
-})
-})
-
-if(!best) return
-
-let stayHour=Math.floor(bestStay/60)
-
-let html="<br><b>最適OKA日帰りプラン</b><br>"
-
-html+="往路："+best.out.depart+" → "+best.out.arrive+"<br>"
-html+="復路："+best.back.depart+" → "+best.back.arrive+"<br>"
-
-html+="滞在 "+stayHour+"時間<br>"
-
-if(stayHour>=3){
-html+="→ 余裕あり（観光OK）"
-}else if(stayHour>=2){
-html+="→ タイト（空港中心）"
-}else{
-html+="→ 非推奨"
-}
-
-document.getElementById("okaAdvice").innerHTML+=html
-
-}
-
-/* =====================
-3レター自動変換
-===================== */
-
-document.getElementById("from").addEventListener("change",function(){
-this.value=code(this.value)
-})
-
-document.getElementById("to").addEventListener("change",function(){
-this.value=code(this.value)
-})
-
-function goalPredictAI(remain){
-
-let monthsData={}
-
-flights.forEach(f=>{
-
-if(!f.month || !f.done) return
-
-if(!monthsData[f.month]) monthsData[f.month]=0
-
-monthsData[f.month]+=f.pp
-
-})
-
-let values=Object.values(monthsData)
-
-if(values.length==0) return
-
-values.sort((a,b)=>b-a)
-
-let recent=values.slice(0,3)
-
-let avg=recent.reduce((a,b)=>a+b)/recent.length
-
-let months=Math.ceil(remain/avg)
-
-document.getElementById("ai").innerHTML+=
-"<br><b>SFC達成予測</b><br>"+
-"平均 "+Math.floor(avg)+"PP/月<br>"+
-months+"ヶ月で達成"
-
-}
-
-const airportDistance={
-
-// 東京
-"HND-CTS":510,
-"HND-OKA":984,
-"HND-FUK":567,
-"HND-ITM":280,
-"HND-KIX":280,
-"HND-NGO":175,
-"HND-HIJ":414,
-"HND-SDJ":164,
-"HND-KMJ":556,
-"HND-NGS":609,
-"HND-KMI":593,
-"HND-KOJ":601,
-"HND-MMY":1158,
-"HND-ISG":1224,
-
-// 大阪
-"KIX-CTS":666,
-"KIX-OKA":739,
-"KIX-FUK":302,
-"KIX-NGO":93,
-"KIX-SDJ":463,
-
-// 名古屋
-"NGO-CTS":449,
-"NGO-OKA":758,
-"NGO-FUK":378,
-
-// 福岡
-"FUK-OKA":537,
-"FUK-CTS":882,
-"FUK-SDJ":476,
-"FUK-KMI":145,
-
-// 沖縄
-"OKA-MMY":204,
-"OKA-ISG":255,
-
-// 札幌
-"CTS-SDJ":335,
-"CTS-HKD":93,
-
-// ---- 国際線 ----
-
-// アジア
-"HND-ICN":758,
-"HND-GMP":758,
-"HND-PUS":621,
-"HND-TPE":1330,
-"HND-HKG":1803,
-"HND-SHA":1088,
-"HND-PVG":1090,
-"HND-PEK":1300,
-"HND-CAN":1800,
-"HND-SIN":3312,
-"HND-BKK":2889,
-"HND-KUL":3300,
-
-// 関西国際
-"KIX-ICN":522,
-"KIX-TPE":1060,
-"KIX-HKG":1530,
-"KIX-BKK":2590,
-"KIX-SIN":3040,
-
-// 名古屋
-"NGO-ICN":516,
-"NGO-TPE":1240,
-"NGO-HKG":1620,
-
-// 北米
-"HND-HNL":3840,
-"HND-LAX":5458,
-"HND-SFO":5130,
-"HND-SAN":5450,
-"HND-SEA":4780,
-"HND-YVR":4670,
-"HND-JFK":6740,
-"HND-EWR":6720,
-
-// ヨーロッパ
-"HND-LHR":5950,
-"HND-CDG":6020,
-"HND-FRA":5850,
-"HND-MUC":5800,
-
-// オセアニア
-"HND-SYD":4860,
-"HND-MEL":5020,
-
-}
-
-function newID(){
-return Date.now().toString()+Math.floor(Math.random()*10000)
-}
-
-render()
-
+// 初期実行
+render();
 </script>
-
 </body>
 </html>
