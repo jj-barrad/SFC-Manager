@@ -383,6 +383,7 @@ return airportMap[a] || a.toUpperCase()
 }
 
 function calcPP(from,to,rate,seat){
+alert("calcPP")
 
 let key=from+"-"+to
 let dist=airportDistance[key]
@@ -412,7 +413,6 @@ return Math.floor(pp)
 }
 
 function addFlight(){
-alert("呼ばれてる")
 
 let from=code(document.getElementById("from").value)
 let to=code(document.getElementById("to").value)
