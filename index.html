@@ -401,13 +401,13 @@ let domestic=isDomestic(from,to)
 let pp
 
 if(domestic){
-pp=(dist*rate)+400
+pp = (dist * rate * 2) + 400
 }else{
-pp=(dist*rate*1.5)
+pp = (dist * rate * 1.5)
 }
 
 if(seat=="premium" && domestic){
-pp+=400
+pp += 400
 }
 
 return Math.floor(pp)
