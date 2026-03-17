@@ -237,6 +237,7 @@ border-radius:8px;
 </div>
 
 <script>
+alert("JSスタート")
 
 const airportMap={
 
@@ -413,23 +414,8 @@ return Math.floor(pp)
 
 }
 
+alert("addFlight定義前")
 function addFlight(){
-
-alert("①開始")
-
-let fromRaw=document.getElementById("from").value
-let toRaw=document.getElementById("to").value
-
-alert("②入力OK")
-
-let from=code(fromRaw)
-let to=code(toRaw)
-
-alert("③変換OK: "+from+"-"+to)
-if(!from || !to){
-alert("出発・到着を入力してください")
-return
-}
 
 let from=code(document.getElementById("from").value)
 let to=code(document.getElementById("to").value)
