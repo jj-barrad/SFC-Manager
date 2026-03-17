@@ -374,9 +374,11 @@ return domesticAirports.includes(from) && domesticAirports.includes(to)
 
 function code(a){
 
-if(!a) return ""
+if(!a || typeof a !== "string") return ""
 
 a=a.trim()
+
+if(a==="") return ""
 
 return airportMap[a] || a.toUpperCase()
 
@@ -412,7 +414,23 @@ return Math.floor(pp)
 }
 
 function addFlight(){
-alert(from+"-"+to+" / PP="+pp)
+function addFlight(){
+
+alert("①開始")
+
+let fromRaw=document.getElementById("from").value
+let toRaw=document.getElementById("to").value
+
+alert("②入力OK")
+
+let from=code(fromRaw)
+let to=code(toRaw)
+
+alert("③変換OK: "+from+"-"+to)
+if(!from || !to){
+alert("出発・到着を入力してください")
+return
+}
 
 let from=code(document.getElementById("from").value)
 let to=code(document.getElementById("to").value)
