@@ -377,6 +377,14 @@ const anaRoutes=[
 
 let flights=JSON.parse(localStorage.getItem("sfcFlights"))||[]
 
+const domesticAirports=[
+"HND","CTS","OKA","FUK","ITM","KIX","NGO","SDJ","HIJ","KMJ","NGS","KMI","KOJ","MMY","ISG"
+]
+
+function isDomestic(from,to){
+return domesticAirports.includes(from) && domesticAirports.includes(to)
+}
+
 function code(a){
 
 if(!a) return ""
@@ -390,7 +398,6 @@ return airportMap[a] || a.toUpperCase()
 function calcPP(from,to,rate,seat){
 
 let key=from+"-"+to
-
 let dist=airportDistance[key]
 
 if(!dist){
@@ -399,18 +406,14 @@ dist=airportDistance[to+"-"+from]
 
 if(!dist) return 0
 
-let domestic=dist<2000
+let domestic=isDomestic(from,to)
 
 let pp
 
 if(domestic){
-
-pp=(dist*rate*2)+400
-
+pp=(dist*rate)+400
 }else{
-
 pp=(dist*rate*1.5)
-
 }
 
 if(seat=="premium" && domestic){
@@ -614,7 +617,7 @@ let routes={}
 
 flights.forEach(f=>{
 
-if(!f.price || !f.pp) return
+if(!f.price || f.price<=0 || !f.pp) return
 
 let unit=f.price/f.pp
 let key=f.from+"-"+f.to
@@ -736,6 +739,7 @@ goalPredictAI(remain)
 okaOptimize(remain)
 bestPP()
 okaDayPossible()
+okaBestPair()
 
 }
 
@@ -778,7 +782,7 @@ bestRoute+" "+bestUnit.toFixed(1)+"円/PP"
 
 function roadmapAI(remain){
 
-let okaPP=3752
+let okaPP=calcPP("HND","OKA",0.75,"normal")*2
 let trips=Math.ceil(remain/okaPP)
 
 document.getElementById("roadmap").innerHTML=
@@ -807,7 +811,7 @@ OKA日帰りAI
 
 function okaDayTripAI(remain){
 
-let okaPP=3752
+let okaPP=calcPP("HND","OKA",0.75,"normal")*2
 let trips=Math.ceil(remain/okaPP)
 
 let hours=trips*6
@@ -826,7 +830,7 @@ OKAタッチ最適化AI
 
 function okaOptimize(remain){
 
-let okaPP=3752
+let okaPP=calcPP("HND","OKA",0.75,"normal")*2
 let trips=Math.ceil(remain/okaPP)
 
 let months=Math.ceil(trips/2)
@@ -857,7 +861,15 @@ let p=r.split("-")
 
 let pp=calcPP(p[0],p[1],0.75,"normal")
 
-let avgPrice=r.includes("OKA")?9000:15000
+let actuals=flights.filter(f=> (f.from+"-"+f.to)==r && f.price>0)
+
+let avgPrice
+
+if(actuals.length>0){
+avgPrice=actuals.reduce((a,b)=>a+b.price,0)/actuals.length
+}else{
+avgPrice=r.includes("OKA")?9000:15000
+}
 
 let unit=avgPrice/pp
 
@@ -918,15 +930,66 @@ bestStay=stay
 
 let html="<br><b>OKA日帰り判定</b><br>"
 
-if(bestStay>=120){
+let stayHour=Math.floor(bestStay/60)
 
-html+="日帰り可能<br>"
-html+="最大滞在 "+Math.floor(bestStay/60)+"時間"
+html+="最大滞在 "+stayHour+"時間<br>"
 
+if(stayHour>=3){
+html+="余裕あり日帰り可能<br>"
+html+="→ ラウンジ・食事も余裕"
+}else if(stayHour>=2){
+html+="日帰り可能（タイト）<br>"
+html+="→ 空港内のみが現実的"
 }else{
-
 html+="日帰り不可"
+}
 
+document.getElementById("okaAdvice").innerHTML+=html
+
+}
+
+function okaBestPair(){
+
+let outs=flights.filter(f=>f.from=="HND" && f.to=="OKA")
+let backs=flights.filter(f=>f.from=="OKA" && f.to=="HND")
+
+if(outs.length==0 || backs.length==0) return
+
+let best=null
+let bestStay=0
+
+outs.forEach(o=>{
+backs.forEach(b=>{
+
+if(!o.arrive || !b.depart) return
+
+let stay=timeDiff(o.arrive,b.depart)
+
+if(stay>bestStay){
+bestStay=stay
+best={out:o,back:b}
+}
+
+})
+})
+
+if(!best) return
+
+let stayHour=Math.floor(bestStay/60)
+
+let html="<br><b>最適OKA日帰りプラン</b><br>"
+
+html+="往路："+best.out.depart+" → "+best.out.arrive+"<br>"
+html+="復路："+best.back.depart+" → "+best.back.arrive+"<br>"
+
+html+="滞在 "+stayHour+"時間<br>"
+
+if(stayHour>=3){
+html+="→ 余裕あり（観光OK）"
+}else if(stayHour>=2){
+html+="→ タイト（空港中心）"
+}else{
+html+="→ 非推奨"
 }
 
 document.getElementById("okaAdvice").innerHTML+=html
@@ -963,7 +1026,11 @@ let values=Object.values(monthsData)
 
 if(values.length==0) return
 
-let avg=values.reduce((a,b)=>a+b)/values.length
+values.sort((a,b)=>b-a)
+
+let recent=values.slice(0,3)
+
+let avg=recent.reduce((a,b)=>a+b)/recent.length
 
 let months=Math.ceil(remain/avg)
 
@@ -1069,7 +1136,7 @@ const airportDistance={
 }
 
 function newID(){
-return Date.now()+Math.floor(Math.random()*10000)
+return Date.now().toString()+Math.floor(Math.random()*10000)
 }
 
 </script>
