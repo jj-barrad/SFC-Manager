@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v16</title>
+<title>SFC Manager v16.1</title>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -34,45 +34,18 @@
     .ai-box{background:#f0f7ff; padding:12px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff;}
     .status-badge{font-size: 10px; padding: 2px 5px; border-radius: 4px; color: white; vertical-align: middle;}
     .danger { background: var(--money); } .ok { background: var(--success); }
-    .history-item{font-size:12px; padding:5px 0; border-bottom:1px dashed #eee; color:#555;}
-    .history-item b { color: var(--success); }
     
-    /* V15追加: スタイル */
     .link-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-    .btn-link { background: #fff; color: var(--main-blue); border: 1px solid var(--main-blue); font-size: 11px; padding: 8px; text-decoration: none; text-align: center; border-radius: 6px; }
+    .btn-link { background: #fff; color: var(--main-blue); border: 1px solid var(--main-blue); font-size: 11px; padding: 8px; text-decoration: none; text-align: center; border-radius: 6px; font-weight: bold;}
     .info-badge { background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; font-size: 11px; margin-bottom: 10px; border: 1px solid #ffeeba; }
 
-    /* V16追加: グラフ用スタイル */
-    .graph-container {
-        width: 100%;
-        height: 150px;
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-around;
-        padding: 10px 0;
-    }
-    .graph-bar {
-        width: calc(100% / 12 - 4px); /* 12ヶ月分 */
-        background: var(--accent-blue);
-        border-radius: 4px 4px 0 0;
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        color: white;
-        font-size: 9px;
-        font-weight: bold;
-        transition: height 0.5s;
-    }
-    .graph-label {
-        color: #333;
-        font-size: 10px;
-        text-align: center;
-    }
+    .graph-container { width: 100%; height: 120px; display: flex; align-items: flex-end; justify-content: space-around; padding: 10px 0; border-bottom: 1px solid #eee;}
+    .graph-bar { width: calc(100% / 12 - 4px); background: var(--accent-blue); border-radius: 4px 4px 0 0; display: flex; align-items: flex-end; justify-content: center; color: white; font-size: 8px; transition: height 0.5s;}
 </style>
 </head>
 <body>
 
-<header>SFC修行管理 v16</header>
+<header>SFC修行管理 v16.1</header>
 
 <div class="container">
     <div class="card">
@@ -87,26 +60,25 @@
     </div>
 
     <div class="card">
-        <h3>修行情報・セール確認</h3>
+        <h3>ANA公式 リンク集</h3>
         <div class="info-badge">
-            📌 <b>公式セールは「毎月29日（ANAの日）」</b>や不定期の木曜日に発表されることが多いです。
+            📌 <b>毎月29日付近</b>は「ANAにキュン！」セールを必ずチェック！
         </div>
         <div class="link-grid">
-            <a href="https://www.ana.co.jp/ja/jp/domestic/theme/promotion/rakunori/tokutabi/" target="_blank" class="btn-link">今週のトクたびマイル</a>
-            <a href="https://www.ana.co.jp/ja/jp/domestic/promotions/special-sales/" target="_blank" class="btn-link">国内線セール情報</a>
-            <a href="https://www.ana.co.jp/ja/jp/guide/amc/premium/simulation/" target="_blank" class="btn-link">公式PPシミュレーター</a>
-            <a href="https://trico.jal.com/" target="_blank" class="btn-link">修行系ブログ検索</a>
+            <a href="https://www.ana.co.jp/ja/jp/domestic/theme/promotion/rakunori/tokutabi/" target="_blank" class="btn-link">トクたびマイル</a>
+            <a href="https://www.ana.co.jp/ja/jp/guide/amc/premium/simulation/" target="_blank" class="btn-link">公式PP計算機</a>
+            <a href="https://www.ana.co.jp/ja/jp/domestic/promotions/" target="_blank" class="btn-link">キャンペーン一覧</a>
+            <a href="https://aswbe-d.ana.co.jp/p_per/sky_search/ja/jp/search_01.html" target="_blank" class="btn-link">空席照会・予約</a>
         </div>
         <button class="btn-sub" style="margin-top:10px; background:#e3f2fd; color:#007bff;" onclick="setReminder()">
-            📅 セール警戒日をカレンダーに登録（案内）
+            📅 29日のセールをカレンダー通知設定
         </button>
     </div>
 
     <div class="card">
         <h3>月別獲得PPグラフ</h3>
-        <div id="ppGraph" class="graph-container">
-            </div>
-        <div style="display: flex; justify-content: space-around; font-size: 10px;">
+        <div id="ppGraph" class="graph-container"></div>
+        <div style="display: flex; justify-content: space-around; font-size: 9px; margin-top:5px; color:#666;">
             <div>1月</div><div>2月</div><div>3月</div><div>4月</div><div>5月</div><div>6月</div>
             <div>7月</div><div>8月</div><div>9月</div><div>10月</div><div>11月</div><div>12月</div>
         </div>
@@ -115,28 +87,25 @@
     <div class="card">
         <h3>フライト追加</h3>
         <div style="display:flex; gap:10px;">
-            <input id="from" placeholder="出発地" style="flex:1">
-            <input id="to" placeholder="到着地" style="flex:1">
+            <input id="from" placeholder="出発地">
+            <input id="to" placeholder="到着地">
         </div>
         <div style="display:flex; gap:10px;">
             <select id="rate" style="flex:2">
-                <option value="0.75" selected>国内:75% (VALUE/SV等)</option>
-                <option value="1.0">国内:100% (普通運賃/特割等)</option>
-                <option value="1.25">国内:125% (プレミアム株主等)</option>
-                <option value="1.0">海外:100% (Y/B/Mクラス)</option>
-                <option value="0.7">海外:70% (E/G/Pクラス)</option>
-                <option value="0.5">海外:50% (L/K/S/Vクラス)</option>
+                <option value="0.75" selected>国内:75% (VALUE等)</option>
+                <option value="1.0">国内:100% (特割等)</option>
+                <option value="1.25">国内:125% (プレミアム等)</option>
             </select>
             <select id="seat" style="flex:1">
                 <option value="normal">普通席</option>
                 <option value="premium">プレミアム</option>
             </select>
         </div>
-        <input id="price" type="number" placeholder="航空券代 (往復なら合計額)">
+        <input id="price" type="number" placeholder="航空券代">
         <input type="date" id="flightDate">
         <div style="display:flex; gap:10px;">
-            <div style="flex:1">出発時刻<input type="time" id="departTime"></div>
-            <div style="flex:1">到着時刻<input type="time" id="arriveTime"></div>
+            <div style="flex:1">出発<input type="time" id="departTime"></div>
+            <div style="flex:1">到着<input type="time" id="arriveTime"></div>
         </div>
         <select id="trip" onchange="document.getElementById('returnArea').style.display = (this.value=='round'?'block':'none')">
             <option value="oneway">片道</option>
@@ -152,21 +121,15 @@
         <div style="margin-top:10px;">
             <button class="routeBtn" onclick="quickFill('羽田','那覇')">羽田-那覇</button>
             <button class="routeBtn" onclick="quickFill('羽田','石垣')">羽田-石垣</button>
-            <button class="routeBtn" onclick="quickFill('羽田','シンガポール')">羽田-SIN</button>
-            <button class="routeBtn" onclick="quickFill('羽田','クアラルンプール')">羽田-KUL</button>
         </div>
     </div>
 
     <div class="card">
-        <h3>AI診断</h3>
-        <div id="aiAdvice" class="ai-box">プランを入力してください。</div>
-    </div>
-
-    <div class="card">
-        <h3>データ管理</h3>
+        <h3>AI診断 & データ管理</h3>
+        <div id="aiAdvice" class="ai-box" style="margin-bottom:10px;"></div>
         <div style="display:flex; gap:10px;">
-            <button class="btn-sub" onclick="exportData()">エクスポート</button>
-            <button class="btn-sub" onclick="importData()">インポート</button>
+            <button class="btn-sub" onclick="exportData()">バックアップ</button>
+            <button class="btn-sub" onclick="importData()">復元(インポート)</button>
         </div>
     </div>
 
@@ -181,18 +144,11 @@
             </table>
         </div>
     </div>
-
-    <div class="card">
-        <h3>搭乗履歴（実績のみ）</h3>
-        <div id="historyList"></div>
-    </div>
 </div>
 
 <script>
-const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","札幌":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TPE","ソウル":"ICN","ホノルル":"HNL","サンディエゴ":"SAN","ロサンゼルス":"LAX","サンフランシスコ":"SFO","ニューヨーク":"JFK","ロンドン":"LHR","パリ":"CDG","フランクフルト":"FRA","シドニー":"SYD","クアラルンプール":"KUL","ジャカルタ":"CGK","マニラ":"MNL","ホーチミン":"SGN","シカゴ":"ORD","ワシントン":"IAD","シアトル":"SEA","バンクーバー":"YVR"};
-const distDB = {"HND-OKA":738, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1017, "HND-ITM":280, "HND-KIX":280, "HND-MMY":931, "HND-SIN":3312, "HND-KUL":3338, "HND-BKK":2889, "HND-JFK":6740, "HND-LHR":5950, "HND-HNL":3840};
-const domList = ["HND","NRT","CTS","OKA","FUK","ITM","KIX","NGO","ISG","MMY"];
-const asiaOcea = ["SIN","BKK","TPE","ICN","SYD","KUL","CGK","MNL","SGN"];
+const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","札幌":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","クアラルンプール":"KUL"};
+const distDB = {"HND-OKA":738, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1017, "HND-ITM":280};
 
 let flights = JSON.parse(localStorage.getItem("sfc_v16_data")) || [];
 
@@ -200,10 +156,10 @@ function getCode(name) { return airportMap[name] || (name ? name.toUpperCase() :
 function getName(code) { for(let n in airportMap) { if(airportMap[n] === code) return n; } return code; }
 function quickFill(f, t) { document.getElementById("from").value = f; document.getElementById("to").value = t; }
 
-function exportData() { prompt("バックアップ用テキスト:", JSON.stringify(flights)); }
+function exportData() { prompt("この文字をコピーして保存:", JSON.stringify(flights)); }
 function importData() {
-    const s = prompt("テキストを貼り付け:");
-    if(s) { try{ flights=JSON.parse(s); save(); alert("完了"); }catch(e){alert("失敗");} }
+    const s = prompt("保存した文字を貼り付け:");
+    if(s) { try{ flights=JSON.parse(s); save(); alert("復元完了"); }catch(e){alert("失敗");} }
 }
 
 function calcPP(from, to, rate, seat){
@@ -211,10 +167,7 @@ function calcPP(from, to, rate, seat){
     let base = distDB[key] || distDB[rev] || 0;
     if(base === 0) return 0;
     if((key==="HND-OKA"||rev==="HND-OKA") && rate===0.75 && seat==="normal") return 1476;
-    let isDom = domList.includes(from) && domList.includes(to);
-    if(isDom) return Math.floor((base * (seat==="premium"?rate+0.5:rate) * 2) + 400);
-    let multi = (asiaOcea.includes(to) || asiaOcea.includes(from)) ? 1.5 : 1.0;
-    return Math.floor((base * rate * multi) + 400);
+    return Math.floor((base * (seat==="premium"?rate+0.5:rate) * 2) + 400);
 }
 
 function addFlight() {
@@ -244,29 +197,26 @@ function toggleDone(id) { let f=flights.find(x=>x.id===id); if(f) f.done=!f.done
 
 function render() {
     const table = document.getElementById("tableBody");
-    const history = document.getElementById("historyList");
     const graph = document.getElementById("ppGraph");
-    table.innerHTML = "";
-    history.innerHTML = "";
-    graph.innerHTML = "";
+    table.innerHTML = ""; graph.innerHTML = "";
     let actualP=0, totalP=0, totalC=0;
-    let monthlyPP = Array(12).fill(0); // 月別获得PP
+    let monthlyPP = Array(12).fill(0);
     flights.sort((a,b) => (a.date + a.depart).localeCompare(b.date + b.depart));
 
     flights.forEach((f, idx) => {
         totalP += f.pp; totalC += f.price;
-        if(f.done) actualP += f.pp;
+        if(f.done) {
+            actualP += f.pp;
+            let m = parseInt(f.date.slice(5, 7));
+            if (m >= 1 && m <= 12) monthlyPP[m - 1] += f.pp;
+        }
         
-        // V16追加: 月別PP集計
-        let month = parseInt(f.date.slice(5, 7));
-        if (!isNaN(month) && month >= 1 && month <= 12) monthlyPP[month - 1] += f.pp;
-
         let waitHtml = "";
         if(idx < flights.length - 1) {
             let next = flights[idx+1];
             if(f.to === next.from) {
                 let diff = (new Date(next.date + "T" + next.depart) - new Date(f.date + "T" + f.arrive)) / 60000;
-                if(diff >= 0 && diff < 1440) waitHtml = `<br><span class="status-badge ${diff < 40?'danger':'ok'}">${Math.floor(diff/60)}h${diff%60}m 待機</span>`;
+                if(diff >= 0 && diff < 1440) waitHtml = `<br><span class="status-badge ${diff < 40?'danger':'ok'}">${Math.floor(diff/60)}h${diff%60}m</span>`;
             }
         }
 
@@ -280,31 +230,25 @@ function render() {
         </tr>`;
     });
 
-    // V16追加: グラフ生成
-    const maxPP = 10000; // グラフの最大高さ(PP)
+    const maxMonthly = Math.max(...monthlyPP, 5000);
     monthlyPP.forEach(pp => {
-        const height = Math.min(100, (pp / maxPP) * 100);
-        const bar = document.createElement("div");
-        bar.className = "graph-bar";
-        bar.style.height = `${height}%`;
-        if (pp > 0) bar.innerText = pp.toLocaleString();
-        graph.appendChild(bar);
+        const h = (pp / maxMonthly) * 100;
+        graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp > 0 ? pp : ''}</div>`;
     });
 
     document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000 PP";
     document.getElementById("progressBar").style.width = Math.min(100, (actualP/50000)*100) + "%";
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
+    document.getElementById("paidBudget").innerText = "¥" + (flights.filter(f=>f.done).reduce((s,f)=>s+f.price,0)).toLocaleString();
     document.getElementById("remainPP").innerText = (50000 - actualP).toLocaleString();
 
     const avg = totalP > 0 ? (totalC / totalP).toFixed(1) : 0;
     document.getElementById("aiAdvice").innerHTML = `解脱まであと <b>${(50000-actualP).toLocaleString()} PP</b><br>平均単価: <b>${avg}円</b> / 那覇往復(VALUE)あと <b>${Math.ceil((50000-actualP)/2952)}回</b>`;
 }
 
-// V15追加: スクリプト
 function setReminder() {
-    alert("iPhone/Androidの標準カレンダーを開き、\n『毎月29日』に『ANAの日セールチェック』という繰り返し予定を入れるのが最も確実です！\n\n不定期セールは、ANAの公式LINEやTwitter(X)の通知をオンにしておくと最速で届きますよ。");
+    alert("カレンダーアプリを開き、『毎月29日』に『ANAの日セール確認』を繰り返し登録しましょう！これが一番確実です。");
 }
-
 render();
 </script>
 </body>
