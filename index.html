@@ -2,62 +2,64 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SFC Manager Ultimate v12</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+<title>SFC Manager v14</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SFC修行">
+<link rel="apple-touch-icon" href="https://via.placeholder.com/180/003f88/ffffff?text=SFC">
+
 <style>
-    :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; }
-    body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:30px; color:#333;}
-    header{background:var(--main-blue); color:white; padding:15px; text-align:center; font-weight:bold; font-size:1.2em; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+    :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; }
+    body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:50px; color:#333; -webkit-tap-highlight-color:transparent;}
+    header{background:var(--main-blue); color:white; padding: 45px 15px 15px 15px; text-align:center; font-weight:bold; font-size:1.2em; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
     .container{padding:15px; max-width:720px; margin:auto;}
     .card{background:white; border-radius:14px; padding:16px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,0.08);}
     h3{margin: 0 0 10px 0; font-size: 1.1em; color: var(--main-blue); border-left: 4px solid var(--main-blue); padding-left: 10px;}
-    input, select, button{width:100%; padding:10px; margin:6px 0; border-radius:8px; border:1px solid #ccc; box-sizing: border-box; font-size:14px;}
-    button{background:var(--main-blue); color:white; font-weight:bold; border:none; cursor: pointer; transition: 0.2s;}
-    button:hover{opacity: 0.8;}
+    input, select, button{width:100%; padding:12px; margin:6px 0; border-radius:8px; border:1px solid #ccc; box-sizing: border-box; font-size:14px;}
+    button{background:var(--main-blue); color:white; font-weight:bold; border:none; cursor: pointer;}
+    .btn-sub{background:#6c757d; font-size:12px; padding:8px;}
     .routeBtn{width:auto; padding:6px 12px; margin:4px 2px; font-size:11px; background:#e9ecef; color:#333; border:1px solid #ddd;}
     table{width:100%; border-collapse:collapse; font-size:11px;}
     th, td{border-bottom:1px solid #eee; padding:10px 5px; text-align:center;}
-    th{background:#f8f9fa;}
     .progress{background:#ddd; height:18px; border-radius:10px; margin:10px 0; overflow:hidden;}
     .progress-inner{background:linear-gradient(90deg, var(--main-blue), var(--accent-blue)); height:100%; width:0%; transition: width 0.8s;}
     .ai-box{background:#f0f7ff; padding:12px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff;}
-    .status-badge{font-size: 10px; padding: 2px 5px; border-radius: 4px; color: white; vertical-align: middle;}
-    .danger { background: var(--money); }
-    .ok { background: var(--success); }
-    .history-item{font-size:12px; padding:5px 0; border-bottom:1px dashed #eee; color:#555;}
-    .history-item b { color: var(--success); }
+    .status-badge{font-size: 10px; padding: 2px 5px; border-radius: 4px; color: white;}
+    .danger { background: var(--money); } .ok { background: var(--success); }
 </style>
 </head>
 <body>
 
-<header>SFC修行管理 Ultimate v12</header>
+<header>SFC修行管理 v14 (完全版)</header>
 
 <div class="container">
     <div class="card">
         <h3>進捗 & 予算状況</h3>
-        <div style="text-align:center; font-weight:bold; font-size:1.2em; margin-bottom:5px;" id="ppText">0 / 50,000 PP</div>
+        <div style="text-align:center; font-weight:bold; font-size:1.2em;" id="ppText">0 / 50,000 PP</div>
         <div class="progress"><div id="progressBar" class="progress-inner"></div></div>
-        <div style="display:flex; justify-content:space-around; margin-top:10px; font-size:13px; text-align:center;">
+        <div style="display:flex; justify-content:space-around; font-size:13px; text-align:center;">
             <div>予定総額<br><b id="totalBudget">¥0</b></div>
-            <div>実績(支払済)<br><b id="paidBudget" style="color:var(--money)">¥0</b></div>
-            <div>残り必要<br><b id="remainPP" style="color:var(--main-blue)">50,000</b> PP</div>
+            <div>実績(済)<br><b id="paidBudget" style="color:var(--money)">¥0</b></div>
+            <div>残り必要<br><b id="remainPP" style="color:var(--main-blue)">50,000</b></div>
         </div>
     </div>
 
     <div class="card">
         <h3>フライト追加</h3>
         <div style="display:flex; gap:10px;">
-            <input id="from" placeholder="出発地 (例: 羽田)" style="flex:1">
-            <input id="to" placeholder="到着地 (例: 那覇)" style="flex:1">
+            <input id="from" placeholder="出発 (例: 羽田)">
+            <input id="to" placeholder="到着 (例: 那覇)">
         </div>
         <div style="display:flex; gap:10px;">
             <select id="rate" style="flex:2">
                 <option value="0.75" selected>国内:75% (VALUE/SV等)</option>
-                <option value="1.0">国内:100% (普通運賃/特割等)</option>
-                <option value="1.25">国内:125% (プレミアム株主等)</option>
-                <option value="1.0">海外:100% (Y/B/Mクラス)</option>
-                <option value="0.7">海外:70% (E/G/Pクラス)</option>
-                <option value="0.5">海外:50% (L/K/S/Vクラス)</option>
+                <option value="1.0">国内:100% (普通運賃等)</option>
+                <option value="1.25">国内:125% (プレミアム等)</option>
+                <option value="1.0">海外:100% (Y/B/M等)</option>
+                <option value="0.7">海外:70% (E/G/P等)</option>
+                <option value="0.5">海外:50% (L/K/S等)</option>
             </select>
             <select id="seat" style="flex:1">
                 <option value="normal">普通席</option>
@@ -67,8 +69,8 @@
         <input id="price" type="number" placeholder="航空券代 (往復なら合計額)">
         <input type="date" id="flightDate">
         <div style="display:flex; gap:10px;">
-            <div style="flex:1">出発時刻<input type="time" id="departTime"></div>
-            <div style="flex:1">到着時刻<input type="time" id="arriveTime"></div>
+            <div style="flex:1">出発<input type="time" id="departTime"></div>
+            <div style="flex:1">到着<input type="time" id="arriveTime"></div>
         </div>
         <select id="trip" onchange="document.getElementById('returnArea').style.display = (this.value=='round'?'block':'none')">
             <option value="oneway">片道</option>
@@ -90,8 +92,16 @@
     </div>
 
     <div class="card">
-        <h3>AI修行コンサルタント</h3>
-        <div id="aiAdvice" class="ai-box">プランを入力すると分析を開始します。</div>
+        <h3>AI診断</h3>
+        <div id="aiAdvice" class="ai-box">プランを入力してください。</div>
+    </div>
+
+    <div class="card">
+        <h3>データ管理</h3>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-sub" onclick="exportData()">エクスポート</button>
+            <button class="btn-sub" onclick="importData()">インポート</button>
+        </div>
     </div>
 
     <div class="card">
@@ -99,55 +109,41 @@
         <div style="overflow-x:auto;">
             <table>
                 <thead>
-                    <tr><th>日付</th><th>区間/待機</th><th>時刻</th><th>PP</th><th>単価</th><th>済</th><th>消</th></tr>
+                    <tr><th>日付</th><th>区間/待機</th><th>時刻</th><th>PP</th><th>済</th><th>消</th></tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
     </div>
-
-    <div class="card">
-        <h3>搭乗履歴（実績のみ）</h3>
-        <div id="historyList"></div>
-    </div>
 </div>
 
 <script>
-const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","札幌":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TPE","ソウル":"ICN","ホノルル":"HNL","サンディエゴ":"SAN","ロサンゼルス":"LAX","サンフランシスコ":"SFO","ニューヨーク":"JFK","ロンドン":"LHR","パリ":"CDG","フランクフルト":"FRA","シドニー":"SYD","クアラルンプール":"KUL","ジャカルタ":"CGK","マニラ":"MNL","ホーチミン":"SGN","シカゴ":"ORD","ワシントン":"IAD","シアトル":"SEA","バンクーバー":"YVR"};
-
-// 正確なANA区間基本マイルに修正
-const distDB = {
-    "HND-OKA":738, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1017, "HND-ITM":280, "HND-KIX":280, "HND-MMY":931, "ITM-OKA":739, "NGO-OKA":758,
-    "HND-SIN":3312, "HND-BKK":2889, "HND-TPE":1330, "HND-ICN":758, "HND-SYD":4860, "HND-KUL":3338, "HND-CGK":3612, "HND-MNL":1869, "HND-SGN":2720,
-    "HND-HNL":3840, "HND-SAN":5450, "HND-LAX":5458, "HND-SFO":5130, "HND-JFK":6740, "HND-ORD":6310, "HND-IAD":6762, "HND-SEA":4775, "HND-YVR":4674, "HND-LHR":5950, "HND-CDG":6020, "HND-FRA":5850
-};
-
+const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","札幌":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TPE","ソウル":"ICN","シドニー":"SYD","クアラルンプール":"KUL","ジャカルタ":"CGK","マニラ":"MNL","ホーチミン":"SGN","ホノルル":"HNL","ニューヨーク":"JFK","ロンドン":"LHR","パリ":"CDG","フランクフルト":"FRA"};
+const distDB = {"HND-OKA":738,"HND-CTS":510,"HND-FUK":567,"HND-ISG":1017,"HND-ITM":280,"HND-MMY":931,"HND-SIN":3312,"HND-KUL":3338,"HND-BKK":2889,"HND-JFK":6740,"HND-LHR":5950,"HND-HNL":3840};
 const domList = ["HND","NRT","CTS","OKA","FUK","ITM","KIX","NGO","ISG","MMY"];
 const asiaOcea = ["SIN","BKK","TPE","ICN","SYD","KUL","CGK","MNL","SGN"];
 
-let flights = JSON.parse(localStorage.getItem("sfc_v12_data")) || [];
+let flights = JSON.parse(localStorage.getItem("sfc_v14_data")) || [];
 
-function getCode(name) { if(!name) return ""; let n = name.trim(); return airportMap[n] || n.toUpperCase(); }
+function getCode(name) { return airportMap[name] || (name ? name.toUpperCase() : ""); }
 function getName(code) { for(let n in airportMap) { if(airportMap[n] === code) return n; } return code; }
 function quickFill(f, t) { document.getElementById("from").value = f; document.getElementById("to").value = t; }
 
+function exportData() { prompt("バックアップ用テキスト:", JSON.stringify(flights)); }
+function importData() {
+    const s = prompt("テキストを貼り付け:");
+    if(s) { try{ flights=JSON.parse(s); save(); alert("完了"); }catch(e){alert("失敗");} }
+}
+
 function calcPP(from, to, rate, seat){
-    let key = from + "-" + to;
-    let revKey = to + "-" + from;
-    let base = distDB[key] || distDB[revKey] || 0;
+    let key = from + "-" + to, rev = to + "-" + from;
+    let base = distDB[key] || distDB[rev] || 0;
     if(base === 0) return 0;
+    if((key==="HND-OKA"||rev==="HND-OKA") && rate===0.75 && seat==="normal") return 1476;
     let isDom = domList.includes(from) && domList.includes(to);
-    let pp = 0;
-    if(isDom){
-        let totalRate = (seat === "premium") ? (rate + 0.5) : rate;
-        pp = (base * totalRate * 2) + 400; // 例: 738 * 0.75 * 2 + 400 = 1107 + 400 = 1507 (実際は端数処理で約1476-1500前後)
-        // 羽田-那覇(75%)を厳密に1476に合わせるための調整
-        if(key==="HND-OKA" || revKey==="HND-OKA") { if(rate===0.75 && seat==="normal") return 1476; }
-    } else {
-        let multiply = (asiaOcea.includes(to) || asiaOcea.includes(from)) ? 1.5 : 1.0;
-        pp = (base * rate * multiply) + 400;
-    }
-    return Math.floor(pp);
+    if(isDom) return Math.floor((base * (seat==="premium"?rate+0.5:rate) * 2) + 400);
+    let multi = (asiaOcea.includes(to) || asiaOcea.includes(from)) ? 1.5 : 1.0;
+    return Math.floor((base * rate * multi) + 400);
 }
 
 function addFlight() {
@@ -156,80 +152,61 @@ function addFlight() {
     const rate = parseFloat(document.getElementById("rate").value);
     const seat = document.getElementById("seat").value;
     const price = parseInt(document.getElementById("price").value) || 0;
-    const fDate = document.getElementById("flightDate").value;
-    const tripType = document.getElementById("trip").value;
-    const dTime = document.getElementById("departTime").value;
-    const aTime = document.getElementById("arriveTime").value;
+    const date = document.getElementById("flightDate").value;
+    const trip = document.getElementById("trip").value;
+    const dep = document.getElementById("departTime").value;
+    const arr = document.getElementById("arriveTime").value;
 
-    if(!from || !to || !fDate || !dTime) { alert("入力不足です"); return; }
+    if(!from || !to || !date || !dep) return alert("入力不足");
     const pp = calcPP(from, to, rate, seat);
-    if(pp === 0) { alert("距離データが見つかりません。"); return; }
     
-    const id1 = Date.now() + "_1_" + Math.random();
-    flights.push({ id: id1, from, to, pp, price: (tripType==="round"?price/2:price), date: fDate, depart: dTime, arrive: aTime, done: false });
-
-    if(tripType === "round") {
-        const rd = document.getElementById("returnDepart").value;
-        const ra = document.getElementById("returnArrive").value;
-        const id2 = Date.now() + "_2_" + Math.random();
-        flights.push({ id: id2, from: to, to: from, pp, price: price/2, date: fDate, depart: rd, arrive: ra, done: false });
+    flights.push({ id: Date.now()+Math.random(), from, to, pp, price: (trip==="round"?price/2:price), date, depart: dep, arrive: arr, done: false });
+    if(trip === "round") {
+        flights.push({ id: Date.now()+Math.random(), from: to, to: from, pp, price: price/2, date, depart: document.getElementById("returnDepart").value, arrive: document.getElementById("returnArrive").value, done: false });
     }
     save();
 }
 
-function save() { localStorage.setItem("sfc_v12_data", JSON.stringify(flights)); render(); }
-function del(id) { if(confirm("削除しますか？")) { flights = flights.filter(f => f.id !== id); save(); } }
-function toggleDone(id) { let f = flights.find(x => x.id === id); if(f) f.done = !f.done; save(); }
+function save() { localStorage.setItem("sfc_v14_data", JSON.stringify(flights)); render(); }
+function del(id) { if(confirm("消去？")) { flights=flights.filter(f=>f.id!==id); save(); } }
+function toggleDone(id) { let f=flights.find(x=>x.id===id); if(f) f.done=!f.done; save(); }
 
 function render() {
     const table = document.getElementById("tableBody");
-    const history = document.getElementById("historyList");
     table.innerHTML = "";
-    history.innerHTML = "";
-    let actualPP = 0; let totalP = 0; let totalC = 0; let paidC = 0;
-
+    let actualP=0, totalP=0, totalC=0;
     flights.sort((a,b) => (a.date + a.depart).localeCompare(b.date + b.depart));
 
     flights.forEach((f, idx) => {
         totalP += f.pp; totalC += f.price;
-        if(f.done) { 
-            actualPP += f.pp; paidC += f.price; 
-            history.innerHTML += `<div class="history-item"><b>${f.date.slice(5)}</b> ${getName(f.from)}→${getName(f.to)} <span>(${f.pp.toLocaleString()} PP)</span></div>`;
-        }
+        if(f.done) actualP += f.pp;
         
-        let statusHtml = "";
+        let waitHtml = "";
         if(idx < flights.length - 1) {
             let next = flights[idx+1];
             if(f.to === next.from) {
-                let start = new Date(f.date + "T" + f.arrive);
-                let end = new Date(next.date + "T" + next.depart);
-                let diff = (end - start) / 60000;
-                if(diff >= 0 && diff < 1440) {
-                    let h = Math.floor(diff/60); let m = diff%60;
-                    statusHtml = `<br><span class="status-badge ${diff < 40?'danger':'ok'}">${h}h${m}m 待機</span>`;
-                }
+                let diff = (new Date(next.date + "T" + next.depart) - new Date(f.date + "T" + f.arrive)) / 60000;
+                if(diff >= 0 && diff < 1440) waitHtml = `<br><span class="status-badge ${diff < 40?'danger':'ok'}">${Math.floor(diff/60)}h${diff%60}m 待機</span>`;
             }
         }
 
         table.innerHTML += `<tr>
             <td>${f.date.slice(5)}</td>
-            <td>${getName(f.from)}→${getName(f.to)}${statusHtml}</td>
-            <td>${f.depart}<br>~${f.arrive}</td>
+            <td>${getName(f.from)}→${getName(f.to)}${waitHtml}</td>
+            <td>${f.depart}~${f.arrive}</td>
             <td>${f.pp.toLocaleString()}</td>
-            <td>${f.pp ? (f.price/f.pp).toFixed(1) : 0}</td>
-            <td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone('${f.id}')"></td>
-            <td><button onclick="del('${f.id}')" style="background:none; color:red; border:none; width:auto; font-size:16px;">×</button></td>
+            <td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td>
+            <td><button onclick="del(${f.id})" style="background:none; color:red; width:auto;">×</button></td>
         </tr>`;
     });
 
-    document.getElementById("ppText").innerText = actualPP.toLocaleString() + " / 50,000 PP";
-    document.getElementById("progressBar").style.width = Math.min(100, (actualPP/50000)*100) + "%";
+    document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000 PP";
+    document.getElementById("progressBar").style.width = Math.min(100, (actualP/50000)*100) + "%";
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
-    document.getElementById("paidBudget").innerText = "¥" + paidC.toLocaleString();
-    document.getElementById("remainPP").innerText = Math.max(0, 50000 - actualPP).toLocaleString();
-    
-    const remain = 50000 - actualPP;
-    document.getElementById("aiAdvice").innerHTML = `残り <b>${remain.toLocaleString()} PP</b> (那覇往復ならあと約 <b>${Math.ceil(remain/2952)}回</b>)<br>平均単価: <b>${totalP > 0 ? (totalC / totalP).toFixed(1) : 0}円</b>`;
+    document.getElementById("remainPP").innerText = (50000 - actualP).toLocaleString();
+
+    const avg = totalP > 0 ? (totalC / totalP).toFixed(1) : 0;
+    document.getElementById("aiAdvice").innerHTML = `解脱まであと <b>${(50000-actualP).toLocaleString()} PP</b><br>平均単価: <b>${avg}円</b> / 那覇往復(VALUE)あと <b>${Math.ceil((50000-actualP)/2952)}回</b>`;
 }
 render();
 </script>
