@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v18</title>
-
+<title>SFC Manager v19</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SFC修行">
@@ -17,38 +16,26 @@
     .container{padding:15px; max-width:720px; margin:auto;}
     .card{background:white; border-radius:14px; padding:16px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,0.08);}
     h3{margin: 0 0 10px 0; font-size: 1.1em; color: var(--main-blue); border-left: 4px solid var(--main-blue); padding-left: 10px;}
-    
     input, select, button{width:100%; padding:12px; margin:6px 0; border-radius:8px; border:1px solid #ccc; box-sizing: border-box; font-size:14px;}
-    button{background:var(--main-blue); color:white; font-weight:bold; border:none; cursor: pointer; transition: 0.2s;}
-    button:active{opacity: 0.7;}
+    button{background:var(--main-blue); color:white; font-weight:bold; border:none; cursor: pointer;}
     .btn-sub{background:#6c757d; font-size:12px; padding:8px;}
     .routeBtn{width:auto; padding:6px 12px; margin:4px 2px; font-size:11px; background:#e9ecef; color:#333; border:1px solid #ddd; border-radius: 6px;}
     .swap-btn{width:40px; height:40px; margin: 6px 0; padding:0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; font-size:18px;}
-    
     table{width:100%; border-collapse:collapse; font-size:11px;}
     th, td{border-bottom:1px solid #eee; padding:10px 5px; text-align:center;}
-    
     .progress{background:#ddd; height:18px; border-radius:10px; margin:10px 0; overflow:hidden;}
     .progress-inner{background:linear-gradient(90deg, var(--main-blue), var(--accent-blue)); height:100%; width:0%; transition: width 0.8s;}
-    
     .ai-box{background:#f0f7ff; padding:12px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff;}
-    .link-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-    .btn-link { background: #fff; color: var(--main-blue); border: 1px solid var(--main-blue); font-size: 11px; padding: 8px; text-decoration: none; text-align: center; border-radius: 6px; font-weight: bold;}
-
     .graph-container { width: 100%; height: 120px; display: flex; align-items: flex-end; justify-content: space-around; padding: 10px 0; border-bottom: 1px solid #eee;}
     .graph-bar { width: calc(100% / 12 - 4px); background: var(--accent-blue); border-radius: 4px 4px 0 0; display: flex; align-items: flex-end; justify-content: center; color: white; font-size: 8px; transition: height 0.5s;}
-    
     #backupArea { display:none; background:#eee; padding:10px; border-radius:8px; margin-top:10px; }
     #backupText { width:100%; height:100px; font-size:10px; }
-    
     .history-item{font-size:12px; padding:10px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
-    .history-item:active{background:#f0f0f0;}
-    .history-label{color:#666; font-size:10px; margin-bottom:2px;}
 </style>
 </head>
 <body>
 
-<header>SFC Manager v18</header>
+<header>SFC Manager v19</header>
 
 <div class="container">
     <div class="card">
@@ -63,38 +50,26 @@
     </div>
 
     <div class="card">
-        <h3>ANA公式 リンク集</h3>
-        <div class="link-grid">
-            <a href="https://www.ana.co.jp/ja/jp/domestic/promotions/rakunori/tokutabi/" target="_blank" class="btn-link">トクたびマイル</a>
-            <a href="https://www.ana.co.jp/ja/jp/guide/amc/premium/simulation/" target="_blank" class="btn-link">公式PP計算機</a>
-            <a href="https://www.ana.co.jp/ja/jp/domestic/promotions/" target="_blank" class="btn-link">キャンペーン一覧</a>
-            <a href="https://www.ana.co.jp/" target="_blank" class="btn-link">ANAトップ</a>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3>月別獲得PP</h3>
-        <div id="ppGraph" class="graph-container"></div>
-        <div style="display: flex; justify-content: space-around; font-size: 9px; margin-top:5px; color:#666;">
-            <div>1月</div><div>2月</div><div>3月</div><div>4月</div><div>5月</div><div>6月</div>
-            <div>7月</div><div>8月</div><div>9月</div><div>10月</div><div>11月</div><div>12月</div>
-        </div>
-    </div>
-
-    <div class="card">
         <h3>フライト追加</h3>
         <div style="display:flex; align-items:center; gap:8px;">
-            <input id="from" placeholder="出発地" style="flex:1">
-            <button class="swap-btn" onclick="swapRoute()">⇄</button>
-            <input id="to" placeholder="到着地" style="flex:1">
+            <input id="from" placeholder="出発地" style="flex:1"><button class="swap-btn" onclick="swapRoute()">⇄</button><input id="to" placeholder="到着地" style="flex:1">
         </div>
         <select id="rate">
-            <option value="0.75" selected>国内:75% (VALUE/SV等)</option>
-            <option value="1.0">国内:100% (特割/普通等)</option>
-            <option value="1.25">国内:125% (プレミアム等)</option>
-            <option value="1.0">海外:100% (Y/B/M等)</option>
-            <option value="0.7">海外:70% (E/G/P等)</option>
-            <option value="0.5">海外:50% (L/K/S等)</option>
+            <optgroup label="【2026/5/19〜 新運賃】">
+                <option value="0.7">国内:新シンプル(70%) +100pt</option>
+                <option value="0.8">国内:新スタンダード(80%) +100pt</option>
+                <option value="1.0">国内:新フレックス(100%) +400pt</option>
+            </optgroup>
+            <optgroup label="【〜2026/5/18 現行運賃】">
+                <option value="0.75" selected>国内:現行75% (VALUE/SV等)</option>
+                <option value="1.0_old">国内:現行100% (特割等) +400pt</option>
+                <option value="1.25">国内:現行125% (プレミアム等)</option>
+            </optgroup>
+            <optgroup label="【国際線】">
+                <option value="1.0_intl">海外:100% (Y/B/M等)</option>
+                <option value="0.7_intl">海外:70% (E/G/P等)</option>
+                <option value="0.5_intl">海外:50% (L/K/S等)</option>
+            </optgroup>
         </select>
         <select id="seat"><option value="normal">普通席</option><option value="premium">プレミアム</option></select>
         <input id="price" type="number" placeholder="代金">
@@ -117,22 +92,17 @@
             <button class="routeBtn" onclick="quickFill('羽田','那覇')">羽田-那覇</button>
             <button class="routeBtn" onclick="quickFill('羽田','千歳')">羽田-千歳</button>
             <button class="routeBtn" onclick="quickFill('羽田','バンコク')">羽田-BKK</button>
-            <button class="routeBtn" onclick="quickFill('羽田','ホノルル')">羽田-HNL</button>
         </div>
     </div>
 
     <div class="card">
-        <h3>AI診断 & データ管理</h3>
+        <h3>AI診断 & 管理</h3>
         <div id="aiAdvice" class="ai-box" style="margin-bottom:10px;"></div>
         <div style="display:flex; gap:10px;">
             <button class="btn-sub" onclick="showBackup()">バックアップ作成</button>
-            <button class="btn-sub" onclick="importData()">復元(インポート)</button>
+            <button class="btn-sub" onclick="importData()">復元</button>
         </div>
-        <div id="backupArea">
-            <p style="font-size:11px;">↓全文をコピーして保存してください</p>
-            <textarea id="backupText" readonly></textarea>
-            <button class="btn-sub" onclick="document.getElementById('backupArea').style.display='none'">閉じる</button>
-        </div>
+        <div id="backupArea"><textarea id="backupText" readonly></textarea></div>
     </div>
 
     <div class="card">
@@ -144,8 +114,12 @@
     </div>
 
     <div class="card">
-        <h3>搭乗履歴（タップして再利用）</h3>
-        <div class="history-label">※履歴をタップすると入力欄にコピーされます</div>
+        <h3>月別獲得PP</h3>
+        <div id="ppGraph" class="graph-container"></div>
+    </div>
+
+    <div class="card">
+        <h3>搭乗履歴（再利用）</h3>
         <div id="historyList"></div>
     </div>
 </div>
@@ -160,89 +134,57 @@ let flights = JSON.parse(localStorage.getItem("sfc_v17_data")) || [];
 
 function getCode(name) { return airportMap[name] || (name ? name.toUpperCase() : ""); }
 function getName(code) { for(let n in airportMap) { if(airportMap[n] === code) return n; } return code; }
+function swapRoute() { const f = document.getElementById("from").value, t = document.getElementById("to").value; document.getElementById("from").value = t; document.getElementById("to").value = f; }
+function quickFill(f, t) { document.getElementById("from").value = f; document.getElementById("to").value = t; }
 
-function quickFill(f, t) { 
-    document.getElementById("from").value = f; 
-    document.getElementById("to").value = t; 
-}
-
-function swapRoute() {
-    const f = document.getElementById("from").value;
-    const t = document.getElementById("to").value;
-    document.getElementById("from").value = t;
-    document.getElementById("to").value = f;
-}
-
-// 履歴から呼び出し
 function reuseFlight(id) {
     const f = flights.find(x => x.id === id);
-    if(!f) return;
-    document.getElementById("from").value = getName(f.from);
-    document.getElementById("to").value = getName(f.to);
-    document.getElementById("departTime").value = f.depart;
-    document.getElementById("arriveTime").value = f.arrive;
-    document.getElementById("price").value = f.price;
-    // 積算率なども推測してセット（PPから逆算は複雑なので基本デフォルトへ）
-    alert("フライト情報を入力欄にセットしました。日付を確認して追加してください。");
-    window.scrollTo({top: 400, behavior: 'smooth'});
+    if(f) {
+        document.getElementById("from").value = getName(f.from);
+        document.getElementById("to").value = getName(f.to);
+        document.getElementById("departTime").value = f.depart;
+        document.getElementById("arriveTime").value = f.arrive;
+        document.getElementById("price").value = f.price;
+        window.scrollTo({top: 400, behavior: 'smooth'});
+    }
 }
 
-function showBackup() {
-    const area = document.getElementById("backupArea");
-    const text = document.getElementById("backupText");
-    area.style.display = "block";
-    text.value = JSON.stringify(flights);
-    text.select();
-}
-
-function importData() {
-    let s = prompt("バックアップテキストを貼り付け:");
-    if(!s) return;
-    try {
-        const parsed = JSON.parse(s.trim());
-        if(Array.isArray(parsed)) { flights = parsed; save(); alert("復元成功！"); location.reload(); }
-    } catch(e) { alert("失敗。形式を確認してください。"); }
-}
-
-function calcPP(from, to, rate, seat){
+function calcPP(from, to, rateStr, seat){
     let key = from + "-" + to, rev = to + "-" + from;
     let base = distDB[key] || distDB[rev] || 0;
     if(base === 0) return 0;
-    if((key==="HND-OKA"||rev==="HND-OKA") && rate===0.75 && seat==="normal") return 1476;
     let isDom = domList.includes(from) && domList.includes(to);
-    if(isDom) return Math.floor((base * (seat==="premium"?rate+0.5:rate) * 2) + 400);
+    
+    // --- 2026年5月新運賃ロジック ---
+    if(rateStr === "0.7") return Math.floor(base * 2 * 0.7) + 100; // 新シンプル
+    if(rateStr === "0.8") return Math.floor(base * 2 * 0.8) + 100; // 新スタンダード
+    
+    let rate = parseFloat(rateStr);
+    if(rateStr === "1.0") return Math.floor(base * 2 * 1.0) + 400; // 新フレックス
+    if(rateStr === "1.0_old") return Math.floor(base * 2 * 1.0) + 400; // 旧100%
+    if(rateStr === "1.0_intl") rate = 1.0;
+    if(rateStr === "0.7_intl") rate = 0.7;
+    if(rateStr === "0.5_intl") rate = 0.5;
+
+    if(isDom) {
+        if(rate === 0.75 && (key==="HND-OKA"||rev==="HND-OKA")) return 1476;
+        return Math.floor((base * (seat==="premium"?rate+0.5:rate) * 2) + (rate >= 1.0 ? 400 : 0));
+    }
     let multi = (asiaOcea.includes(to) || asiaOcea.includes(from)) ? 1.5 : 1.0;
     return Math.floor((base * rate * multi) + 400);
 }
 
 function addFlight() {
-    const from = getCode(document.getElementById("from").value);
-    const to = getCode(document.getElementById("to").value);
-    const rate = parseFloat(document.getElementById("rate").value);
-    const seat = document.getElementById("seat").value;
-    const price = parseInt(document.getElementById("price").value) || 0;
-    const date = document.getElementById("flightDate").value;
-    const trip = document.getElementById("trip").value;
-    
+    const from = getCode(document.getElementById("from").value), to = getCode(document.getElementById("to").value);
+    const rateStr = document.getElementById("rate").value;
+    const date = document.getElementById("flightDate").value, trip = document.getElementById("trip").value;
     if(!from || !to || !date) return alert("入力不足");
-    const pp = calcPP(from, to, rate, seat);
+    const pp = calcPP(from, to, rateStr, document.getElementById("seat").value);
+    const price = parseInt(document.getElementById("price").value) || 0;
     
-    const fData = {
-        id: Date.now()+Math.random(), from, to, pp, 
-        price: (trip==="round"?price/2:price), 
-        date, 
-        depart: document.getElementById("departTime").value, 
-        arrive: document.getElementById("arriveTime").value, 
-        done: false
-    };
+    const fData = { id: Date.now()+Math.random(), from, to, pp, price: (trip==="round"?price/2:price), date, depart: document.getElementById("departTime").value, arrive: document.getElementById("arriveTime").value, done: false };
     flights.push(fData);
-    if(trip === "round") {
-        flights.push({
-            ...fData, id: Date.now()+Math.random(), from: to, to: from,
-            depart: document.getElementById("returnDepart").value,
-            arrive: document.getElementById("returnArrive").value
-        });
-    }
+    if(trip === "round") flights.push({ ...fData, id: Date.now()+Math.random(), from: to, to: from, depart: document.getElementById("returnDepart").value, arrive: document.getElementById("returnArrive").value });
     save();
 }
 
@@ -251,12 +193,10 @@ function del(id) { if(confirm("消去？")) { flights=flights.filter(f=>f.id!==i
 function toggleDone(id) { let f=flights.find(x=>x.id===id); if(f) f.done=!f.done; save(); }
 
 function render() {
-    const table = document.getElementById("tableBody");
-    const history = document.getElementById("historyList");
-    const graph = document.getElementById("ppGraph");
+    const table = document.getElementById("tableBody"), history = document.getElementById("historyList"), graph = document.getElementById("ppGraph");
     table.innerHTML = ""; history.innerHTML = ""; graph.innerHTML = "";
     let actualP=0, totalP=0, totalC=0, monthlyPP = Array(12).fill(0);
-    flights.sort((a,b) => (a.date + a.depart).localeCompare(b.date + b.depart));
+    flights.sort((a,b) => (a.date + (a.depart||"")).localeCompare(b.date + (b.depart||"")));
 
     flights.forEach((f, idx) => {
         totalP += f.pp; totalC += (f.price || 0);
@@ -264,12 +204,8 @@ function render() {
             actualP += f.pp;
             let m = parseInt(f.date.slice(5, 7));
             if (m >= 1 && m <= 12) monthlyPP[m - 1] += f.pp;
-            history.innerHTML += `<div class="history-item" onclick="reuseFlight(${f.id})">
-                <span>${f.date.slice(5)} ${getName(f.from)}→${getName(f.to)}</span>
-                <b style="color:var(--success)">+${f.pp.toLocaleString()} PP</b>
-            </div>`;
+            history.innerHTML += `<div class="history-item" onclick="reuseFlight(${f.id})"><span>${f.date.slice(5)} ${getName(f.from)}→${getName(f.to)}</span><b>+${f.pp.toLocaleString()} PP</b></div>`;
         }
-        
         let waitHtml = "";
         if(idx < flights.length - 1) {
             let next = flights[idx+1];
@@ -278,30 +214,19 @@ function render() {
                 if(diff >= 0 && diff < 1440) waitHtml = `<br><span style="background:var(--success); color:white; font-size:9px; padding:1px 4px; border-radius:4px;">${Math.floor(diff/60)}h${diff%60}m 待機</span>`;
             }
         }
-
-        table.innerHTML += `<tr>
-            <td>${f.date.slice(5)}</td>
-            <td>${getName(f.from)}→${getName(f.to)}${waitHtml}</td>
-            <td>${f.depart}~${f.arrive}</td>
-            <td>${f.pp.toLocaleString()}</td>
-            <td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td>
-            <td><button onclick="del(${f.id})" style="background:none; color:red; width:auto;">×</button></td>
-        </tr>`;
+        table.innerHTML += `<tr><td>${f.date.slice(5)}</td><td>${getName(f.from)}→${getName(f.to)}${waitHtml}</td><td>${f.depart||""}~${f.arrive||""}</td><td>${f.pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td><td><button onclick="del(${f.id})" style="background:none; color:red; width:auto;">×</button></td></tr>`;
     });
 
-    monthlyPP.forEach(pp => {
-        const h = (pp / Math.max(...monthlyPP, 5000)) * 100;
-        graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp > 0 ? pp : ''}</div>`;
-    });
-
+    monthlyPP.forEach(pp => { const h = (pp / Math.max(...monthlyPP, 5000)) * 100; graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp > 0 ? pp : ''}</div>`; });
     document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000 PP";
     document.getElementById("progressBar").style.width = Math.min(100, (actualP/50000)*100) + "%";
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
     document.getElementById("paidBudget").innerText = "¥" + (flights.filter(f=>f.done).reduce((s,f)=>s+(f.price||0),0)).toLocaleString();
     document.getElementById("remainPP").innerText = Math.max(0, 50000 - actualP).toLocaleString();
-    const avg = totalP > 0 ? (totalC / totalP).toFixed(1) : 0;
-    document.getElementById("aiAdvice").innerHTML = `解脱まであと <b>${Math.max(0, 50000-actualP).toLocaleString()} PP</b><br>平均単価: <b>${avg}円</b>`;
+    document.getElementById("aiAdvice").innerHTML = `解脱まであと <b>${Math.max(0, 50000-actualP).toLocaleString()} PP</b><br>那覇往復(新シンプル)あと <b>${Math.ceil((50000-actualP)/2964)}回</b>`;
 }
+function showBackup() { const area = document.getElementById("backupArea"), text = document.getElementById("backupText"); area.style.display = "block"; text.value = JSON.stringify(flights); text.select(); }
+function importData() { let s = prompt("貼り付け:"); if(s) { try { const p = JSON.parse(s.trim()); if(Array.isArray(p)) { flights = p; save(); alert("成功"); location.reload(); } } catch(e) { alert("失敗"); } } }
 render();
 </script>
 </body>
