@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v47</title>
+<title>SFC Manager v48</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -11,13 +11,15 @@
     .container{padding:12px; max-width:720px; margin:auto;}
     .card{background:white; border-radius:14px; padding:16px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,0.08);}
     h3{margin: 0 0 10px 0; font-size: 1.1em; color: var(--main-blue); border-left: 4px solid var(--main-blue); padding-left: 10px;}
-    /* UIサイズの最適化: iPhoneでの誤操作を防ぐため高さを微増 */
     input, select, button{width:100%; padding:14px; margin:6px 0; border-radius:10px; border:1px solid #ccc; box-sizing: border-box; font-size:15px; -webkit-appearance: none;}
-    button{background:var(--main-blue); color:white; font-weight:bold; border:none; cursor: pointer; active { opacity: 0.7; }}
+    button{background:var(--main-blue); color:white; font-weight:bold; border:none; cursor: pointer;}
     .routeBtn{width:auto; padding:10px 14px; margin:4px 2px; font-size:12px; background:#e9ecef; color:#333; border:1px solid #ddd; border-radius: 8px;}
     .swap-btn{width:48px; height:48px; margin: 0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
-    table{width:100%; border-collapse:collapse; font-size:11px; table-layout: fixed;}
+    table{width:100%; border-collapse:collapse; font-size:10px; table-layout: fixed;}
     th, td{border-bottom:1px solid #eee; padding:10px 2px; text-align:center; word-wrap: break-word;}
+    /* チェックボックスの視覚化 */
+    input[type="checkbox"] { width: 22px; height: 22px; margin: 0; cursor: pointer; border: 2px solid var(--main-blue); border-radius: 4px; vertical-align: middle; }
+    .row-done { background-color: #f8f9fa; color: #aaa; }
     .clickable-route { color: var(--accent-blue); text-decoration: underline; cursor: pointer; font-weight: bold; }
     .progress{background:#ddd; height:22px; border-radius:11px; margin:10px 0; overflow:hidden; position: relative;}
     .progress-inner{background:linear-gradient(90deg, var(--main-blue), var(--accent-blue)); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 2;}
@@ -32,7 +34,7 @@
 </head>
 <body>
 
-<header>SFC Manager v47</header>
+<header>SFC Manager v48</header>
 
 <div class="container">
     <div class="card">
@@ -120,7 +122,7 @@
     <div class="card">
         <h3>予定フライト一覧</h3>
         <div style="overflow-x:auto;"><table>
-            <thead><tr><th style="width:18%">日付</th><th style="width:34%">区間/待機</th><th style="width:12%">時刻</th><th style="width:12%">PP</th><th style="width:8%">済</th><th style="width:16%">UG/通知</th></tr></thead>
+            <thead><tr><th style="width:18%">日付</th><th style="width:34%">区間/待機</th><th style="width:12%">時刻</th><th style="width:12%">PP</th><th style="width:10%">済</th><th style="width:14%">操作</th></tr></thead>
             <tbody id="tableBody"></tbody>
         </table></div>
     </div>
@@ -131,7 +133,7 @@
     </div>
 
     <div class="card">
-        <h3>搭乗履歴（タップで再利用）</h3>
+        <h3>搭乗履歴（タップで再登録）</h3>
         <div id="historyList"></div>
     </div>
 </div>
@@ -160,13 +162,15 @@ function reuseFlight(id) {
     window.scrollTo({top: 150, behavior: 'smooth'});
 }
 
+// iPhoneカレンダー用 icsファイル生成 (v33回帰)
 function scheduleUG(dateStr, route) {
     const ugDate = new Date(dateStr + "T00:00:00");
     ugDate.setDate(ugDate.getDate() - 2); 
-    const startStr = ugDate.toISOString().replace(/-|:|\.\d+/g, "").split(".")[0] + "Z";
-    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('UG争奪戦:'+route)}&dates=${startStr}/${startStr}&details=${encodeURIComponent('SFC修行用')}`;
-    if(confirm(`${ugDate.toLocaleDateString()}の通知をカレンダーに登録（Google）しますか？`)) {
-        window.open(url, '_blank');
+    const startStr = ugDate.toISOString().replace(/-|:|\.\d+/g, "").split(".")[0];
+    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nDESCRIPTION:SFC修行用UG申込開始通知\nEND:VEVENT\nEND:VCALENDAR`;
+    if(confirm(`${ugDate.toLocaleDateString()}の通知をiPhoneカレンダーに登録（保存）しますか？`)) {
+        const blob = new Blob([icsContent], {type: "text/calendar"});
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ug_alert.ics"; a.click();
     }
 }
 
@@ -174,13 +178,10 @@ function calcPP(f, t, rStr) {
     let key = f+"-"+t, rev = t+"-"+f;
     let base = distDB[key] || distDB[rev] || 0;
     if(base===0) return 0;
-    
-    // 新制度(5/19〜)の計算
     if(rStr === "0.7_new") return Math.floor(base * 0.7 * 2.0) + 100;
     if(rStr === "0.8_new") return Math.floor(base * 0.8 * 2.0) + 100;
     if(rStr === "0.5_new_sale") return Math.floor(base * 0.5 * 2.0);
     if(rStr === "1.0_new") return Math.floor(base * 1.0 * 2.0) + 400;
-
     let rate = parseFloat(rStr);
     let bonus = rStr.includes("plus") || ["1.0","1.25","1.0_intl"].includes(rStr) ? 400 : 0;
     let isIntl = ["SIN","BKK","TSA","HNL","KUL","SYD","CGK"].includes(f) || ["SIN","BKK","TSA","HNL","KUL","SYD","CGK"].includes(t);
@@ -242,23 +243,25 @@ function render() {
         
         let ugArea = f.isUG ? "UG済" : (!f.done ? `<button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button><br><button class="ug-action-btn" style="background:#666; margin-top:2px;" onclick="scheduleUG('${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>` : "-");
         
-        table.innerHTML += `<tr><td>${f.date.slice(5)}</td><td><span class="clickable-route" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}</span>${waitHtml}</td><td>${f.depart||""}</td><td>${f.pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td><td>${ugArea}</td><td><button onclick="del(${f.id})" style="color:red; background:none; border:none; font-size:18px;">×</button></td></tr>`;
+        // 到着時刻の表示と済チェックの視覚化
+        table.innerHTML += `<tr class="${f.done ? 'row-done' : ''}"><td>${f.date.slice(5)}</td><td><span class="clickable-route" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}</span>${waitHtml}</td><td>${f.depart||""}<br>↓<br>${f.arrive||""}</td><td>${f.pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td><td>${ugArea}<br><button onclick="del(${f.id})" style="color:red; background:none; border:none; font-size:16px;">×</button></td></tr>`;
     });
 
     const remain = Math.max(0, 50000 - actualP);
     const remainAfterPending = Math.max(0, 50000 - totalP);
+    const costPerPP = totalP > 0 ? (totalC / totalP).toFixed(2) : 0;
     
     document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000 PP";
-    document.getElementById("pendingTotalText").innerText = "(予約込合計: " + totalP.toLocaleString() + " PP)";
+    document.getElementById("pendingTotalText").innerText = "(全搭乗時合計: " + totalP.toLocaleString() + " PP)";
     document.getElementById("progressBar").style.width = Math.min(100, (actualP/50000)*100) + "%";
     document.getElementById("progressPending").style.width = Math.min(100, (totalP/50000)*100) + "%";
     document.getElementById("remainPP").innerText = remain.toLocaleString();
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
     document.getElementById("paidBudget").innerText = "¥" + (flights.filter(f=>f.done).reduce((s,f)=>s+(f.price||0),0)).toLocaleString();
     
-    // AI診断のロジック修正: 羽田-那覇(70%+100) = 1477PP, 羽田-石垣(70%+100) = 1809PP
+    // 単価効率(PP単価)の復活とAI診断
     const nahaNew = 1477, isigakiNew = 1809;
-    document.getElementById("aiAdvice").innerHTML = `残り <b>${remain.toLocaleString()} PP</b> (予約後不足: ${remainAfterPending.toLocaleString()} PP)<br>${remainAfterPending > 0 ? `新制度なら、羽田-那覇 あと <b>${Math.ceil(remainAfterPending/nahaNew)}回</b>、または羽田-石垣 あと <b>${Math.ceil(remainAfterPending/isigakiNew)}回</b> で解脱！` : '解脱おめでとうございます！'}`;
+    document.getElementById("aiAdvice").innerHTML = `残り <b>${remain.toLocaleString()} PP</b> / PP単価: <b>${costPerPP}円</b><br>${remainAfterPending > 0 ? `新制度なら、那覇 あと <b>${Math.ceil(remainAfterPending/nahaNew)}回</b>、または石垣 あと <b>${Math.ceil(remainAfterPending/isigakiNew)}回</b> で解脱！` : '解脱おめでとうございます！'}`;
 
     const maxPP = Math.max(...monthlyPP, 5000);
     monthlyPP.forEach(pp => { const h = (pp / maxPP) * 100; graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp>0?`<span class="graph-val">${pp}</span>`:''}</div>`; });
