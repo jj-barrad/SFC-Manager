@@ -3,9 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v20</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>SFC Manager v21</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:50px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -29,12 +27,11 @@
     #backupArea { display:none; background:#f8f9fa; padding:10px; border-radius:8px; margin-top:10px; border: 1px dashed #ccc; }
     #backupText { width:100%; height:120px; font-size:10px; font-family: monospace; margin-bottom: 10px;}
     .history-item{font-size:12px; padding:12px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
-    .history-item:active{background:#f0f7ff;}
 </style>
 </head>
 <body>
 
-<header>SFC Manager v20</header>
+<header>SFC Manager v21</header>
 
 <div class="container">
     <div class="card">
@@ -56,15 +53,16 @@
             <input id="to" placeholder="到着地" style="flex:1">
         </div>
         <select id="rate">
+            <optgroup label="【〜2026/5/18 現行運賃】">
+                <option value="0.5_old">国内:現行50% (SALE/バリューセール等)</option>
+                <option value="0.75" selected>国内:現行75% (バリュー/SV等)</option>
+                <option value="1.0_old">国内:現行100% (特割等) +400pt</option>
+                <option value="1.25">国内:現行125% (プレミアム等) +400pt</option>
+            </optgroup>
             <optgroup label="【2026/5/19〜 新運賃】">
                 <option value="0.7">国内:シンプル(70%) +100pt</option>
                 <option value="0.8">国内:スタンダード(80%) +100pt</option>
                 <option value="1.0_new">国内:フレックス(100%) +400pt</option>
-            </optgroup>
-            <optgroup label="【〜2026/5/18 現行運賃】">
-                <option value="0.75" selected>国内:現行75% (SV等)</option>
-                <option value="1.0_old">国内:現行100% (特割等) +400pt</option>
-                <option value="1.25">国内:現行125% (プレミアム等) +400pt</option>
             </optgroup>
             <optgroup label="【国際線】">
                 <option value="1.0_intl">海外:100% (プレエコ等) +400pt</option>
@@ -91,22 +89,20 @@
         <button onclick="addFlight()" style="margin-top:10px; background: var(--accent-blue);">プランに追加</button>
         <div style="margin-top:10px;">
             <button class="routeBtn" onclick="quickFill('羽田','那覇')">羽田-那覇</button>
-            <button class="routeBtn" onclick="quickFill('羽田','千歳')">羽田-千歳</button>
+            <button class="routeBtn" onclick="quickFill('那覇','石垣')">那覇-石垣</button>
+            <button class="routeBtn" onclick="quickFill('羽田','石垣')">羽田-石垣</button>
             <button class="routeBtn" onclick="quickFill('羽田','台北')">羽田-台北</button>
-            <button class="routeBtn" onclick="quickFill('羽田','バンコク')">羽田-BKK</button>
-            <button class="routeBtn" onclick="quickFill('羽田','ホノルル')">羽田-HNL</button>
         </div>
     </div>
 
     <div class="card">
-        <h3>AI診断 & データ管理</h3>
+        <h3>AI修行診断 & 管理</h3>
         <div id="aiAdvice" class="ai-box" style="margin-bottom:10px;"></div>
         <div style="display:flex; gap:10px;">
             <button class="btn-sub" style="flex:1" onclick="showBackup()">バックアップ作成</button>
-            <button class="btn-sub" style="flex:1" onclick="importData()">復元(インポート)</button>
+            <button class="btn-sub" style="flex:1" onclick="importData()">復元</button>
         </div>
         <div id="backupArea">
-            <p style="font-size:11px; margin-top:0;">↓コピーして保存してください</p>
             <textarea id="backupText" readonly onclick="this.select()"></textarea>
             <button class="btn-sub" onclick="document.getElementById('backupArea').style.display='none'">閉じる</button>
         </div>
@@ -123,10 +119,6 @@
     <div class="card">
         <h3>月別獲得PP推移</h3>
         <div id="ppGraph" class="graph-container"></div>
-        <div style="display: flex; justify-content: space-around; font-size: 9px; margin-top:5px; color:#666;">
-            <div>1月</div><div>2月</div><div>3月</div><div>4月</div><div>5月</div><div>6月</div>
-            <div>7月</div><div>8月</div><div>9月</div><div>10月</div><div>11月</div><div>12月</div>
-        </div>
     </div>
 
     <div class="card">
@@ -136,14 +128,10 @@
 </div>
 
 <script>
-const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","札幌":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","台北桃園":"TPE","ソウル":"ICN","クアラルンプール":"KUL","ホノルル":"HNL"};
-const distDB = {
-    "HND-OKA":738, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1017, "HND-ITM":280, 
-    "HND-SIN":3312, "HND-KUL":3338, "HND-BKK":2889, "HND-HNL":3840,
-    "HND-TSA":1330, "HND-TPE":1330, "NRT-TPE":1330
-};
+const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","ホノルル":"HNL"};
+const distDB = {"HND-OKA":738, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1017, "HND-ITM":280, "OKA-ISG":73, "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330};
 const domList = ["HND","NRT","CTS","OKA","FUK","ITM","KIX","NGO","ISG","MMY"];
-const asiaOcea = ["SIN","BKK","TSA","TPE","ICN","SYD","KUL","CGK","MNL","SGN"];
+const asiaOcea = ["SIN","BKK","TSA","TPE","KUL","SYD"];
 
 let flights = JSON.parse(localStorage.getItem("sfc_v17_data")) || [];
 
@@ -157,10 +145,7 @@ function reuseFlight(id) {
     if(f) {
         document.getElementById("from").value = getName(f.from);
         document.getElementById("to").value = getName(f.to);
-        document.getElementById("departTime").value = f.depart;
-        document.getElementById("arriveTime").value = f.arrive;
         document.getElementById("price").value = f.price;
-        alert("フライト情報をセットしました。日付を確認して追加してください。");
         window.scrollTo({top: 150, behavior: 'smooth'});
     }
 }
@@ -169,26 +154,30 @@ function calcPP(from, to, rateStr, seat){
     let key = from + "-" + to, rev = to + "-" + from;
     let base = distDB[key] || distDB[rev] || 0;
     if(base === 0) return 0;
-    
     let isDom = domList.includes(from) && domList.includes(to);
     
-    // --- 2026年5月新運賃判定 ---
+    // --- 新運賃 (2026/5/19以降) ---
     if(rateStr === "0.7") return Math.floor(base * 2 * 0.7) + 100;
     if(rateStr === "0.8") return Math.floor(base * 2 * 0.8) + 100;
     if(rateStr === "1.0_new") return Math.floor(base * 2 * 1.0) + 400;
 
+    // --- 現行運賃 ---
     let rate = parseFloat(rateStr);
+    if(rateStr === "0.5_old") rate = 0.5;
     if(rateStr === "1.0_old") rate = 1.0;
-    if(rateStr === "1.0_intl") rate = 1.0;
-    if(rateStr === "0.7_intl") rate = 0.7;
-    if(rateStr === "0.5_intl") rate = 0.5;
 
     if(isDom) {
-        // 現行の羽田那覇特例（75%＝1476）
+        // 那覇特例（75%＝1476）
         if(rateStr === "0.75" && (key==="HND-OKA"||rev==="HND-OKA")) return 1476;
-        let bonus = (rate >= 1.0) ? 400 : 0;
+        // セール（50%＝984）
+        if(rateStr === "0.5_old" && (key==="HND-OKA"||rev==="HND-OKA")) return 984;
+        
+        let bonus = (rate >= 1.0 || seat === "premium") ? 400 : 0;
         let pFactor = (seat === "premium") ? 0.5 : 0;
-        return Math.floor(base * (rate + pFactor) * 2) + bonus;
+        // プレミアム運賃は一律125%積算
+        if(seat === "premium") rate = 1.25; 
+        
+        return Math.floor(base * rate * 2) + bonus;
     } else {
         let multi = (asiaOcea.includes(to) || asiaOcea.includes(from)) ? 1.5 : 1.0;
         return Math.floor(base * rate * multi) + 400;
@@ -197,24 +186,18 @@ function calcPP(from, to, rateStr, seat){
 
 function addFlight() {
     const from = getCode(document.getElementById("from").value), to = getCode(document.getElementById("to").value);
-    const rateStr = document.getElementById("rate").value;
     const date = document.getElementById("flightDate").value, trip = document.getElementById("trip").value;
     if(!from || !to || !date) return alert("入力不足です");
-    
-    const pp = calcPP(from, to, rateStr, document.getElementById("seat").value);
+    const pp = calcPP(from, to, document.getElementById("rate").value, document.getElementById("seat").value);
     const price = parseInt(document.getElementById("price").value) || 0;
-    
     const fData = { id: Date.now()+Math.random(), from, to, pp, price: (trip==="round"?price/2:price), date, depart: document.getElementById("departTime").value, arrive: document.getElementById("arriveTime").value, done: false };
-    
     flights.push(fData);
-    if(trip === "round") {
-        flights.push({ ...fData, id: Date.now()+Math.random(), from: to, to: from, depart: document.getElementById("returnDepart").value, arrive: document.getElementById("returnArrive").value });
-    }
+    if(trip === "round") flights.push({ ...fData, id: Date.now()+Math.random(), from: to, to: from, depart: document.getElementById("returnDepart").value, arrive: document.getElementById("returnArrive").value });
     save();
 }
 
 function save() { localStorage.setItem("sfc_v17_data", JSON.stringify(flights)); render(); }
-function del(id) { if(confirm("消去しますか？")) { flights=flights.filter(f=>f.id!==id); save(); } }
+function del(id) { if(confirm("削除しますか？")) { flights=flights.filter(f=>f.id!==id); save(); } }
 function toggleDone(id) { let f=flights.find(x=>x.id===id); if(f) f.done=!f.done; save(); }
 
 function render() {
@@ -244,10 +227,8 @@ function render() {
 
     monthlyPP.forEach(pp => { const h = (pp / Math.max(...monthlyPP, 5000)) * 100; graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp > 0 ? pp : ''}</div>`; });
     
-    // AI診断メッセージの復元・強化
     const remain = Math.max(0, 50000 - actualP);
-    const nahaPP = 1482; // 新シンプル那覇往復の片道
-    const nahaRound = Math.ceil(remain / (nahaPP * 2));
+    const nahaRound = Math.ceil(remain / 2964);
     const avgPrice = totalP > 0 ? (totalC / totalP).toFixed(1) : 0;
     
     document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000 PP";
@@ -257,14 +238,14 @@ function render() {
     document.getElementById("remainPP").innerText = remain.toLocaleString();
     
     document.getElementById("aiAdvice").innerHTML = `
-        <b>【AI修行診断】</b><br>
-        ・解脱まであと <b>${remain.toLocaleString()} PP</b> です。<br>
-        ・那覇往復(新シンプル)なら、あと <b>${nahaRound}往復</b> で達成！<br>
-        ・現在の合計PP単価は <b>${avgPrice}円</b> です。
+        <b>【AI修行診断 v21】</b><br>
+        ・解脱まであと <b>${remain.toLocaleString()} PP</b><br>
+        ・那覇往復ならあと <b>${nahaRound}回</b> で達成見込<br>
+        ・現在の合計PP単価: <b>${avgPrice}円</b>
     `;
 }
-function showBackup() { const area = document.getElementById("backupArea"), text = document.getElementById("backupText"); area.style.display = "block"; text.value = JSON.stringify(flights); text.focus(); text.select(); }
-function importData() { let s = prompt("バックアップテキストを貼り付けてください:"); if(s) { try { const p = JSON.parse(s.trim()); if(Array.isArray(p)) { flights = p; save(); alert("復元に成功しました！"); location.reload(); } } catch(e) { alert("形式が正しくありません。"); } } }
+function showBackup() { document.getElementById("backupArea").style.display = "block"; document.getElementById("backupText").value = JSON.stringify(flights); }
+function importData() { let s = prompt("バックアップを貼り付け:"); if(s) { try { flights = JSON.parse(s); save(); location.reload(); } catch(e) { alert("無効な形式です"); } } }
 render();
 </script>
 </body>
