@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v33</title>
+<title>SFC Manager v34</title>
 <style>
-    :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; }
+    :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; --remain-color: #6c757d; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:50px; color:#333; -webkit-tap-highlight-color:transparent;}
     header{background:var(--main-blue); color:white; padding: 45px 15px 15px 15px; text-align:center; font-weight:bold; font-size:1.2em; position: sticky; top: 0; z-index: 100;}
     .container{padding:15px; max-width:720px; margin:auto;}
@@ -18,8 +18,9 @@
     table{width:100%; border-collapse:collapse; font-size:10px;}
     th, td{border-bottom:1px solid #eee; padding:8px 4px; text-align:center;}
     .clickable-route { color: var(--accent-blue); text-decoration: underline; cursor: pointer; font-weight: bold; }
-    .progress{background:#ddd; height:18px; border-radius:10px; margin:10px 0; overflow:hidden;}
-    .progress-inner{background:linear-gradient(90deg, var(--main-blue), var(--accent-blue)); height:100%; width:0%; transition: width 0.8s;}
+    .progress{background:#ddd; height:18px; border-radius:10px; margin:10px 0; overflow:hidden; position: relative;}
+    .progress-inner{background:var(--main-blue); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 2;}
+    .progress-pending{background:rgba(42, 109, 244, 0.4); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 1;}
     .ai-box{background:#f0f7ff; padding:15px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff; color: #003f88;}
     .ug-action-btn{background:var(--ug-purple); color:white; font-size:9px; padding:3px 5px; border-radius:4px; width:auto; margin:0;}
     .graph-container { width: 100%; height: 100px; display: flex; align-items: flex-end; justify-content: space-around; padding: 10px 0; }
@@ -29,17 +30,22 @@
 </head>
 <body>
 
-<header>SFC Manager v33</header>
+<header>SFC Manager v34</header>
 
 <div class="container">
     <div class="card">
         <h3>進捗 & 予算状況</h3>
         <div style="text-align:center; font-weight:bold; font-size:1.4em;" id="ppText">0 / 50,000 PP</div>
-        <div class="progress"><div id="progressBar" class="progress-inner"></div></div>
-        <div style="display:flex; justify-content:space-around; font-size:13px; text-align:center;">
+        <div style="text-align:center; font-size:11px; color:var(--accent-blue); margin-bottom:5px;" id="pendingText">(予約込み: 0 PP)</div>
+        <div class="progress">
+            <div id="progressBar" class="progress-inner"></div>
+            <div id="progressPending" class="progress-pending"></div>
+        </div>
+        <div style="display:flex; justify-content:space-around; font-size:11px; text-align:center; margin-top:5px;">
             <div>予定総額<br><b id="totalBudget">¥0</b></div>
             <div>実績(済)<br><b id="paidBudget" style="color:var(--money)">¥0</b></div>
-            <div>残り必要<br><b id="remainPP" style="color:var(--main-blue)">50,000</b></div>
+            <div>純粋残り<br><b id="remainPP" style="color:var(--main-blue)">50,000</b></div>
+            <div>予約後不足<br><b id="remainAfterPending" style="color:var(--accent-blue)">50,000</b></div>
         </div>
     </div>
 
@@ -55,30 +61,28 @@
             <button class="routeBtn" onclick="setRoute('那覇','石垣')">那覇-石垣</button>
             <button class="routeBtn" onclick="setRoute('羽田','石垣')">羽田-石垣</button>
             <button class="routeBtn" onclick="setRoute('羽田','シンガポール')">SIN</button>
-            <button class="routeBtn" onclick="setRoute('羽田','バンコク')">BKK</button>
-            <button class="routeBtn" onclick="setRoute('羽田','台北')">TSA</button>
         </div>
         
         <select id="rate">
             <optgroup label="【〜2026/5/18 現行運賃】">
                 <option value="0.75" selected>国内:SV/バリューセール(75%) +0pt</option>
                 <option value="0.75_plus">国内:バリュー/特割等(75%) +400pt</option>
-                <option value="0.5">国内:スーパーバリューセール等(50%) +0pt</option>
-                <option value="1.0">国内:フレックス/往復割等(100%) +400pt</option>
+                <option value="0.5">国内:SVセール(50%) +0pt</option>
                 <option value="1.25">国内:プレミアム運賃(125%) +400pt</option>
             </optgroup>
             <optgroup label="【2026/5/19〜 新運賃】">
+                <option value="0.5_new_sale">国内:新セール(50%) +0pt ★今回</option>
                 <option value="0.7_new">国内:新シンプル(70%) +100pt</option>
                 <option value="0.8_new">国内:新スタンダード(80%) +100pt</option>
                 <option value="1.0_new">国内:新フレックス(100%) +400pt</option>
             </optgroup>
             <optgroup label="【国際線】">
-                <option value="1.0_intl">海外:100% (プレエコ等) +400pt</option>
-                <option value="0.7_intl">海外:70% (エコノミー等) +400pt</option>
-                <option value="0.5_intl">海外:50% (セール等) +400pt</option>
+                <option value="1.0_intl">海外:100% +400pt</option>
+                <option value="0.7_intl">海外:70% +400pt</option>
+                <option value="0.5_intl">海外:50% +400pt</option>
             </optgroup>
         </select>
-        <input id="price" type="number" placeholder="代金(往復時は総額入力で自動分割)">
+        <input id="price" type="number" placeholder="代金">
         <input type="date" id="flightDate">
         <div style="display:flex; gap:10px;">
             <div style="flex:1">出発<input type="time" id="departTime"></div>
@@ -131,8 +135,6 @@
 <script>
 const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","ホノルル":"HNL"};
 const distDB = {"HND-OKA":738, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1017, "HND-ITM":280, "OKA-ISG":73, "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-HNL":3831};
-const domList = ["HND","NRT","CTS","OKA","FUK","ITM","KIX","NGO","ISG","MMY"];
-
 let flights = JSON.parse(localStorage.getItem("sfc_v17_data")) || [];
 
 function getCode(name) { return airportMap[name] || (name ? name.toUpperCase() : ""); }
@@ -140,7 +142,6 @@ function getName(code) { for(let n in airportMap) { if(airportMap[n] === code) r
 function swapRoute() { const f = document.getElementById("from").value, t = document.getElementById("to").value; document.getElementById("from").value = t; document.getElementById("to").value = f; }
 function setRoute(f, t) { document.getElementById("from").value = f; document.getElementById("to").value = t; }
 
-// 再利用機能（入力欄へのコピー）
 function reuseFlight(id) {
     const f = flights.find(x => x.id === id);
     if(!f) return;
@@ -154,25 +155,13 @@ function reuseFlight(id) {
     window.scrollTo({top: 150, behavior: 'smooth'});
 }
 
-// iPhoneカレンダー通知
-function scheduleUG(dateStr, route) {
-    const ugDate = new Date(dateStr + "T00:00:00");
-    ugDate.setDate(ugDate.getDate() - 2); 
-    const startStr = ugDate.toISOString().replace(/-|:|\.\d+/g, "");
-    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nEND:VEVENT\nEND:VCALENDAR`;
-    if(confirm(`${ugDate.toLocaleDateString()}の通知をカレンダーに登録しますか？`)) {
-        const blob = new Blob([icsContent], {type: "text/calendar"});
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ug.ics"; a.click();
-    }
-}
-
 function calcPP(f, t, rStr) {
     let key = f+"-"+t, rev = t+"-"+f;
     let base = distDB[key] || distDB[rev] || 0;
     if(base===0) return 0;
-    
     if(rStr === "0.75" && (key==="HND-OKA"||rev==="HND-OKA")) return 1476;
     if(rStr === "0.5" && (key==="HND-OKA"||rev==="HND-OKA")) return 984;
+    if(rStr === "0.5_new_sale" && (key==="HND-OKA"||rev==="HND-OKA")) return 738; // 新セール(50% pt0)
 
     let rate = parseFloat(rStr);
     let bonus = rStr.includes("plus") || ["1.0","1.25","1.0_new","1.0_intl"].includes(rStr) ? 400 : 0;
@@ -235,37 +224,34 @@ function render() {
             }
         }
         
-        let ugArea = f.isUG ? "UG済" : (!f.done ? `<button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button><br><button class="ug-action-btn" style="background:#666; margin-top:2px;" onclick="scheduleUG('${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>` : "-");
-        
+        let ugArea = f.isUG ? "UG済" : (!f.done ? `<button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button>` : "-");
         table.innerHTML += `<tr><td>${f.date.slice(5)}</td><td><span class="clickable-route" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}</span>${waitHtml}</td><td>${f.depart||""}</td><td>${f.pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td><td>${ugArea}</td><td><button onclick="del(${f.id})" style="color:red; background:none; border:none;">×</button></td></tr>`;
     });
 
-    const remain = Math.max(0, 50000 - actualP);
+    const remainReal = Math.max(0, 50000 - actualP);
+    const remainAfterPending = Math.max(0, 50000 - totalP);
+
     document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000 PP";
+    document.getElementById("pendingText").innerText = "(予約込み合計: " + totalP.toLocaleString() + " PP)";
     document.getElementById("progressBar").style.width = Math.min(100, (actualP/50000)*100) + "%";
-    document.getElementById("remainPP").innerText = remain.toLocaleString();
+    document.getElementById("progressPending").style.width = Math.min(100, (totalP/50000)*100) + "%";
+    document.getElementById("remainPP").innerText = remainReal.toLocaleString();
+    document.getElementById("remainAfterPending").innerText = remainAfterPending.toLocaleString();
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
     document.getElementById("paidBudget").innerText = "¥" + (flights.filter(f=>f.done).reduce((s,f)=>s+(f.price||0),0)).toLocaleString();
-    document.getElementById("aiAdvice").innerHTML = `残り <b>${remain.toLocaleString()} PP</b> / 平均単価: <b>${totalP>0?(totalC/totalP).toFixed(1):0}円</b><br>${remain > 0 ? `那覇(75%)あと <b>${Math.ceil(remain/2952)}回</b> で解脱！` : '解脱おめでとうございます！'}`;
+
+    let nextCount = Math.ceil(remainAfterPending / 2952);
+    document.getElementById("aiAdvice").innerHTML = `<b>【AI修行診断】</b><br>全予約完了後の不足: <b>${remainAfterPending.toLocaleString()} PP</b><br>${remainAfterPending > 0 ? `あと <b>羽田-那覇(75%) ${nextCount}往復</b> で解脱予定！` : '全予約搭乗で解脱確定です！'}`;
 
     monthlyPP.forEach(pp => { const h = (pp / Math.max(...monthlyPP, 5000)) * 100; graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp>0?pp:''}</div>`; });
 }
 
 function showBackup() { document.getElementById("backupArea").style.display="block"; document.getElementById("backupText").value = JSON.stringify(flights); }
 function importData() { 
-    let s = prompt("バックアップを貼り付け:"); 
-    if(!s) return;
+    let s = prompt("バックアップを貼り付け:"); if(!s) return;
     try { 
         let data = JSON.parse(s);
-        if(Array.isArray(data)) {
-            flights = data.map(f => ({
-                id: f.id || Date.now()+Math.random(), from: f.from || "HND", to: f.to || "OKA",
-                date: f.date || "", depart: f.depart || "", arrive: f.arrive || "",
-                price: parseInt(f.price) || 0, rateStr: f.rateStr || "0.75", pp: parseInt(f.pp) || 0,
-                done: !!f.done, isUG: !!f.isUG
-            }));
-            save(); location.reload();
-        }
+        if(Array.isArray(data)) { flights = data; save(); location.reload(); }
     } catch(e) { alert("不正な形式です"); } 
 }
 render();
