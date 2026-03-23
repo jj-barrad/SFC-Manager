@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v27</title>
+<title>SFC Manager v28</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:50px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -33,7 +33,7 @@
 </head>
 <body>
 
-<header>SFC Manager v27</header>
+<header>SFC Manager v28</header>
 
 <div class="container">
     <div class="card">
@@ -152,7 +152,7 @@ function scheduleUG(dateStr, route) {
     const now = new Date();
     const diffMs = flightDate - now;
     if (diffMs < 0) { alert("UG開始時刻を過ぎています。ANAアプリを確認！"); return; }
-    alert(`UG通知予約: ${flightDate.toLocaleString()}に開始を通知します。`);
+    alert(`UG通知予約: ${flightDate.toLocaleString()}に通知します。`);
     setTimeout(() => { 
         if(Notification.permission==="granted") new Notification("UG開始！", {body: `${route}の受付開始です`});
         else alert(`【UG争奪戦開始！】\n${route}`);
@@ -239,14 +239,27 @@ function render() {
         table.innerHTML += `<tr><td>${f.date.slice(5)}</td><td><span class="clickable-route" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}</span>${waitHtml}</td><td>${f.depart||""}</td><td>${f.pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td><td>${ugBtn}</td><td><button onclick="del(${f.id})" style="background:none; color:red; width:auto; font-size:12px;">×</button></td></tr>`;
     });
 
-    monthlyPP.forEach(pp => { const h = (pp / Math.max(...monthlyPP, 5000)) * 100; graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp > 0 ? pp : ''}</div>`; });
     const remain = Math.max(0, 50000 - actualP);
+    const costPerPP = totalP > 0 ? (totalC / totalP).toFixed(1) : "0.0";
+    const nahaCount = Math.ceil(remain / 2952); // 羽田-那覇(75%)往復ベース
+
     document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000 PP";
     document.getElementById("progressBar").style.width = Math.min(100, (actualP/50000)*100) + "%";
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
     document.getElementById("paidBudget").innerText = "¥" + (flights.filter(f=>f.done).reduce((s,f)=>s+(f.price||0),0)).toLocaleString();
     document.getElementById("remainPP").innerText = remain.toLocaleString();
-    document.getElementById("aiAdvice").innerHTML = `<b>【AI修行診断 v27】</b> 残り <b>${remain.toLocaleString()} PP</b> / 単価 <b>${totalP>0?(totalC/totalP).toFixed(1):0}円</b>`;
+    
+    // AI診断の完全復活
+    let adviceMsg = `<b>【AI修行診断 v28】</b><br>`;
+    adviceMsg += `残り <b>${remain.toLocaleString()} PP</b> です。平均単価は <b>${costPerPP}円</b> です。<br>`;
+    if(remain > 0) {
+        adviceMsg += `羽田-那覇(75%)の単純往復ならあと <b>${nahaCount}回</b> で解脱です！`;
+    } else {
+        adviceMsg += `<span style="color:var(--success)">解脱おめでとうございます！プラチナ達成です！</span>`;
+    }
+    document.getElementById("aiAdvice").innerHTML = adviceMsg;
+
+    monthlyPP.forEach(pp => { const h = (pp / Math.max(...monthlyPP, 5000)) * 100; graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp > 0 ? pp : ''}</div>`; });
 }
 
 function showBackup() { document.getElementById("backupArea").style.display = "block"; document.getElementById("backupText").value = JSON.stringify(flights); }
