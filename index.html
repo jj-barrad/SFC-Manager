@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v50</title>
+<title>SFC Manager v51</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -15,33 +15,35 @@
     button{background:var(--main-blue); color:white; font-weight:bold; border:none; cursor: pointer;}
     .routeBtn{width:auto; padding:10px 14px; margin:4px 2px; font-size:12px; background:#e9ecef; color:#333; border:1px solid #ddd; border-radius: 8px;}
     .swap-btn{width:48px; height:48px; margin: 0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
-    
-    /* 予定フライト一覧の最適化: 縦幅を詰め、視認性を向上 */
+
+    /* 【修正】予定フライト一覧の縦幅凝縮デザイン */
     table{width:100%; border-collapse:collapse; font-size:10px; table-layout: fixed;}
-    th, td{border-bottom:1px solid #eee; padding:6px 2px; text-align:center; word-wrap: break-word; line-height: 1.3;}
-    input[type="checkbox"] { width: 20px; height: 20px; margin: 0; cursor: pointer; vertical-align: middle; }
+    th, td{border-bottom:1px solid #eee; padding:5px 1px; text-align:center; word-wrap: break-word; line-height: 1.25;}
+    th{ color: #666; font-weight: normal; padding-bottom: 8px; }
+    input[type="checkbox"] { width: 20px; height: 20px; margin: 0; cursor: pointer; border: 2px solid var(--main-blue); border-radius: 4px; vertical-align: middle; }
     .row-done { background-color: #f8f9fa; color: #aaa; }
-    
     .clickable-route { color: var(--accent-blue); text-decoration: underline; cursor: pointer; font-weight: bold; }
+
     .progress{background:#ddd; height:22px; border-radius:11px; margin:10px 0; overflow:hidden; position: relative;}
     .progress-inner{background:linear-gradient(90deg, var(--main-blue), var(--accent-blue)); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 2;}
     .progress-pending{background:rgba(42, 109, 244, 0.3); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 1;}
     .ai-box{background:#f0f7ff; padding:15px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff; color: #003f88;}
-    .ug-action-btn{background:var(--ug-purple); color:white; font-size:9px; padding:3px 5px; border-radius:4px; width:auto; margin:1px 0; display: inline-block;}
+    .ug-action-btn{background:var(--ug-purple); color:white; font-size:9px; padding:2px 4px; border-radius:4px; width:auto; margin:1px 0; display: inline-block;}
     .graph-container { width: 100%; height: 100px; display: flex; align-items: flex-end; justify-content: space-around; padding: 15px 0 5px 0; }
     .graph-bar { width: calc(100% / 12 - 4px); background: var(--accent-blue); border-radius: 4px 4px 0 0; position: relative; min-height: 2px;}
     .graph-val { position: absolute; top: -14px; width: 100%; text-align: center; font-size: 8px; color: #666;}
+    .history-item{font-size:13px; padding:14px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between; align-items: center;}
 </style>
 </head>
 <body>
 
-<header>SFC Manager v50</header>
+<header>SFC Manager v51</header>
 
 <div class="container">
     <div class="card">
         <h3>進捗 & 予算状況</h3>
         <div style="text-align:center; font-weight:bold; font-size:1.5em; color:var(--main-blue);" id="ppText">0 / 50,000 PP</div>
-        <div style="text-align:center; font-size:11px; color:var(--accent-blue); margin-bottom:5px;" id="pendingTotalText">(全搭乗時合計: 0 PP)</div>
+        <div style="text-align:center; font-size:11px; color:var(--accent-blue); margin-bottom:5px;" id="pendingTotalText">(予約込合計: 0 PP)</div>
         <div class="progress">
             <div id="progressBar" class="progress-inner"></div>
             <div id="progressPending" class="progress-pending"></div>
@@ -65,20 +67,28 @@
             <button class="routeBtn" onclick="setRoute('那覇','石垣')">那覇-石垣</button>
             <button class="routeBtn" onclick="setRoute('羽田','石垣')">羽田-石垣</button>
             <button class="routeBtn" onclick="setRoute('羽田','シンガポール')">SIN</button>
+            <button class="routeBtn" onclick="setRoute('羽田','バンコク')">BKK</button>
+            <button class="routeBtn" onclick="setRoute('羽田','台北')">TSA</button>
         </div>
         
         <select id="rate">
-            <optgroup label="【〜2026/5/18 現行】">
-                <option value="0.75" selected>国内:75% +0pt</option>
-                <option value="0.75_plus">国内:75% +400pt</option>
-                <option value="0.5">国内:50% +0pt</option>
-                <option value="1.25">国内:125% +400pt</option>
+            <optgroup label="【〜2026/5/18 現行運賃】">
+                <option value="0.75" selected>国内:SV/バリューセール(75%) +0pt</option>
+                <option value="0.75_plus">国内:バリュー/特割等(75%) +400pt</option>
+                <option value="0.5">国内:スーパーバリューセール等(50%) +0pt</option>
+                <option value="1.0">国内:フレックス/往復割等(100%) +400pt</option>
+                <option value="1.25">国内:プレミアム運賃(125%) +400pt</option>
             </optgroup>
-            <optgroup label="【2026/5/19〜 新制度】">
+            <optgroup label="【2026/5/19〜 新運賃】">
                 <option value="0.7_new">国内:新シンプル(70%) +100pt</option>
                 <option value="0.8_new">国内:新スタンダード(80%) +100pt</option>
                 <option value="0.5_new_sale">国内:新セール(50%) +0pt</option>
                 <option value="1.0_new">国内:新フレックス(100%) +400pt</option>
+            </optgroup>
+            <optgroup label="【国際線】">
+                <option value="1.0_intl">海外:100% (プレエコ等) +400pt</option>
+                <option value="0.7_intl">海外:70% (エコノミー等) +400pt</option>
+                <option value="0.5_intl">海外:50% (セール等) +400pt</option>
             </optgroup>
         </select>
         <input id="price" type="number" placeholder="代金(往復時は総額入力で自動分割)">
@@ -115,7 +125,7 @@
     <div class="card">
         <h3>予定フライト一覧</h3>
         <div style="overflow-x:auto;"><table>
-            <thead><tr><th style="width:13%">日付</th><th style="width:37%">区間/待機</th><th style="width:14%">時刻</th><th style="width:12%">PP</th><th style="width:9%">済</th><th style="width:15%">操作</th></tr></thead>
+            <thead><tr><th style="width:14%">日付</th><th style="width:38%">区間/待機</th><th style="width:14%">時刻</th><th style="width:12%">PP</th><th style="width:10%">済</th><th style="width:12%">操作</th></tr></thead>
             <tbody id="tableBody"></tbody>
         </table></div>
     </div>
@@ -123,6 +133,11 @@
     <div class="card">
         <h3>月別獲得PP推移</h3>
         <div id="ppGraph" class="graph-container"></div>
+    </div>
+
+    <div class="card">
+        <h3>搭乗履歴（タップで再登録）</h3>
+        <div id="historyList"></div>
     </div>
 </div>
 
@@ -141,21 +156,26 @@ function scheduleUG(dateStr, route) {
     const ugDate = new Date(dateStr + "T00:00:00");
     ugDate.setDate(ugDate.getDate() - 2); 
     const startStr = ugDate.toISOString().replace(/-|:|\.\d+/g, "").split(".")[0];
-    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nEND:VEVENT\nEND:VCALENDAR`;
+    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nDESCRIPTION:SFC修行用UG申込開始通知\nEND:VEVENT\nEND:VCALENDAR`;
     if(confirm(`${ugDate.toLocaleDateString()}の通知をiPhoneカレンダーに保存しますか？`)) {
         const blob = new Blob([icsContent], {type: "text/calendar"});
         const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ug_alert.ics"; a.click();
     }
 }
 
+// PP計算ロジック（最新基準）
 function calcPP(f, t, rStr) {
     let key = f+"-"+t, rev = t+"-"+f;
     let base = distDB[key] || distDB[rev] || 0;
     if(base===0) return 0;
+    
+    // 2026/5/19以降の新制度
     if(rStr === "0.7_new") return Math.floor(base * 0.7 * 2.0) + 100;
     if(rStr === "0.8_new") return Math.floor(base * 0.8 * 2.0) + 100;
     if(rStr === "0.5_new_sale") return Math.floor(base * 0.5 * 2.0);
     if(rStr === "1.0_new") return Math.floor(base * 1.0 * 2.0) + 400;
+    
+    // 現行制度
     let rate = parseFloat(rStr);
     let bonus = rStr.includes("plus") || ["1.0","1.25","1.0_intl"].includes(rStr) ? 400 : 0;
     let isAsia = ["SIN","BKK","TSA","KUL","SYD","CGK"].includes(f) || ["SIN","BKK","TSA","KUL","SYD","CGK"].includes(t);
@@ -191,17 +211,21 @@ function del(id) { if(confirm("削除?")) { flights=flights.filter(f=>f.id!==id)
 function toggleDone(id) { let f=flights.find(x=>x.id===id); if(f) f.done=!f.done; save(); }
 
 function render() {
-    const table = document.getElementById("tableBody"), graph = document.getElementById("ppGraph");
-    table.innerHTML = ""; graph.innerHTML = "";
+    const table = document.getElementById("tableBody"), history = document.getElementById("historyList"), graph = document.getElementById("ppGraph");
+    table.innerHTML = ""; history.innerHTML = ""; graph.innerHTML = "";
     let actualP=0, totalP=0, totalC=0, monthlyPP = Array(12).fill(0);
     
-    // 【修正】日付と出発時刻順に厳密にソート (未入力時刻は後方に)
+    // 【修正】日付 → 出発時刻順に厳密にソート
     flights.sort((a,b) => (a.date + (a.depart||"99:99")).localeCompare(b.date + (b.depart||"99:99")));
 
     flights.forEach((f, idx) => {
         let pp = calcPP(f.from, f.to, f.rateStr) + (f.isUG ? (f.pp_ug || 0) : 0);
         totalP += pp; totalC += (f.price || 0);
-        if(f.done) { actualP += pp; let m = parseInt(f.date.slice(5, 7)); if (m >= 1 && m <= 12) monthlyPP[m - 1] += pp; }
+        if(f.done) {
+            actualP += pp;
+            let m = parseInt(f.date.slice(5, 7)); if (m >= 1 && m <= 12) monthlyPP[m - 1] += pp;
+            history.innerHTML += `<div class="history-item" onclick="reuseFlight(${f.id})"><span>${f.date.slice(5)} ${getName(f.from)}→${getName(f.to)}</span><b>+${pp.toLocaleString()} PP</b></div>`;
+        }
 
         let waitHtml = "";
         if(idx < flights.length - 1) {
@@ -214,8 +238,15 @@ function render() {
         
         let ugArea = f.isUG ? "UG済" : (!f.done ? `<button class="ug-action-btn" onclick="tryUG(${f.id})">+UG</button><br><button class="ug-action-btn" style="background:#666" onclick="scheduleUG('${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>` : "-");
         
-        // 【修正】日付を「月/日」に、時刻を2段に、パディングを極限まで調整
-        table.innerHTML += `<tr class="${f.done ? 'row-done' : ''}"><td>${f.date.slice(5).replace('-','/')}</td><td><span class="clickable-route" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}</span>${waitHtml}</td><td>${f.depart||""}<br>↓<br>${f.arrive||""}</td><td>${pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td><td>${ugArea}<br><span onclick="del(${f.id})" style="color:red; font-size:16px">×</span></td></tr>`;
+        // 【修正】日付を「月/日」に、時刻を「発↓着」にまとめ、縦幅を極限まで抑制
+        table.innerHTML += `<tr class="${f.done ? 'row-done' : ''}">
+            <td>${f.date.slice(5).replace('-','/')}</td>
+            <td><span class="clickable-route" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}</span>${waitHtml}</td>
+            <td>${f.depart||""}<br>↓<br>${f.arrive||""}</td>
+            <td>${pp.toLocaleString()}</td>
+            <td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td>
+            <td>${ugArea}<br><span onclick="del(${f.id})" style="color:red; font-size:16px; display:inline-block; margin-top:2px;">×</span></td>
+        </tr>`;
     });
 
     const remain = Math.max(0, 50000 - actualP);
@@ -226,12 +257,12 @@ function render() {
     document.getElementById("pendingTotalText").innerText = "(全搭乗時合計: " + totalP.toLocaleString() + " PP)";
     document.getElementById("progressBar").style.width = Math.min(100, (actualP/50000)*100) + "%";
     document.getElementById("progressPending").style.width = Math.min(100, (totalP/50000)*100) + "%";
-    document.getElementById("remainPP").innerText = remain.toLocaleString();
+    document.getElementById("remainPP").innerText = (50000-totalP > 0 ? 50000-totalP : 0).toLocaleString();
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
     document.getElementById("paidBudget").innerText = "¥" + (flights.filter(f=>f.done).reduce((s,f)=>s+(f.price||0),0)).toLocaleString();
     
     const nahaNew = 1477;
-    document.getElementById("aiAdvice").innerHTML = `残り <b>${remain.toLocaleString()} PP</b> / PP単価: <b>${costPerPP}円</b><br>${remainAfterPending > 0 ? `新シンプル那覇なら あと <b>${Math.ceil(remainAfterPending/nahaNew)}回</b> で解脱！` : '解脱おめでとうございます！'}`;
+    document.getElementById("aiAdvice").innerHTML = `単価: <b>${costPerPP}円</b> / 残り: <b>${remain.toLocaleString()} PP</b><br>${remainAfterPending > 0 ? `新シンプル那覇なら あと <b>${Math.ceil(remainAfterPending/nahaNew)}回</b> で解脱！` : '解脱おめでとうございます！'}`;
 
     const maxPP = Math.max(...monthlyPP, 5000);
     monthlyPP.forEach(pp => { const h = (pp / maxPP) * 100; graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp>0?`<span class="graph-val">${pp}</span>`:''}</div>`; });
