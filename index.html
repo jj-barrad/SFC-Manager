@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v26</title>
+<title>SFC Manager v27</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:50px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -24,12 +24,16 @@
     .progress-inner{background:linear-gradient(90deg, var(--main-blue), var(--accent-blue)); height:100%; width:0%; transition: width 0.8s;}
     .ai-box{background:#f0f7ff; padding:15px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff; color: #003f88;}
     .ug-btn{background:var(--ug-purple); font-size:9px; padding:4px 6px; width:auto; margin:0;}
+    .graph-container { width: 100%; height: 120px; display: flex; align-items: flex-end; justify-content: space-around; padding: 10px 0; border-bottom: 1px solid #eee;}
+    .graph-bar { width: calc(100% / 12 - 4px); background: var(--accent-blue); border-radius: 4px 4px 0 0; display: flex; align-items: flex-end; justify-content: center; color: white; font-size: 8px; transition: height 0.5s;}
+    #backupArea { display:none; background:#f8f9fa; padding:10px; border-radius:8px; margin-top:10px; border: 1px dashed #ccc; }
+    #backupText { width:100%; height:120px; font-size:10px; font-family: monospace; margin-bottom: 10px;}
     .history-item{font-size:12px; padding:12px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
 </style>
 </head>
 <body>
 
-<header>SFC Manager v26</header>
+<header>SFC Manager v27</header>
 
 <div class="container">
     <div class="card">
@@ -98,14 +102,6 @@
     </div>
 
     <div class="card">
-        <h3>予定フライト一覧</h3>
-        <div style="overflow-x:auto;"><table>
-            <thead><tr><th>日付</th><th>区間/待機</th><th>時刻</th><th>PP</th><th>済</th><th>UG</th><th>消</th></tr></thead>
-            <tbody id="tableBody"></tbody>
-        </table></div>
-    </div>
-
-    <div class="card">
         <h3>AI修行診断 & 管理</h3>
         <div id="aiAdvice" class="ai-box" style="margin-bottom:10px;"></div>
         <div style="display:flex; gap:10px;">
@@ -116,6 +112,19 @@
             <textarea id="backupText" readonly onclick="this.select()"></textarea>
             <button class="btn-sub" onclick="document.getElementById('backupArea').style.display='none'">閉じる</button>
         </div>
+    </div>
+
+    <div class="card">
+        <h3>予定フライト一覧</h3>
+        <div style="overflow-x:auto;"><table>
+            <thead><tr><th>日付</th><th>区間/待機</th><th>時刻</th><th>PP</th><th>済</th><th>UG</th><th>消</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table></div>
+    </div>
+
+    <div class="card">
+        <h3>月別獲得PP推移</h3>
+        <div id="ppGraph" class="graph-container"></div>
     </div>
 
     <div class="card">
@@ -137,28 +146,16 @@ function getName(code) { for(let n in airportMap) { if(airportMap[n] === code) r
 function swapRoute() { const f = document.getElementById("from").value, t = document.getElementById("to").value; document.getElementById("from").value = t; document.getElementById("to").value = f; }
 function setRoute(f, t) { document.getElementById("from").value = f; document.getElementById("to").value = t; }
 
-// --- UG通知予約（ANAルール: 搭乗2日前 0:00） ---
 function scheduleUG(dateStr, route) {
     const flightDate = new Date(dateStr + "T00:00:00");
-    flightDate.setDate(flightDate.getDate() - 2); // 2日前
-    
+    flightDate.setDate(flightDate.getDate() - 2);
     const now = new Date();
-    if (flightDate < now) {
-        alert("既にアップグレード受付期間内、または搭乗日が近すぎます。ANAアプリを確認してください。");
-        return;
-    }
-    
     const diffMs = flightDate - now;
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    
-    alert(`UG通知予約完了！\n${route}のUG開始（${flightDate.toLocaleDateString()} 0:00）の通知をセットしました。\n(ブラウザを開いている間、またはリマインダーとして機能します)`);
-    
-    setTimeout(() => {
-        if (Notification.permission === "granted") {
-            new Notification("SFC修行 UG争奪戦開始！", { body: `${route}のアップグレード受付が開始されました。今すぐANAアプリへ！` });
-        } else {
-            alert(`【UG争奪戦開始！】\n${route}のアップグレード受付時間です！`);
-        }
+    if (diffMs < 0) { alert("UG開始時刻を過ぎています。ANAアプリを確認！"); return; }
+    alert(`UG通知予約: ${flightDate.toLocaleString()}に開始を通知します。`);
+    setTimeout(() => { 
+        if(Notification.permission==="granted") new Notification("UG開始！", {body: `${route}の受付開始です`});
+        else alert(`【UG争奪戦開始！】\n${route}`);
     }, diffMs);
 }
 
@@ -173,8 +170,6 @@ function reuseFlight(id) {
         document.getElementById("arriveTime").value = f.arrive || "";
         document.getElementById("rate").value = f.rateStr || "0.75";
         document.getElementById("seat").value = f.seat || "normal";
-        document.getElementById("trip").value = "oneway";
-        document.getElementById("returnArea").style.display = "none";
         window.scrollTo({top: 150, behavior: 'smooth'});
     }
 }
@@ -190,7 +185,6 @@ function calcPP(from, to, rateStr, seat){
     let rate = parseFloat(rateStr);
     if(rateStr === "0.5_old") rate = 0.5;
     if(rateStr === "1.0_old") rate = 1.0;
-
     if(isDom) {
         if(rateStr === "0.75" && (key==="HND-OKA"||rev==="HND-OKA")) return 1476;
         if(rateStr === "0.5_old" && (key==="HND-OKA"||rev==="HND-OKA")) return 984;
@@ -206,11 +200,10 @@ function calcPP(from, to, rateStr, seat){
 function addFlight() {
     const from = getCode(document.getElementById("from").value), to = getCode(document.getElementById("to").value);
     const date = document.getElementById("flightDate").value, trip = document.getElementById("trip").value;
-    const rateStr = document.getElementById("rate").value, seat = document.getElementById("seat").value;
     if(!from || !to || !date) return alert("入力不足です");
-    const pp = calcPP(from, to, rateStr, seat);
+    const rateStr = document.getElementById("rate").value, seat = document.getElementById("seat").value;
     const price = parseInt(document.getElementById("price").value) || 0;
-    const fData = { id: Date.now()+Math.random(), from, to, pp, price: (trip==="round"?price/2:price), date, depart: document.getElementById("departTime").value, arrive: document.getElementById("arriveTime").value, rateStr, seat, done: false };
+    const fData = { id: Date.now()+Math.random(), from, to, pp: calcPP(from, to, rateStr, seat), price: (trip==="round"?price/2:price), date, depart: document.getElementById("departTime").value, arrive: document.getElementById("arriveTime").value, rateStr, seat, done: false };
     flights.push(fData);
     if(trip === "round") flights.push({ ...fData, id: Date.now()+Math.random(), from: to, to: from, depart: document.getElementById("returnDepart").value, arrive: document.getElementById("returnArrive").value });
     save();
@@ -221,15 +214,17 @@ function del(id) { if(confirm("削除しますか？")) { flights=flights.filter
 function toggleDone(id) { let f=flights.find(x=>x.id===id); if(f) f.done=!f.done; save(); }
 
 function render() {
-    const table = document.getElementById("tableBody"), history = document.getElementById("historyList");
-    table.innerHTML = ""; history.innerHTML = "";
-    let actualP=0, totalP=0, totalC=0;
+    const table = document.getElementById("tableBody"), history = document.getElementById("historyList"), graph = document.getElementById("ppGraph");
+    table.innerHTML = ""; history.innerHTML = ""; graph.innerHTML = "";
+    let actualP=0, totalP=0, totalC=0, monthlyPP = Array(12).fill(0);
     flights.sort((a,b) => (a.date + (a.depart||"")).localeCompare(b.date + (b.depart||"")));
 
     flights.forEach((f, idx) => {
         totalP += f.pp; totalC += (f.price || 0);
         if(f.done) {
             actualP += f.pp;
+            let m = parseInt(f.date.slice(5, 7));
+            if (m >= 1 && m <= 12) monthlyPP[m - 1] += f.pp;
             history.innerHTML += `<div class="history-item" onclick="reuseFlight(${f.id})"><span>${f.date.slice(5)} ${getName(f.from)}→${getName(f.to)} (${f.depart})</span><b style="color:var(--success)">+${f.pp.toLocaleString()} PP</b></div>`;
         }
         let waitHtml = "";
@@ -240,21 +235,34 @@ function render() {
                 if(diff >= 0 && diff < 1440) waitHtml = `<br><span style="background:var(--success); color:white; font-size:8px; padding:1px 3px; border-radius:3px;">${Math.floor(diff/60)}h${diff%60}m 待機</span>`;
             }
         }
-        let ugBtnHtml = (!f.done && domList.includes(f.from)) ? `<button class="ug-btn" onclick="scheduleUG('${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>` : "-";
-        table.innerHTML += `<tr><td>${f.date.slice(5)}</td><td><span class="clickable-route" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}</span>${waitHtml}</td><td>${f.depart||""}</td><td>${f.pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td><td>${ugBtnHtml}</td><td><button onclick="del(${f.id})" style="background:none; color:red; width:auto; font-size:12px;">×</button></td></tr>`;
+        let ugBtn = (!f.done && domList.includes(f.from)) ? `<button class="ug-btn" onclick="scheduleUG('${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>` : "-";
+        table.innerHTML += `<tr><td>${f.date.slice(5)}</td><td><span class="clickable-route" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}</span>${waitHtml}</td><td>${f.depart||""}</td><td>${f.pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td><td>${ugBtn}</td><td><button onclick="del(${f.id})" style="background:none; color:red; width:auto; font-size:12px;">×</button></td></tr>`;
     });
 
+    monthlyPP.forEach(pp => { const h = (pp / Math.max(...monthlyPP, 5000)) * 100; graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp > 0 ? pp : ''}</div>`; });
     const remain = Math.max(0, 50000 - actualP);
     document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000 PP";
     document.getElementById("progressBar").style.width = Math.min(100, (actualP/50000)*100) + "%";
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
     document.getElementById("paidBudget").innerText = "¥" + (flights.filter(f=>f.done).reduce((s,f)=>s+(f.price||0),0)).toLocaleString();
     document.getElementById("remainPP").innerText = remain.toLocaleString();
-    document.getElementById("aiAdvice").innerHTML = `<b>【AI修行診断 v26】</b><br>残り <b>${remain.toLocaleString()} PP</b> / 単価: <b>${totalP>0?(totalC/totalP).toFixed(1):0}円</b><br>※国内線UGは搭乗2日前の午前0時から。争奪戦に備えましょう。`;
+    document.getElementById("aiAdvice").innerHTML = `<b>【AI修行診断 v27】</b> 残り <b>${remain.toLocaleString()} PP</b> / 単価 <b>${totalP>0?(totalC/totalP).toFixed(1):0}円</b>`;
 }
+
 function showBackup() { document.getElementById("backupArea").style.display = "block"; document.getElementById("backupText").value = JSON.stringify(flights); }
-function importData() { let s = prompt("バックアップを貼り付け:"); if(s) { try { flights = JSON.parse(s); save(); location.reload(); } catch(e) { alert("無効な形式です"); } } }
-if (Notification.permission === "default") Notification.requestPermission();
+function importData() { 
+    let s = prompt("バックアップを貼り付け:"); 
+    if(s) { 
+        try { 
+            let data = JSON.parse(s);
+            if(Array.isArray(data)) {
+                flights = data.map(f => ({ ...f, id: f.id || Date.now()+Math.random(), done: !!f.done }));
+                save(); location.reload();
+            }
+        } catch(e) { alert("形式が正しくありません"); } 
+    } 
+}
+if(Notification.permission==="default") Notification.requestPermission();
 render();
 </script>
 </body>
