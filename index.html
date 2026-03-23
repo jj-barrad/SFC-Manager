@@ -3,60 +3,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v37</title>
+<title>SFC Manager v38</title>
 <style>
-    :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; }
-    body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:60px; color:#333; -webkit-tap-highlight-color:transparent;}
+    :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; }
+    body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
     header{background:var(--main-blue); color:white; padding: 45px 15px 15px 15px; text-align:center; font-weight:bold; font-size:1.2em; position: sticky; top: 0; z-index: 100;}
     .container{padding:15px; max-width:720px; margin:auto;}
-    .card{background:white; border-radius:14px; padding:16px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,0.08); overflow: hidden;}
-    h3{margin: 0 0 10px 0; font-size: 1.1em; color: var(--main-blue); border-left: 4px solid var(--main-blue); padding-left: 10px;}
-    input, select, button{width:100%; padding:12px; margin:6px 0; border-radius:8px; border:1px solid #ccc; box-sizing: border-box; font-size:14px;}
-    button{background:var(--main-blue); color:white; font-weight:bold; border:none; cursor: pointer;}
-    .routeBtn{width:auto; padding:8px 12px; margin:4px 2px; font-size:11px; background:#e9ecef; color:#333; border:1px solid #ddd; border-radius: 6px;}
-    .swap-btn{width:44px; height:44px; margin: 0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
-    table{width:100%; border-collapse:collapse; font-size:10px;}
-    th, td{border-bottom:1px solid #eee; padding:8px 4px; text-align:center;}
-    .progress{background:#ddd; height:22px; border-radius:11px; margin:10px 0; overflow:hidden; position: relative;}
-    .progress-inner{background:var(--main-blue); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 2;}
-    .progress-pending{background:rgba(42, 109, 244, 0.4); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 1;}
-    .ai-box{background:#f0f7ff; padding:15px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff; color: #003f88; min-height: 60px;}
-    .graph-container { width: 100%; height: 100px; display: flex; align-items: flex-end; justify-content: space-around; padding: 10px 0; border-bottom: 1px solid #eee; }
-    .graph-bar { width: calc(100% / 12 - 4px); background: var(--accent-blue); border-radius: 4px 4px 0 0; display: flex; align-items: flex-end; justify-content: center; color: white; font-size: 7px;}
-    .history-list{max-height: 200px; overflow-y: auto;}
-    .history-item{font-size:12px; padding:12px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
-    .wait-tag { background:var(--success); color:white; font-size:9px; padding:2px 4px; border-radius:4px; display:inline-block; margin-top:2px; }
+    .card{background:white; border-radius:14px; padding:18px; margin-bottom:15px; box-shadow:0 4px 15px rgba(0,0,0,0.1); border: 1px solid #e0e6ed;}
+    h3{margin: 0 0 15px 0; font-size: 1.1em; color: var(--main-blue); border-left: 5px solid var(--main-blue); padding-left: 10px; display: flex; justify-content: space-between; align-items: center;}
+    input, select, button{width:100%; padding:14px; margin:8px 0; border-radius:10px; border:1px solid #ced4da; box-sizing: border-box; font-size:15px;}
+    button{background:var(--main-blue); color:white; font-weight:bold; border:none; cursor: pointer; transition: opacity 0.2s;}
+    button:active{opacity: 0.7;}
+    .route-grid{display: grid; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 6px; margin-bottom: 10px;}
+    .routeBtn{padding:10px 5px; font-size:11px; background:#eef2f7; color:var(--main-blue); border:1px solid #d1d9e6; border-radius: 8px; margin:0;}
+    .swap-btn{width:48px; height:48px; margin: 0; background:#fff; color:var(--main-blue); border:1px solid #ced4da; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+    table{width:100%; border-collapse:collapse; font-size:11px; margin-top: 10px;}
+    th, td{border-bottom:1px solid #eee; padding:10px 4px; text-align:center;}
+    .progress{background:#e9ecef; height:24px; border-radius:12px; margin:15px 0; overflow:hidden; position: relative; border: 1px solid #dee2e6;}
+    .progress-inner{background: linear-gradient(90deg, #003f88, #2a6df4); height:100%; width:0%; transition: width 1s ease-out; position: absolute; z-index: 2;}
+    .progress-pending{background:rgba(42, 109, 244, 0.3); height:100%; width:0%; transition: width 1s ease-out; position: absolute; z-index: 1;}
+    .ai-box{background:#f8fbff; padding:15px; border-radius:12px; font-size:13.5px; line-height:1.7; border:1.5px solid #d0e3ff; color: #004085;}
+    .graph-container { width: 100%; height: 120px; display: flex; align-items: flex-end; justify-content: space-around; padding: 10px 0; background: #fafafa; border-radius: 8px;}
+    .graph-bar { width: 18px; background: var(--accent-blue); border-radius: 4px 4px 0 0; display: flex; align-items: flex-end; justify-content: center; position: relative;}
+    .graph-label { position: absolute; top: -18px; font-size: 8px; color: #666; width: 30px; text-align: center;}
+    .graph-month { font-size: 9px; margin-top: 5px; color: #999;}
+    .history-list{max-height: 250px; overflow-y: auto; border: 1px solid #eee; border-radius: 10px;}
+    .history-item{font-size:13px; padding:14px; border-bottom:1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: white;}
+    .history-item:active{background: #f8f9fa;}
+    .wait-tag { background:var(--success); color:white; font-size:10px; padding:3px 6px; border-radius:5px; margin-top:4px; display: inline-block;}
 </style>
 </head>
 <body>
 
-<header>SFC Manager v37</header>
+<header>SFC Manager v38</header>
 
 <div class="container">
     <div class="card">
-        <h3>進捗 & 5/19以降予測</h3>
-        <div style="text-align:center; font-weight:bold; font-size:1.5em;" id="ppText">0 / 50,000 PP</div>
-        <div style="text-align:center; font-size:11px; color:var(--accent-blue); margin-bottom:5px;" id="pendingText">(予約込み合計: 0 PP)</div>
+        <h3>進捗ステータス</h3>
+        <div style="text-align:center; font-weight:bold; font-size:1.6em; color:var(--main-blue);" id="ppText">0 / 50,000 PP</div>
+        <div style="text-align:center; font-size:12px; color:var(--accent-blue); margin: 5px 0 10px 0;" id="pendingText">(予約込み: 0 PP)</div>
         <div class="progress">
             <div id="progressBar" class="progress-inner"></div>
             <div id="progressPending" class="progress-pending"></div>
         </div>
-        <div style="display:flex; justify-content:space-around; font-size:11px; text-align:center;">
-            <div>予定総額<br><b id="totalBudget">¥0</b></div>
-            <div>実績(済)<br><b id="paidBudget" style="color:var(--money)">¥0</b></div>
-            <div>純粋残り<br><b id="remainPP">50,000</b></div>
-            <div>予約後不足<br><b id="remainAfterPending" style="color:var(--accent-blue)">50,000</b></div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size:12px; text-align:center; border-top: 1px solid #eee; padding-top: 15px;">
+            <div>予定総額: <b id="totalBudget">¥0</b></div>
+            <div>搭乗済(実績): <b id="paidBudget" style="color:var(--money)">¥0</b></div>
+            <div>純粋残りPP: <b id="remainPP">50,000</b></div>
+            <div>予約後不足: <b id="remainAfterPending" style="color:var(--accent-blue)">50,000</b></div>
         </div>
     </div>
 
     <div class="card">
+        <h3>修行診断（5/19新制度基準）</h3>
+        <div id="aiAdvice" class="ai-box">計算中...</div>
+    </div>
+
+    <div class="card">
         <h3>フライト追加</h3>
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:5px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
             <input id="from" placeholder="出発地" style="flex:1">
             <button class="swap-btn" onclick="swapRoute()">⇄</button>
             <input id="to" placeholder="到着地" style="flex:1">
         </div>
-        <div style="margin-bottom:10px;">
+        <div class="route-grid">
             <button class="routeBtn" onclick="setRoute('羽田','那覇')">羽田-那覇</button>
             <button class="routeBtn" onclick="setRoute('那覇','石垣')">那覇-石垣</button>
             <button class="routeBtn" onclick="setRoute('羽田','石垣')">羽田-石垣</button>
@@ -64,18 +74,19 @@
             <button class="routeBtn" onclick="setRoute('羽田','千歳')">千歳</button>
             <button class="routeBtn" onclick="setRoute('羽田','福岡')">福岡</button>
             <button class="routeBtn" onclick="setRoute('羽田','シンガポール')">SIN</button>
+            <button class="routeBtn" onclick="setRoute('羽田','バンコク')">BKK</button>
+            <button class="routeBtn" onclick="setRoute('羽田','ホノルル')">HNL</button>
         </div>
         <select id="rate">
-            <optgroup label="【5/19〜 新制度（国内）】">
+            <optgroup label="【5/19〜 新制度】">
                 <option value="0.7_new" selected>国内:新シンプル(70%) +100pt</option>
                 <option value="0.8_new">国内:新スタンダード(80%) +100pt</option>
                 <option value="0.5_new_sale">国内:新セール(50%) +0pt</option>
                 <option value="1.0_new">国内:新フレックス(100%) +400pt</option>
             </optgroup>
-            <optgroup label="【〜5/18 現行（国内）】">
-                <option value="0.75">国内:SV/バリューセール(75%) +0pt</option>
-                <option value="0.75_plus">国内:バリュー/特割(75%) +400pt</option>
-                <option value="0.5">国内:SVセール(旧50%) +0pt</option>
+            <optgroup label="【〜5/18 現行】">
+                <option value="0.75">国内:SV/バリュー(75%) +0pt</option>
+                <option value="0.75_plus">国内:特割(75%) +400pt</option>
                 <option value="1.25">国内:プレミアム(125%) +400pt</option>
             </optgroup>
             <optgroup label="【国際線】">
@@ -84,7 +95,7 @@
                 <option value="0.5_intl">海外:50% +400pt</option>
             </optgroup>
         </select>
-        <input id="price" type="number" placeholder="代金(往復の場合は合計)">
+        <input id="price" type="number" placeholder="チケット代金">
         <input type="date" id="flightDate">
         <select id="trip" onchange="toggleTrip()">
             <option value="oneway">片道</option><option value="round" selected>往復</option>
@@ -94,44 +105,40 @@
                 <div style="flex:1">行き出発<input type="time" id="departTime"></div>
                 <div style="flex:1">行き到着<input type="time" id="arriveTime"></div>
             </div>
-            <div id="returnArea" style="display:flex; gap:10px; margin-top:5px;">
+            <div id="returnArea" style="display:flex; gap:10px; margin-top:8px;">
                 <div style="flex:1">帰り出発<input type="time" id="returnDepart"></div>
                 <div style="flex:1">帰り到着<input type="time" id="returnArrive"></div>
             </div>
         </div>
-        <button onclick="addFlight()" style="background:var(--accent-blue); margin-top:10px;">プランに追加</button>
+        <button onclick="addFlight()" style="background:var(--accent-blue); margin-top:15px; font-size:17px;">プランを保存</button>
     </div>
 
     <div class="card">
-        <h3>AI修行診断（現実化プラン）</h3>
-        <div id="aiAdvice" class="ai-box">計算中...</div>
-    </div>
-
-    <div class="card">
-        <h3>予定フライト一覧</h3>
+        <h3>フライト一覧</h3>
         <div style="overflow-x:auto;"><table>
-            <thead><tr><th>日付</th><th>区間/待機</th><th>PP</th><th>済</th><th>消</th></tr></thead>
+            <thead><tr><th>日付</th><th>区間</th><th>PP</th><th>済</th><th>消</th></tr></thead>
             <tbody id="tableBody"></tbody>
         </table></div>
     </div>
 
     <div class="card">
-        <h3>月別獲得PP推移</h3>
+        <h3>月別PP推移グラフ</h3>
         <div id="ppGraph" class="graph-container"></div>
+        <div style="display:flex; justify-content:space-around; margin-top:5px;" id="monthLabels"></div>
     </div>
 
     <div class="card">
-        <h3>搭乗履歴（タップで再利用）</h3>
+        <h3>履歴・再利用（タップでコピー）</h3>
         <div id="historyList" class="history-list"></div>
     </div>
 
     <div class="card">
-        <h3>設定・バックアップ</h3>
+        <h3>データ管理</h3>
         <div style="display:flex; gap:10px;">
             <button style="flex:1; background:#6c757d;" onclick="showBackup()">データ出力</button>
             <button style="flex:1; background:#6c757d;" onclick="importData()">データ復元</button>
         </div>
-        <textarea id="backupText" style="display:none; width:100%; height:80px; margin-top:10px; font-size:10px;"></textarea>
+        <textarea id="backupText" style="display:none; width:100%; height:100px; margin-top:10px; font-size:11px; font-family:monospace;"></textarea>
     </div>
 </div>
 
@@ -159,7 +166,7 @@ function calcPP(f, t, rStr) {
     if(rStr === "1.0_new") return Math.floor(base * 1.0 * multi) + 400;
     
     let rate = parseFloat(rStr);
-    let bonus = rStr.includes("plus") || ["1.25","1.0_intl"].includes(rStr) ? 400 : (rStr==="0.7_intl"||rStr==="0.5_intl"?400:0);
+    let bonus = rStr.includes("plus") || ["1.25","1.0_intl"].includes(rStr) ? 400 : (rStr.includes("intl")?400:0);
     return Math.floor(base * rate * multi) + bonus;
 }
 
@@ -169,14 +176,14 @@ function reuse(id) {
     document.getElementById("to").value=getName(f.to);
     document.getElementById("rate").value=f.rateStr; 
     document.getElementById("price").value=f.price * (f.trip==='round'?2:1);
-    window.scrollTo({top: 150, behavior: 'smooth'});
+    window.scrollTo({top: 250, behavior: 'smooth'});
 }
 
 function addFlight() {
     const from=getCode(document.getElementById("from").value), to=getCode(document.getElementById("to").value);
     const date=document.getElementById("flightDate").value, trip=document.getElementById("trip").value;
     const rStr=document.getElementById("rate").value, price=parseInt(document.getElementById("price").value)||0;
-    if(!from||!to||!date) return alert("入力不足です");
+    if(!from||!to||!date) return alert("出発地、到着地、日付を入力してください");
 
     const fData = { id:Date.now(), from, to, date, depart:document.getElementById("departTime").value, arrive:document.getElementById("arriveTime").value, price:(trip==="round"?price/2:price), rateStr:rStr, done:false, trip:trip };
     flights.push(fData);
@@ -185,12 +192,12 @@ function addFlight() {
 }
 
 function save(){ localStorage.setItem("sfc_v17_data", JSON.stringify(flights)); render(); }
-function del(id){ if(confirm("削除しますか？")){ flights=flights.filter(f=>f.id!==id); save(); } }
+function del(id){ if(confirm("このフライトを削除しますか？")){ flights=flights.filter(f=>f.id!==id); save(); } }
 function toggleDone(id){ let f=flights.find(x=>x.id===id); if(f) f.done=!f.done; save(); }
 
 function render() {
-    const table=document.getElementById("tableBody"), graph=document.getElementById("ppGraph"), history=document.getElementById("historyList");
-    table.innerHTML=""; graph.innerHTML=""; history.innerHTML="";
+    const table=document.getElementById("tableBody"), graph=document.getElementById("ppGraph"), history=document.getElementById("historyList"), labels=document.getElementById("monthLabels");
+    table.innerHTML=""; graph.innerHTML=""; history.innerHTML=""; labels.innerHTML="";
     let actualP=0, totalP=0, totalC=0, monthlyPP=Array(12).fill(0);
     
     flights.sort((a,b)=> (a.date+(a.depart||"")).localeCompare(b.date+(b.depart||"")));
@@ -208,13 +215,13 @@ function render() {
             }
         }
         
-        table.innerHTML += `<tr><td>${f.date.slice(5)}</td><td>${getName(f.from)}→${getName(f.to)}${waitHtml}</td><td>${pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td><td><button onclick="del(${f.id})" style="background:none; color:red; border:none; font-size:16px;">×</button></td></tr>`;
-        if(f.done) history.innerHTML += `<div class="history-item" onclick="reuse(${f.id})"><span>${f.date.slice(5)} ${getName(f.from)}→${getName(f.to)}</span><b>${pp} PP</b></div>`;
+        table.innerHTML += `<tr><td>${f.date.slice(5)}</td><td>${getName(f.from)}→${getName(f.to)}${waitHtml}</td><td>${pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})" style="width:20px; height:20px;"></td><td><button onclick="del(${f.id})" style="background:none; color:red; border:none; font-size:18px; width:auto; padding:0;">×</button></td></tr>`;
+        history.innerHTML += `<div class="history-item" onclick="reuse(${f.id})"><div><b>${f.date.slice(5)}</b> ${getName(f.from)}→${getName(f.to)}</div><div style="color:var(--accent-blue); font-weight:bold;">${pp} PP</div></div>`;
     });
 
     const remainAfter = Math.max(0, 50000 - totalP);
     document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000 PP";
-    document.getElementById("pendingText").innerText = "(予約込み合計: " + totalP.toLocaleString() + " PP)";
+    document.getElementById("pendingText").innerText = "(全予約搭乗時の合計: " + totalP.toLocaleString() + " PP)";
     document.getElementById("progressBar").style.width = Math.min(100, (actualP/50000*100)) + "%";
     document.getElementById("progressPending").style.width = Math.min(100, (totalP/50000*100)) + "%";
     document.getElementById("remainPP").innerText = (50000-actualP).toLocaleString();
@@ -224,13 +231,20 @@ function render() {
 
     let okaCount = Math.ceil(remainAfter / 2266);
     let isgCount = Math.ceil(remainAfter / 3130);
-    document.getElementById("aiAdvice").innerHTML = `<b>【5/19以降の現実的な必要数】</b><br>全予約後の不足: <b>${remainAfter.toLocaleString()} PP</b><br>・羽田－那覇(70%)なら：あと <b>${okaCount} 往復</b><br>・羽田－石垣(那覇経由70%)なら：あと <b>${isgCount} 往復</b>`;
-    monthlyPP.forEach(pp => { const h=(pp/Math.max(...monthlyPP,5000))*100; graph.innerHTML+=`<div class="graph-bar" style="height:${h}%">${pp>0?pp:''}</div>`; });
+    document.getElementById("aiAdvice").innerHTML = `<b>【5/19新制度での解脱予測】</b><br>全予約後の不足: <b>${remainAfter.toLocaleString()} PP</b><br>・羽田－那覇(新シンプル)なら：あと <b>${okaCount} 往復</b><br>・羽田－石垣(那覇経由)なら：あと <b>${isgCount} 往復</b>`;
+    
+    const maxM = Math.max(...monthlyPP, 1);
+    monthlyPP.forEach((pp, i) => { 
+        const h = (pp/maxM)*100;
+        graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp>0?`<span class="graph-label">${pp}</span>`:''}</div>`;
+        labels.innerHTML += `<div class="graph-month">${i+1}月</div>`;
+    });
 }
 
-function showBackup(){ const t=document.getElementById("backupText"); t.style.display="block"; t.value=JSON.stringify(flights); }
-function importData(){ let s=prompt("データを貼り付け:"); if(!s)return; try{flights=JSON.parse(s);save();location.reload();}catch(e){alert("失敗しました");} }
+function showBackup(){ const t=document.getElementById("backupText"); t.style.display="block"; t.value=JSON.stringify(flights); t.select(); }
+function importData(){ let s=prompt("バックアップ用テキストをここに貼り付けてください:"); if(!s)return; try{flights=JSON.parse(s);save();location.reload();}catch(e){alert("データの復元に失敗しました。形式を確認してください。");} }
 render();
+toggleTrip();
 </script>
 </body>
 </html>
