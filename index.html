@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v53</title>
+<title>SFC Manager v54</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -36,7 +36,7 @@
 </head>
 <body>
 
-<header>SFC Manager v53</header>
+<header>SFC Manager v54</header>
 
 <div class="container">
     <div class="card">
@@ -142,7 +142,6 @@
 
 <script>
 const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","ホノルル":"HNL","クアラルンプール":"KUL","シドニー":"SYD","ジャカルタ":"CGK"};
-// 石垣-那覇の距離をアプリ実数値の根拠となる247マイルに修正
 const distDB = {"HND-OKA":984, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1221, "HND-ITM":280, "OKA-ISG":247, "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-HNL":3831, "HND-KUL":3338, "HND-SYD":4930, "HND-CGK":3612};
 
 let flights = JSON.parse(localStorage.getItem("sfc_v17_data")) || [];
@@ -168,25 +167,26 @@ function calcPP(f, t, rStr) {
     let base = distDB[key] || distDB[rev] || 0;
     if(base===0) return 0;
 
-    // 【2026/5/19〜 新運賃ルール：正確な反映】
-    if(rStr === "0.7_new") return Math.floor(base * 0.7 * 2.0) + 100; // 新シンプル/スタン 70% 2.0倍
-    if(rStr === "0.8_new") return Math.floor(base * 0.8 * 2.0) + 100; // 新スタンダード 80% 2.0倍
-    if(rStr === "0.5_new_sale") return Math.floor(base * 0.5 * 1.0); // 新セール 50% 倍率1.0
-    if(rStr === "1.0_new") return Math.floor(base * 1.0 * 2.0) + 400; // 新フレックス 100% 2.0倍
+    // 【公式ルールに基づく厳密な計算】
+    // PP = (基本マイル × 積算率) ※端数切捨て × 路線倍率 + 搭乗ポイント
 
-    // 【国際線ルール：正確な反映】
+    // 2026/5/19〜 新運賃
+    if(rStr === "0.7_new") return Math.floor(base * 0.7) * 2 + 100;
+    if(rStr === "0.8_new") return Math.floor(base * 0.8) * 2 + 100;
+    if(rStr === "0.5_new_sale") return Math.floor(base * 0.5) * 1; 
+    if(rStr === "1.0_new") return Math.floor(base * 1.0) * 2 + 400;
+
+    // 国際線
     if(rStr.includes("_intl")) {
         let rate = parseFloat(rStr);
-        let bonus = 400; // 国際線は一律+400
         let multi = (["SIN","BKK","TSA","KUL","SYD","CGK"].includes(f) || ["SIN","BKK","TSA","KUL","SYD","CGK"].includes(t)) ? 1.5 : 1.0;
-        return Math.floor(base * rate * multi) + bonus;
+        return Math.floor(base * rate * multi) + 400;
     }
 
-    // 【〜2026/5/18 現行運賃ルール】
+    // 〜2026/5/18 現行国内線
     let rate = parseFloat(rStr);
     let bonus = rStr.includes("plus") || ["1.0","1.25"].includes(rStr) ? 400 : 0;
-    let multi = 2.0; // 国内線一律2.0倍
-    return Math.floor(base * rate * multi) + bonus;
+    return Math.floor(base * rate) * 2 + bonus;
 }
 
 function addFlight() {
@@ -208,7 +208,8 @@ function tryUG(id) {
     let ugPrice = (key==="OKA-ISG" || rev==="OKA-ISG") ? 4000 : 14000;
     if(confirm(`UG(${ugPrice.toLocaleString()}円 / +50%)を実行しますか？`)) {
         let base = distDB[key] || distDB[rev] || 0;
-        f.pp += Math.floor(base * 0.5 * 2); f.price += ugPrice; f.isUG = true; save();
+        // UG時は積算率が+50%される
+        f.pp += Math.floor(base * 0.5) * 2; f.price += ugPrice; f.isUG = true; save();
     }
 }
 
@@ -221,11 +222,9 @@ function render() {
     table.innerHTML = ""; history.innerHTML = ""; graph.innerHTML = "";
     let actualP=0, totalP=0, totalC=0, monthlyPP = Array(12).fill(0);
     
-    // 【厳密ソート】日付＋出発時刻
     flights.sort((a,b) => (a.date + (a.depart || "23:59")).localeCompare(b.date + (b.depart || "23:59")));
 
     flights.forEach((f, idx) => {
-        // レンダリング時に常に最新のロジックでPPを再計算
         f.pp = calcPP(f.from, f.to, f.rateStr || "0.75");
         totalP += f.pp; totalC += (f.price || 0);
         if(f.done) {
@@ -260,9 +259,10 @@ function render() {
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
     document.getElementById("paidBudget").innerText = "¥" + (flights.filter(f=>f.done).reduce((s,f)=>s+(f.price||0),0)).toLocaleString();
     
-    // 診断ロジックの修正（新シンプル70%時の期待値）
-    const nahaNew = 1476, isgNew = 444; 
-    document.getElementById("aiAdvice").innerHTML = `残り <b>${remain.toLocaleString()} PP</b> / PP単価: <b>${costPerPP}円</b><br>${remainAfterPending > 0 ? `新シンプルなら、那覇 あと <b>${Math.ceil(remainAfterPending/nahaNew)}回</b>、または石垣 あと <b>${Math.ceil(remainAfterPending/isgNew)}回</b> で解脱！` : '解脱おめでとうございます！'}`;
+    // AI診断：羽田-那覇(1476) + 那覇-石垣(444) = 1,920 PP を1セットとして計算
+    const isgSet = 1920; 
+    const nahaOnly = 1476;
+    document.getElementById("aiAdvice").innerHTML = `残り <b>${remain.toLocaleString()} PP</b> / PP単価: <b>${costPerPP}円</b><br>${remainAfterPending > 0 ? `新制度なら、羽田-那覇-石垣(経由) あと <b>${Math.ceil(remainAfterPending/isgSet)}回(レグ)</b>、または那覇往復 あと <b>${Math.ceil(remainAfterPending/nahaOnly)}回</b> で解脱！` : '解脱おめでとうございます！'}`;
 
     const maxPP = Math.max(...monthlyPP, 5000);
     monthlyPP.forEach(pp => { const h = (pp / maxPP) * 100; graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp>0?`<span class="graph-val">${pp}</span>`:''}</div>`; });
