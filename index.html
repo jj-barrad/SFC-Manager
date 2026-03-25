@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v54</title>
+<title>SFC Manager v55</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -16,7 +16,6 @@
     .routeBtn{width:auto; padding:10px 14px; margin:4px 2px; font-size:12px; background:#e9ecef; color:#333; border:1px solid #ddd; border-radius: 8px;}
     .swap-btn{width:48px; height:48px; margin: 0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
 
-    /* 予定フライト一覧の最適化 */
     table{width:100%; border-collapse:collapse; font-size:10px; table-layout: fixed;}
     th, td{border-bottom:1px solid #eee; padding:6px 1px; text-align:center; word-wrap: break-word; line-height: 1.2;}
     input[type="checkbox"] { width: 22px; height: 22px; margin: 0; cursor: pointer; border: 2px solid var(--main-blue); border-radius: 4px; vertical-align: middle; }
@@ -36,7 +35,7 @@
 </head>
 <body>
 
-<header>SFC Manager v54</header>
+<header>SFC Manager v55</header>
 
 <div class="container">
     <div class="card">
@@ -167,12 +166,9 @@ function calcPP(f, t, rStr) {
     let base = distDB[key] || distDB[rev] || 0;
     if(base===0) return 0;
 
-    // 【公式ルールに基づく厳密な計算】
-    // PP = (基本マイル × 積算率) ※端数切捨て × 路線倍率 + 搭乗ポイント
-
-    // 2026/5/19〜 新運賃
-    if(rStr === "0.7_new") return Math.floor(base * 0.7) * 2 + 100;
-    if(rStr === "0.8_new") return Math.floor(base * 0.8) * 2 + 100;
+    // 2026/5/19〜 新運賃ロジック修正
+    if(rStr === "0.7_new") return Math.floor(base * 0.7) * 2 + 100; // 新シンプル(タイプI)
+    if(rStr === "0.8_new") return Math.floor(base * 0.8) * 2 + 100; // 新スタンダード(タイプI)
     if(rStr === "0.5_new_sale") return Math.floor(base * 0.5) * 1; 
     if(rStr === "1.0_new") return Math.floor(base * 1.0) * 2 + 400;
 
@@ -208,7 +204,6 @@ function tryUG(id) {
     let ugPrice = (key==="OKA-ISG" || rev==="OKA-ISG") ? 4000 : 14000;
     if(confirm(`UG(${ugPrice.toLocaleString()}円 / +50%)を実行しますか？`)) {
         let base = distDB[key] || distDB[rev] || 0;
-        // UG時は積算率が+50%される
         f.pp += Math.floor(base * 0.5) * 2; f.price += ugPrice; f.isUG = true; save();
     }
 }
@@ -243,11 +238,9 @@ function render() {
         }
         
         let ugArea = f.isUG ? "UG済" : (!f.done ? `<button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button><br><button class="ug-action-btn" style="background:#666; margin-top:2px;" onclick="scheduleUG('${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>` : "-");
-        
         table.innerHTML += `<tr class="${f.done ? 'row-done' : ''}"><td>${f.date.slice(5).replace('-','/')}</td><td><span class="clickable-route" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}</span>${waitHtml}</td><td>${f.depart||""}<br>↓<br>${f.arrive||""}</td><td>${f.pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td><td>${ugArea}<br><span onclick="del(${f.id})" style="color:red; font-size:16px;">×</span></td></tr>`;
     });
 
-    const remain = Math.max(0, 50000 - actualP);
     const remainAfterPending = Math.max(0, 50000 - totalP);
     const costPerPP = totalP > 0 ? (totalC / totalP).toFixed(2) : 0;
     
@@ -255,14 +248,19 @@ function render() {
     document.getElementById("pendingTotalText").innerText = "(全搭乗時合計: " + totalP.toLocaleString() + " PP)";
     document.getElementById("progressBar").style.width = Math.min(100, (actualP/50000)*100) + "%";
     document.getElementById("progressPending").style.width = Math.min(100, (totalP/50000)*100) + "%";
-    document.getElementById("remainPP").innerText = (50000-totalP > 0 ? 50000-totalP : 0).toLocaleString();
+    document.getElementById("remainPP").innerText = remainAfterPending.toLocaleString();
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
     document.getElementById("paidBudget").innerText = "¥" + (flights.filter(f=>f.done).reduce((s,f)=>s+(f.price||0),0)).toLocaleString();
     
-    // AI診断：羽田-那覇(1476) + 那覇-石垣(444) = 1,920 PP を1セットとして計算
+    // AI診断：新シンプル(1476) + 新シンプル那覇石垣(444) = 1,920 PP
     const isgSet = 1920; 
     const nahaOnly = 1476;
-    document.getElementById("aiAdvice").innerHTML = `残り <b>${remain.toLocaleString()} PP</b> / PP単価: <b>${costPerPP}円</b><br>${remainAfterPending > 0 ? `新制度なら、羽田-那覇-石垣(経由) あと <b>${Math.ceil(remainAfterPending/isgSet)}回(レグ)</b>、または那覇往復 あと <b>${Math.ceil(remainAfterPending/nahaOnly)}回</b> で解脱！` : '解脱おめでとうございます！'}`;
+    document.getElementById("aiAdvice").innerHTML = `
+        現在の全予約(未搭乗含む)消化後の残り: <b>${remainAfterPending.toLocaleString()} PP</b><br>
+        新制度(5/19〜)の「新シンプル」で追加する場合：<br>
+        ・羽田-那覇-石垣(経由) あと <b>${Math.ceil(remainAfterPending/isgSet)}回(レグ)</b><br>
+        ・羽田-那覇(直行) あと <b>${Math.ceil(remainAfterPending/(nahaOnly*2))}往復</b><br>
+        で解脱です！`;
 
     const maxPP = Math.max(...monthlyPP, 5000);
     monthlyPP.forEach(pp => { const h = (pp / maxPP) * 100; graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp>0?`<span class="graph-val">${pp}</span>`:''}</div>`; });
@@ -274,15 +272,7 @@ function importData() {
     if(!s) return;
     try { 
         let data = JSON.parse(s);
-        if(Array.isArray(data)) {
-            flights = data.map(f => ({
-                id: f.id || Date.now()+Math.random(), from: f.from || "HND", to: f.to || "OKA",
-                date: f.date || "", depart: f.depart || "", arrive: f.arrive || "",
-                price: parseInt(f.price) || 0, rateStr: f.rateStr || "0.75", pp: parseInt(f.pp) || 0,
-                done: !!f.done, isUG: !!f.isUG
-            }));
-            save(); location.reload();
-        }
+        if(Array.isArray(data)) { flights = data; save(); location.reload(); }
     } catch(e) { alert("形式エラー"); } 
 }
 
