@@ -168,37 +168,45 @@ function scheduleUG(dateStr, route) {
 /**
  * PP計算ロジック：2026/5/19境界線・新旧運賃完全対応版
  */
+const INTL_15X = [
+"ICN","GMP","TSA","TPE","HKG",
+"PVG","PEK","DLC","SHE","CAN","XMN",
+"BKK","SIN","KUL","CGK",
+"MNL","SGN","HAN",
+"DEL","BOM",
+"SYD","MEL","BNE","PER",
+"VVO"
+];
+
 function calcPP(f, t, rStr, dateStr) {
+
     let key = f+"-"+t, rev = t+"-"+f;
     let base = distDB[key] || distDB[rev] || 0;
     if(base===0) return 0;
 
     const isNewSystem = dateStr && new Date(dateStr) >= new Date("2026-05-19");
 
-    // 2026/5/19〜 新運賃ロジック
-    if(isNewSystem) {
-        if(rStr === "1.2_new") return (Math.floor(base * 1.2) * 2) + 400; // 新ファースト 120%
-        if(rStr === "0.7_new") return (Math.floor(base * 0.7) * 2) + 100; // 新シンプル 70%
-        if(rStr === "0.8_new") return (Math.floor(base * 0.8) * 2) + 100; // 新スタンダード 80%
-        if(rStr === "0.5_new_sale") return Math.floor(base * 0.5) * 1;    // 新セール 50% 倍率1.0
-        if(rStr === "1.0_new") return (Math.floor(base * 1.0) * 2) + 400; // 新フレックス 100%
-        // 安全装置
-        if(rStr === "1.25") return (Math.floor(base * 1.2) * 2) + 400;   // 5/19以降は125%を選んでも120%で計算
-    }
-
     // 国際線
-    if(rStr.includes("_intl")) {
+    if(rStr.includes("_intl")){
         let rate = parseFloat(rStr);
-        let multi = (["SIN","BKK","TSA","KUL","SYD","CGK"].includes(f) || ["SIN","BKK","TSA","KUL","SYD","CGK"].includes(t)) ? 1.5 : 1.0;
-        return Math.floor(base * rate * multi) + 400;
+        let isTarget = INTL_15X.includes(f) || INTL_15X.includes(t);
+        let routeMultiplier = isTarget ? 1.5 : 1.0;
+        return Math.floor(base * rate * routeMultiplier) + 400;
     }
 
-    // 〜2026/5/18 現行国内線
+    // 新国内（2026/5/19〜）
+    if(isNewSystem){
+        if(rStr === "1.2_new") return (Math.floor(base * 1.2) * 2) + 400;
+        if(rStr === "0.7_new") return (Math.floor(base * 0.7) * 2) + 100;
+        if(rStr === "0.8_new") return (Math.floor(base * 0.8) * 2) + 100;
+        if(rStr === "0.5_new_sale") return (Math.floor(base * 0.5) * 2);
+        if(rStr === "1.0_new") return (Math.floor(base * 1.0) * 2) + 400;
+    }
+
+    // 旧国内
     let rate = parseFloat(rStr);
-    if(rStr === "1.2_new") rate = 1.25; 
-    else if(rStr.includes("_new")) rate = 0.75;
-    
-    let bonus = (rStr.includes("plus") || ["1.0","1.25","1.2_new"].includes(rStr)) ? 400 : 0;
+    let bonus = (rStr.includes("plus") || ["1.0","1.25"].includes(rStr)) ? 400 : 0;
+
     return (Math.floor(base * rate) * 2) + bonus;
 }
 
