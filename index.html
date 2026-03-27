@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v56 - Final Edition</title>
+<title>SFC Manager v57 - Ultimate Edition</title>
 <style>
-    /* CSSは提供されたデザインを100%継承 */
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
     header{background:var(--main-blue); color:white; padding: 45px 15px 15px 15px; text-align:center; font-weight:bold; font-size:1.2em; position: sticky; top: 0; z-index: 100;}
@@ -28,15 +27,18 @@
     .progress-pending{background:rgba(42, 109, 244, 0.3); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 1;}
     .ai-box{background:#f0f7ff; padding:15px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff; color: #003f88;}
     .ug-action-btn{background:var(--ug-purple); color:white; font-size:10px; padding:4px 6px; border-radius:5px; width:auto; margin:2px 0; display: inline-block;}
-    .graph-container { width: 100%; height: 100px; display: flex; align-items: flex-end; justify-content: space-around; padding: 15px 0 5px 0; }
+    
+    .graph-container { width: 100%; height: 120px; display: flex; align-items: flex-end; justify-content: space-around; padding: 20px 0 20px 0; position: relative; }
     .graph-bar { width: calc(100% / 12 - 4px); background: var(--accent-blue); border-radius: 4px 4px 0 0; position: relative; min-height: 2px;}
     .graph-val { position: absolute; top: -14px; width: 100%; text-align: center; font-size: 8px; color: #666;}
+    .graph-label { position: absolute; bottom: -18px; width: 100%; text-align: center; font-size: 9px; color: #999;}
+    
     .history-item{font-size:13px; padding:14px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between; align-items: center;}
 </style>
 </head>
 <body>
 
-<header>SFC Manager v56 - Final Edition</header>
+<header>SFC Manager v57 - Ultimate Edition</header>
 
 <div class="container">
     <div class="card">
@@ -91,7 +93,7 @@
                 <option value="0.5_intl">海外:50% (セール等) +400pt</option>
             </optgroup>
         </select>
-        <input id="price" type="number" placeholder="代金(往復時は総額入力で自動分割)">
+        <input id="price" type="number" placeholder="代金(往復時は総額入力)">
         <input type="date" id="flightDate">
         <div style="display:flex; gap:10px;">
             <div style="flex:1">出発<input type="time" id="departTime"></div>
@@ -164,39 +166,35 @@ function scheduleUG(dateStr, route) {
 }
 
 /**
- * PP計算ロジック：2026/5/19境界線を厳密管理
+ * PP計算ロジック：2026/5/19境界線・新旧運賃完全対応版
  */
 function calcPP(f, t, rStr, dateStr) {
     let key = f+"-"+t, rev = t+"-"+f;
     let base = distDB[key] || distDB[rev] || 0;
     if(base===0) return 0;
 
-    // 2026/5/19を境に新旧を判定
     const isNewSystem = dateStr && new Date(dateStr) >= new Date("2026-05-19");
 
-    // --- 2026/5/19〜 新運賃ロジック ---
+    // 2026/5/19〜 新運賃ロジック
     if(isNewSystem) {
-        if(rStr === "1.2_new") return (Math.floor(base * 1.2) * 2) + 400; // 新ファースト(運賃C) 120%
+        if(rStr === "1.2_new") return (Math.floor(base * 1.2) * 2) + 400; // 新ファースト 120%
         if(rStr === "0.7_new") return (Math.floor(base * 0.7) * 2) + 100; // 新シンプル 70%
         if(rStr === "0.8_new") return (Math.floor(base * 0.8) * 2) + 100; // 新スタンダード 80%
         if(rStr === "0.5_new_sale") return Math.floor(base * 0.5) * 1;    // 新セール 50% 倍率1.0
         if(rStr === "1.0_new") return (Math.floor(base * 1.0) * 2) + 400; // 新フレックス 100%
-        
-        // 旧設定で新期間を登録した場合の安全装置
-        if(rStr === "1.25") return (Math.floor(base * 1.2) * 2) + 400;   // 強制120%
-        if(rStr === "0.75" || rStr === "0.75_plus") return (Math.floor(base * 0.7) * 2) + 100; // 強制70%
+        // 安全装置
+        if(rStr === "1.25") return (Math.floor(base * 1.2) * 2) + 400;   // 5/19以降は125%を選んでも120%で計算
     }
 
-    // --- 国際線 (倍率1.5 固定) ---
+    // 国際線
     if(rStr.includes("_intl")) {
         let rate = parseFloat(rStr);
         let multi = (["SIN","BKK","TSA","KUL","SYD","CGK"].includes(f) || ["SIN","BKK","TSA","KUL","SYD","CGK"].includes(t)) ? 1.5 : 1.0;
         return Math.floor(base * rate * multi) + 400;
     }
 
-    // --- 〜2026/5/18 現行国内線ロジック ---
+    // 〜2026/5/18 現行国内線
     let rate = parseFloat(rStr);
-    // 新設定で旧期間を登録した場合の安全装置
     if(rStr === "1.2_new") rate = 1.25; 
     else if(rStr.includes("_new")) rate = 0.75;
     
@@ -241,7 +239,6 @@ function render() {
     flights.sort((a,b) => (a.date + (a.depart || "23:59")).localeCompare(b.date + (b.depart || "23:59")));
 
     flights.forEach((f, idx) => {
-        // 日付・運賃に基づく再計算
         f.pp = calcPP(f.from, f.to, f.rateStr || "0.75", f.date);
         totalP += f.pp; totalC += (f.price || 0);
         if(f.done) {
@@ -264,10 +261,13 @@ function render() {
     });
 
     const remainAfterPending = Math.max(0, 50000 - totalP);
-    const nahaOnly = 1477; // 新シンプルの那覇片道(端数切捨て済)
+    
+    // AI診断用定数（新シンプル 5/19〜）
+    const nahaOnly = 1477; // 羽田-那覇
+    const isgSet = 1920;   // 羽田-那覇-石垣(経由) 1,477 + 443 = 1,920
     
     document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000 PP";
-    document.getElementById("pendingTotalText").innerText = "(全搭乗時合計: " + totalP.toLocaleString() + " PP)";
+    document.getElementById("pendingTotalText").innerText = "(予約込合計: " + totalP.toLocaleString() + " PP)";
     document.getElementById("progressBar").style.width = Math.min(100, (actualP/50000)*100) + "%";
     document.getElementById("progressPending").style.width = Math.min(100, (totalP/50000)*100) + "%";
     document.getElementById("remainPP").innerText = remainAfterPending.toLocaleString();
@@ -275,12 +275,21 @@ function render() {
     document.getElementById("paidBudget").innerText = "¥" + (flights.filter(f=>f.done).reduce((s,f)=>s+(f.price||0),0)).toLocaleString();
     
     document.getElementById("aiAdvice").innerHTML = `
-        全予約消化後の残り: <b>${remainAfterPending.toLocaleString()} PP</b><br>
-        5/19以降の「那覇往復」 あと <b>${Math.ceil(remainAfterPending/(nahaOnly*2))}回</b> で解脱！<br>
-        ※11/20のファーストクラスは1往復で <b>5,520 PP</b> です。`;
+        残り <b>${remainAfterPending.toLocaleString()} PP</b><br>
+        5/19以降の「新シンプル」で追加する場合：<br>
+        ・羽田-那覇(直行) あと <b>${Math.ceil(remainAfterPending/(nahaOnly*2))}往復</b><br>
+        ・羽田-那覇-石垣(経由) あと <b>${Math.ceil(remainAfterPending/isgSet)}レグ</b><br>
+        ※11/20のファーストクラス(120%)は1往復 <b>5,520 PP</b> です。`;
 
+    // グラフ描画（月ラベル復活）
     const maxPP = Math.max(...monthlyPP, 5000);
-    monthlyPP.forEach(pp => { const h = (pp / maxPP) * 100; graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp>0?`<span class="graph-val">${pp}</span>`:''}</div>`; });
+    monthlyPP.forEach((pp, i) => { 
+        const h = (pp / maxPP) * 100; 
+        graph.innerHTML += `<div class="graph-bar" style="height:${h}%">
+            ${pp>0?`<span class="graph-val">${pp}</span>`:''}
+            <span class="graph-label">${i+1}月</span>
+        </div>`; 
+    });
 }
 
 function showBackup() { document.getElementById("backupArea").style.display="block"; document.getElementById("backupText").value = JSON.stringify(flights); }
