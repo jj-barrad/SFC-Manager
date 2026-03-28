@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v58 - True Ultimate</title>
+<title>SFC Manager v58 - Complete Edition</title>
 <style>
+    /* UIはv57を完全継承 */
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
     header{background:var(--main-blue); color:white; padding: 45px 15px 15px 15px; text-align:center; font-weight:bold; font-size:1.2em; position: sticky; top: 0; z-index: 100;}
@@ -32,9 +33,7 @@
 </style>
 </head>
 <body>
-
-<header>SFC Manager v58 - True Ultimate</header>
-
+<header>SFC Manager v58 - Complete Edition</header>
 <div class="container">
     <div class="card">
         <h3>進捗 & 予算状況</h3>
@@ -66,15 +65,15 @@
         
         <select id="rate">
             <optgroup label="【〜2026/5/18 現行運賃】">
-                <option value="1.25">国内:プレミアム(125%) +400pt</option>
-                <option value="0.75" selected>国内:SV(75%) +0pt</option>
-                <option value="0.75_plus">国内:バリュー(75%) +400pt</option>
-                <option value="0.5">国内:SVセール等(50%) +0pt</option>
-                <option value="1.0">国内:フレックス(100%) +400pt</option>
+                <option value="1.25">国内:プレミアム運賃(125%) +400pt</option>
+                <option value="0.75" selected>国内:SV/バリューセール(75%) +0pt</option>
+                <option value="0.75_plus">国内:バリュー/特割等(75%) +400pt</option>
+                <option value="0.5">国内:スーパーバリューセール等(50%) +0pt</option>
+                <option value="1.0">国内:フレックス/往復割等(100%) +400pt</option>
             </optgroup>
             <optgroup label="【2026/5/19〜 新運賃】">
-                <option value="1.2_new">国内:新ファースト(120%) +400pt</option>
-                <option value="0.7_new">国内:新シンプル(70%) +100pt</option>
+                <option value="1.2_new">国内:新ファースト/プレミアム(120%) +400pt</option>
+                <option value="0.7_new">国内:新シンプル/スタン(70%) +100pt</option>
                 <option value="0.8_new">国内:新スタンダード(80%) +100pt</option>
                 <option value="0.5_new_sale">国内:新セール(50%) +0pt ※倍率1.0</option>
                 <option value="1.0_new">国内:新フレックス(100%) +400pt</option>
@@ -114,7 +113,7 @@
     <div class="card">
         <h3>予定フライト一覧</h3>
         <div style="overflow-x:auto;"><table>
-            <thead><tr><th style="width:14%">日付</th><th style="width:38%">区間</th><th style="width:14%">時刻</th><th style="width:12%">PP</th><th style="width:10%">済</th><th style="width:12%">操作</th></tr></thead>
+            <thead><tr><th style="width:14%">日付</th><th style="width:38%">区間/待機</th><th style="width:14%">時刻</th><th style="width:12%">PP</th><th style="width:10%">済</th><th style="width:12%">操作</th></tr></thead>
             <tbody id="tableBody"></tbody>
         </table></div>
     </div>
@@ -123,17 +122,11 @@
         <h3>月別獲得PP推移</h3>
         <div id="ppGraph" class="graph-container"></div>
     </div>
-
-    <div class="card">
-        <h3>搭乗履歴</h3>
-        <div id="historyList"></div>
-    </div>
 </div>
 
 <script>
-const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","シンガポール":"SIN","バンコク":"BKK"};
-const distDB = {"HND-OKA":984, "HND-ISG":1221, "OKA-ISG":247, "HND-SIN":3312, "HND-BKK":2889};
-
+const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG"};
+const distDB = {"HND-OKA":984, "HND-ISG":1221, "OKA-ISG":247};
 let flights = JSON.parse(localStorage.getItem("sfc_v17_data")) || [];
 
 function getCode(name) { return airportMap[name] || (name ? name.toUpperCase() : ""); }
@@ -146,45 +139,33 @@ function scheduleUG(dateStr, route) {
     ugDate.setDate(ugDate.getDate() - 2); 
     const startStr = ugDate.toISOString().replace(/-|:|\.\d+/g, "").split(".")[0];
     const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nDESCRIPTION:SFC修行用UG申込開始通知\nEND:VEVENT\nEND:VCALENDAR`;
-    if(confirm(`${ugDate.toLocaleDateString()}の通知をiPhoneカレンダーに保存しますか？`)) {
-        const blob = new Blob([icsContent], {type: "text/calendar"});
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ug_alert.ics"; a.click();
-    }
+    const blob = new Blob([icsContent], {type: "text/calendar"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ug_alert.ics"; a.click();
 }
 
-/**
- * PP計算ロジック：ANA公式ルール（5/19境界）完全修正版
+/** * ANA公式ルール完全準拠 PP計算エンジン
  */
 function calcPP(f, t, rStr, dateStr) {
     let key = f+"-"+t, rev = t+"-"+f;
     let base = distDB[key] || distDB[rev] || 0;
     if(base===0) return 0;
 
-    const isNewSystem = dateStr && new Date(dateStr) >= new Date("2026-05-19");
+    const isNew = dateStr && new Date(dateStr) >= new Date("2026-05-19");
 
-    // 国際線
-    if(rStr.includes("_intl")){
+    if(isNew){
+        // 新システム（5/19〜）
+        if(rStr === "1.2_new") return (Math.floor(base * 1.2) * 2) + 400; // プレミアム
+        if(rStr === "0.7_new") return (Math.floor(base * 0.7) * 2) + 100; // シンプル
+        if(rStr === "0.8_new") return (Math.floor(base * 0.8) * 2) + 100; // スタンダード
+        if(rStr === "0.5_new_sale") return (Math.floor(base * 0.5) * 1); // セール(倍率1.0改悪反映)
+        if(rStr === "1.0_new") return (Math.floor(base * 1.0) * 2) + 400; // フレックス
+    } else {
+        // 旧システム（〜5/18）
         let rate = parseFloat(rStr);
-        let routeMultiplier = (["SIN","BKK"].includes(f) || ["SIN","BKK"].includes(t)) ? 1.5 : 1.0;
-        return Math.floor(base * rate * routeMultiplier) + 400;
+        let bonus = (rStr.includes("plus") || ["1.0","1.25"].includes(rStr)) ? 400 : 0;
+        return (Math.floor(base * rate) * 2) + bonus;
     }
-
-    // 新システム（2026/5/19〜）
-    if(isNewSystem){
-        if(rStr === "1.2_new") return (Math.floor(base * 1.2) * 2) + 400;
-        if(rStr === "0.7_new") return (Math.floor(base * 0.7) * 2) + 100;
-        if(rStr === "0.8_new") return (Math.floor(base * 0.8) * 2) + 100;
-        if(rStr === "0.5_new_sale") return (Math.floor(base * 0.5) * 1); // ここがChatGPTのミスポイント(倍率1.0)
-        if(rStr === "1.0_new") return (Math.floor(base * 1.0) * 2) + 400;
-        // 安全装置：新システム移行後に旧プラン名で計算しようとした場合
-        if(rStr === "0.75" || rStr === "0.75_plus") return (Math.floor(base * 0.7) * 2) + 100;
-    }
-
-    // 旧システム（〜2026/5/18）
-    let rate = parseFloat(rStr);
-    if(rStr.includes("_new")) rate = (rStr === "1.2_new") ? 1.25 : 0.75; // 旧換算
-    let bonus = (rStr.includes("plus") || ["1.0","1.25","1.2_new","1.0_new"].includes(rStr)) ? 400 : 0;
-    return (Math.floor(base * rate) * 2) + bonus;
+    return 0;
 }
 
 function addFlight() {
@@ -192,6 +173,7 @@ function addFlight() {
     const date = document.getElementById("flightDate").value, trip = document.getElementById("trip").value;
     const rStr = document.getElementById("rate").value, price = parseInt(document.getElementById("price").value) || 0;
     if(!from || !to || !date) return alert("入力不足");
+    
     const pp = calcPP(from, to, rStr, date);
     const fData = { id: Date.now()+Math.random(), from, to, date, depart: document.getElementById("departTime").value, arrive: document.getElementById("arriveTime").value, price: (trip==="round"?price/2:price), rateStr: rStr, pp: pp, done: false, isUG: false };
     flights.push(fData);
@@ -203,13 +185,14 @@ function tryUG(id) {
     let f = flights.find(x => x.id === id);
     if(!f) return;
     let key = f.from+"-"+f.to, rev = f.to+"-"+f.from;
+    let base = distDB[key] || distDB[rev] || 0;
     let ugPrice = (key==="OKA-ISG" || rev==="OKA-ISG") ? 4000 : 14000;
+    
     if(confirm(`当日UG(${ugPrice.toLocaleString()}円)を実行しますか？`)) {
-        let base = distDB[key] || distDB[rev] || 0;
         const isNew = new Date(f.date) >= new Date("2026-05-19");
-        // 5/19〜のUGは120%+400、それ以前は125%+400
-        let newTotalPP = isNew ? (Math.floor(base * 1.2) * 2 + 400) : (Math.floor(base * 1.25) * 2 + 400);
-        f.pp = newTotalPP; f.price += ugPrice; f.isUG = true; save();
+        // 公式：UG後は国内線一律 搭乗pt 400。積算率は新120%/旧125%
+        f.pp = isNew ? (Math.floor(base * 1.2) * 2 + 400) : (Math.floor(base * 1.25) * 2 + 400);
+        f.price += ugPrice; f.isUG = true; save();
     }
 }
 
@@ -219,21 +202,35 @@ function toggleDone(id) { let f=flights.find(x=>x.id===id); if(f) f.done=!f.done
 
 function render() {
     const table = document.getElementById("tableBody"), history = document.getElementById("historyList"), graph = document.getElementById("ppGraph");
-    table.innerHTML = ""; history.innerHTML = ""; graph.innerHTML = "";
+    table.innerHTML = ""; graph.innerHTML = "";
     let actualP=0, totalP=0, totalC=0, monthlyPP = Array(12).fill(0);
+    
     flights.sort((a,b) => (a.date + (a.depart || "23:59")).localeCompare(b.date + (b.depart || "23:59")));
+
     flights.forEach((f, idx) => {
         if(!f.isUG) f.pp = calcPP(f.from, f.to, f.rateStr, f.date);
         totalP += f.pp; totalC += (f.price || 0);
         if(f.done) {
             actualP += f.pp;
             let m = parseInt(f.date.slice(5, 7)); monthlyPP[m - 1] += f.pp;
-            history.innerHTML += `<div class="history-item" onclick="reuseFlight(${f.id})"><span>${f.date.slice(5)} ${getName(f.from)}→${getName(f.to)}</span><b>+${f.pp.toLocaleString()} PP</b></div>`;
         }
+
+        let waitHtml = "";
+        if(idx < flights.length - 1) {
+            let next = flights[idx+1];
+            if(f.to === next.from && f.date === next.date && f.arrive && next.depart) {
+                let diff = (new Date(next.date + "T" + next.depart) - new Date(f.date + "T" + f.arrive)) / 60000;
+                if(diff >= 0 && diff < 1440) waitHtml = `<br><span style="background:var(--success); color:white; font-size:7px; padding:1px 2px; border-radius:3px;">${Math.floor(diff/60)}h${diff%60}m 待機</span>`;
+            }
+        }
+        
         let ugArea = f.isUG ? "UG済" : (!f.done ? `<button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button><br><button class="ug-action-btn" style="background:#666; margin-top:2px;" onclick="scheduleUG('${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>` : "-");
-        table.innerHTML += `<tr class="${f.done ? 'row-done' : ''}"><td>${f.date.slice(5)}</td><td><span class="clickable-route" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}</span></td><td>${f.depart||""}</td><td>${f.pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td><td>${ugArea}<br><span onclick="del(${f.id})" style="color:red;">×</span></td></tr>`;
+        table.innerHTML += `<tr class="${f.done ? 'row-done' : ''}"><td>${f.date.slice(5)}</td><td><span class="clickable-route" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}</span>${waitHtml}</td><td>${f.depart||""}<br>↓<br>${f.arrive||""}</td><td>${f.pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td><td>${ugArea}<br><span onclick="del(${f.id})" style="color:red; font-size:16px;">×</span></td></tr>`;
     });
+
     const remainPP = Math.max(0, 50000 - totalP);
+    const nahaNew = 1477; // 羽田-那覇(新シンプル)
+    
     document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000 PP";
     document.getElementById("pendingTotalText").innerText = "(予約込合計: " + totalP.toLocaleString() + " PP)";
     document.getElementById("progressBar").style.width = Math.min(100, (actualP/50000)*100) + "%";
@@ -241,15 +238,22 @@ function render() {
     document.getElementById("remainPP").innerText = remainPP.toLocaleString();
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
     document.getElementById("paidBudget").innerText = "¥" + (flights.filter(f=>f.done).reduce((s,f)=>s+(f.price||0),0)).toLocaleString();
-    document.getElementById("aiAdvice").innerHTML = `残り <b>${remainPP.toLocaleString()} PP</b><br>羽田-那覇 あと <b>${Math.ceil(remainPP/1477)}往復</b> (新シンプル換算)`;
+    
+    document.getElementById("aiAdvice").innerHTML = `
+        残り <b>${remainPP.toLocaleString()} PP</b> (予約分を除く)<br>
+        5/19以降の「新シンプル運賃」で追加する場合：<br>
+        ・羽田-那覇 往復であと <b>${Math.ceil(remainPP/(nahaNew*2))}回</b><br>
+        ・羽田-那覇 片道であと <b>${Math.ceil(remainPP/nahaNew)}回</b>`;
+
     const maxPP = Math.max(...monthlyPP, 5000);
     monthlyPP.forEach((pp, i) => { 
         const h = (pp / maxPP) * 100; 
         graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp>0?`<span class="graph-val">${pp}</span>`:''}<span class="graph-label">${i+1}月</span></div>`; 
     });
 }
+
 function showBackup() { document.getElementById("backupArea").style.display="block"; document.getElementById("backupText").value = JSON.stringify(flights); }
-function importData() { let s = prompt("貼り付け:"); if(s) { flights = JSON.parse(s); save(); location.reload(); } }
+function importData() { let s = prompt("貼り付け:"); if(s) { try{flights = JSON.parse(s); save(); location.reload();}catch(e){alert("ERROR");}} }
 function reuseFlight(id) {
     const f = flights.find(x => x.id === id); if(!f) return;
     document.getElementById("from").value = getName(f.from); document.getElementById("to").value = getName(f.to);
