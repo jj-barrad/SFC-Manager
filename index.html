@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v58 - Ultimate Professional</title>
+<title>SFC Manager v59 - Professional Evolution</title>
 <style>
-    :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; }
+    :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; --gold: #d4af37; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
     header{background:var(--main-blue); color:white; padding: 45px 15px 15px 15px; text-align:center; font-weight:bold; font-size:1.2em; position: sticky; top: 0; z-index: 100;}
     .container{padding:12px; max-width:720px; margin:auto;}
@@ -16,7 +16,6 @@
     .routeBtn{width:auto; padding:10px 14px; margin:4px 2px; font-size:12px; background:#e9ecef; color:#333; border:1px solid #ddd; border-radius: 8px;}
     .swap-btn{width:48px; height:48px; margin: 0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
 
-    /* UI操作性を最高レベルで維持 */
     table{width:100%; border-collapse:collapse; font-size:10px; table-layout: fixed;}
     th, td{border-bottom:1px solid #eee; padding:6px 1px; text-align:center; word-wrap: break-word; line-height: 1.2;}
     input[type="checkbox"] { width: 24px; height: 24px; margin: 0; cursor: pointer; border: 2px solid var(--main-blue); }
@@ -35,11 +34,16 @@
     .graph-label { position: absolute; bottom: -18px; width: 100%; text-align: center; font-size: 9px; color: #999;}
     
     .history-item{font-size:13px; padding:14px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
+    
+    /* 新機能用スタイル */
+    .unit-price { font-size: 11px; background: #fffbe6; padding: 4px 8px; border-radius: 6px; border: 1px solid #ffe58f; margin-top: 8px; text-align: center; }
+    .benefit-tag { display: inline-block; font-size: 10px; padding: 2px 6px; background: var(--gold); color: white; border-radius: 4px; margin: 2px; }
+    .cheer-msg { font-style: italic; border-top: 1px solid #d0e3ff; margin-top: 10px; padding-top: 8px; font-weight: bold; }
 </style>
 </head>
 <body>
 
-<header>SFC Manager v58 - Final Fix</header>
+<header>SFC Manager v59 - Evolution</header>
 
 <div class="container">
     <div class="card">
@@ -55,6 +59,7 @@
             <div>実績(済)<br><b id="paidBudget" style="color:var(--money)">¥0</b></div>
             <div>残り必要<br><b id="remainPP" style="color:var(--main-blue)">50,000</b></div>
         </div>
+        <div id="avgUnitPrice" class="unit-price">PP単価: 分析中...</div>
     </div>
 
     <div class="card">
@@ -115,6 +120,7 @@
     <div class="card">
         <h3>AI修行診断 & 管理</h3>
         <div id="aiAdvice" class="ai-box"></div>
+        <div id="cheerMessage" class="ai-box cheer-msg" style="margin-top:8px; display:none;"></div>
         <div style="display:flex; gap:10px; margin-top:10px;">
             <button style="flex:1; background:#6c757d; font-size:12px;" onclick="showBackup()">バックアップ作成</button>
             <button style="flex:1; background:#6c757d; font-size:12px;" onclick="importData()">復元</button>
@@ -122,6 +128,17 @@
         <div id="backupArea" style="display:none; margin-top:10px;">
             <textarea id="backupText" readonly style="width:100%; height:100px; font-size:10px; font-family:monospace;"></textarea>
             <button onclick="document.getElementById('backupArea').style.display='none'">閉じる</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>SFC解脱後の世界</h3>
+        <div style="font-size: 13px; line-height: 1.5;">
+            <span class="benefit-tag">専用保安検査場</span> <span class="benefit-tag">ラウンジ利用</span> 
+            <span class="benefit-tag">優先搭乗</span> <span class="benefit-tag">手荷物優先受取</span> 
+            <span class="benefit-tag">特典枠拡大</span> <span class="benefit-tag">スタアラゴールド</span>
+            <span class="benefit-tag">専用デスク</span> <span class="benefit-tag">マイル期限実質無</span>
+            <p style="margin: 8px 0 0 0; font-size: 11px; color: #666;">※一度取得すれば、カードを維持する限り一生継続される「空の特権クラス」への招待状です。</p>
         </div>
     </div>
 
@@ -145,7 +162,6 @@
 </div>
 
 <script>
-// 距離DB・空港MAP 完全復元
 const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","ホノルル":"HNL","クアラルンプール":"KUL","シドニー":"SYD","ジャカルタ":"CGK"};
 const distDB = {"HND-OKA":984, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1221, "HND-ITM":280, "OKA-ISG":247, "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-HNL":3831, "HND-KUL":3338, "HND-SYD":4930, "HND-CGK":3612};
 
@@ -220,7 +236,7 @@ function toggleDone(id) { let f=flights.find(x=>x.id===id); if(f) f.done=!f.done
 function render() {
     const table = document.getElementById("tableBody"), history = document.getElementById("historyList"), graph = document.getElementById("ppGraph");
     table.innerHTML = ""; history.innerHTML = ""; graph.innerHTML = "";
-    let actualP=0, totalP=0, totalC=0, monthlyPP = Array(12).fill(0);
+    let actualP=0, totalP=0, totalC=0, paidC=0, monthlyPP = Array(12).fill(0);
     flights.sort((a,b) => (a.date + (a.depart || "23:59")).localeCompare(b.date + (b.depart || "23:59")));
 
     flights.forEach((f, idx) => {
@@ -228,6 +244,7 @@ function render() {
         totalP += f.pp; totalC += (f.price || 0);
         if(f.done) {
             actualP += f.pp;
+            paidC += (f.price || 0);
             let m = parseInt(f.date.slice(5, 7)); if (m >= 1 && m <= 12) monthlyPP[m - 1] += f.pp;
             history.innerHTML += `<div class="history-item" onclick="reuseFlight(${f.id})"><span>${f.date.slice(5)} ${getName(f.from)}→${getName(f.to)}</span><b>+${f.pp.toLocaleString()} PP</b></div>`;
         }
@@ -249,12 +266,33 @@ function render() {
     document.getElementById("progressPending").style.width = Math.min(100, (totalP/50000)*100) + "%";
     document.getElementById("remainPP").innerText = remainAfterPending.toLocaleString();
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
-    document.getElementById("paidBudget").innerText = "¥" + (flights.filter(f=>f.done).reduce((s,f)=>s+(f.price||0),0)).toLocaleString();
+    document.getElementById("paidBudget").innerText = "¥" + paidC.toLocaleString();
     
-    // AI診断ロジック修正: 石垣ルートと当日UGの加算を正確に表示
-    let simpleNaha = 2954; // 羽田-那覇 新シンプル(70%+100) x2
-    let simpleIshigaki = 3618; // 羽田-石垣 新シンプル(70%+100) x2
-    document.getElementById("aiAdvice").innerHTML = `残り <b>${remainAfterPending.toLocaleString()} PP</b> (予約分除く)<br>【解脱戦略 (5/19〜新運賃)】<br>・石垣往復なら あと <b>${Math.ceil(remainAfterPending/simpleIshigaki)}回</b><br>・那覇往復なら あと <b>${Math.ceil(remainAfterPending/simpleNaha)}回</b><br>※当日UG成功で石垣なら <b>+1,832 PP</b>、那覇なら <b>+1,476 PP</b> 加算！`;
+    // PP単価の計算と表示
+    const avgPaid = actualP > 0 ? (paidC / actualP).toFixed(2) : "0.00";
+    const avgTotal = totalP > 0 ? (totalC / totalP).toFixed(2) : "0.00";
+    document.getElementById("avgUnitPrice").innerText = `PP単価: 実績 ¥${avgPaid} / 全体 ¥${avgTotal}`;
+
+    // AI診断 & 応援メッセージ
+    let simpleNaha = 2954; 
+    let simpleIshigaki = 3618; 
+    let cheer = "";
+    if (totalP >= 50000) {
+        cheer = "【解脱確定】おめでとうございます！あとは搭乗を楽しむだけですね。一生モノのSFCまで秒読みです。";
+    } else if (totalP >= 40000) {
+        cheer = "【クライマックス】残り1万PPを切りました！金欠は辛いですが、ここが正念場。一生の価値が手に入ります。";
+    } else if (totalP >= 25000) {
+        cheer = "【折り返し地点】半分を超えました！空の旅にも慣れてきた頃でしょうか。後半戦も無理せずいきましょう。";
+    } else if (totalP > 0) {
+        cheer = "【修行の始まり】最初の一歩が一番大切です。サンディエゴの朗報など、幸運が舞い込むことを祈っています！";
+    } else {
+        cheer = "まずはプランを作成しましょう。私が全力でサポートします！";
+    }
+    
+    document.getElementById("aiAdvice").innerHTML = `残り <b>${remainAfterPending.toLocaleString()} PP</b> (予約分除く)<br>【解脱戦略 (5/19〜新運賃)】<br>・石垣往復なら あと <b>${Math.ceil(remainAfterPending/simpleIshigaki)}回</b><br>・那覇往復なら あと <b>${Math.ceil(remainAfterPending/simpleNaha)}回</b><br>※当日UG成功で効率UP！`;
+    const cheerEl = document.getElementById("cheerMessage");
+    cheerEl.innerText = cheer;
+    cheerEl.style.display = "block";
 
     const maxPP = Math.max(...monthlyPP, 5000);
     monthlyPP.forEach((pp, i) => { 
