@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>SFC Manager v59 - Professional Evolution</title>
+<title>SFC Manager v60 - Precision & Interactive</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; --gold: #d4af37; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -35,15 +35,15 @@
     
     .history-item{font-size:13px; padding:14px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
     
-    /* 新機能用スタイル */
     .unit-price { font-size: 11px; background: #fffbe6; padding: 4px 8px; border-radius: 6px; border: 1px solid #ffe58f; margin-top: 8px; text-align: center; }
-    .benefit-tag { display: inline-block; font-size: 10px; padding: 2px 6px; background: var(--gold); color: white; border-radius: 4px; margin: 2px; }
-    .cheer-msg { font-style: italic; border-top: 1px solid #d0e3ff; margin-top: 10px; padding-top: 8px; font-weight: bold; }
+    .benefit-tag { display: inline-block; font-size: 10px; padding: 6px 10px; background: var(--gold); color: white; border-radius: 20px; margin: 3px; cursor: pointer; transition: opacity 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .benefit-tag:active { opacity: 0.7; }
+    .cheer-msg { font-style: italic; border-top: 1px solid #d0e3ff; margin-top: 10px; padding-top: 8px; font-weight: bold; color: #d9534f; }
 </style>
 </head>
 <body>
 
-<header>SFC Manager v59 - Evolution</header>
+<header>SFC Manager v60 - Full Professional</header>
 
 <div class="container">
     <div class="card">
@@ -132,13 +132,16 @@
     </div>
 
     <div class="card">
-        <h3>SFC解脱後の世界</h3>
+        <h3>SFC解脱後の世界 (タップして詳細)</h3>
         <div style="font-size: 13px; line-height: 1.5;">
-            <span class="benefit-tag">専用保安検査場</span> <span class="benefit-tag">ラウンジ利用</span> 
-            <span class="benefit-tag">優先搭乗</span> <span class="benefit-tag">手荷物優先受取</span> 
-            <span class="benefit-tag">特典枠拡大</span> <span class="benefit-tag">スタアラゴールド</span>
-            <span class="benefit-tag">専用デスク</span> <span class="benefit-tag">マイル期限実質無</span>
-            <p style="margin: 8px 0 0 0; font-size: 11px; color: #666;">※一度取得すれば、カードを維持する限り一生継続される「空の特権クラス」への招待状です。</p>
+            <span class="benefit-tag" onclick="showBenefit('専用保安検査場')">専用保安検査場</span> 
+            <span class="benefit-tag" onclick="showBenefit('ラウンジ利用')">ラウンジ利用</span> 
+            <span class="benefit-tag" onclick="showBenefit('優先搭乗')">優先搭乗</span> 
+            <span class="benefit-tag" onclick="showBenefit('手荷物優先受取')">手荷物優先受取</span> 
+            <span class="benefit-tag" onclick="showBenefit('特典枠拡大')">特典枠拡大</span> 
+            <span class="benefit-tag" onclick="showBenefit('スタアラゴールド')">スタアラゴールド</span>
+            <span class="benefit-tag" onclick="showBenefit('専用デスク')">専用デスク</span> 
+            <span class="benefit-tag" onclick="showBenefit('マイル期限実質無')">マイル期限実質無</span>
         </div>
     </div>
 
@@ -162,26 +165,30 @@
 </div>
 
 <script>
+// 基本データベース
 const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","ホノルル":"HNL","クアラルンプール":"KUL","シドニー":"SYD","ジャカルタ":"CGK"};
 const distDB = {"HND-OKA":984, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1221, "HND-ITM":280, "OKA-ISG":247, "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-HNL":3831, "HND-KUL":3338, "HND-SYD":4930, "HND-CGK":3612};
+const benefits = {
+    '専用保安検査場': 'ANA PREMIUM CHECK-INが利用可能。GWや盆正月の数十分待ちの列をスキップして、数分で通過できます。',
+    'ラウンジ利用': 'ANA LOUNGEが本人＋同行者1名まで無料。ビールや軽食を楽しみながら搭乗を待てます。',
+    '優先搭乗': 'Group 2での搭乗が可能。機内持ち込み手荷物の収納場所を確実に確保できます。',
+    '手荷物優先受取': '「PRIORITY」タグにより、到着地で荷物が真っ先に出てきます。終電争いの数分を勝ち取れます。',
+    '特典枠拡大': '一般会員には開放されないマイル用の席が開放されます。家族旅行や繁忙期の予約が劇的に有利になります。',
+    'スタアラゴールド': '世界26社のスターアライアンス加盟航空会社で、ラウンジ利用や優先チェックインのVIP待遇が受けられます。',
+    '専用デスク': '電話が繋がりやすい専用ダイヤル。欠航や遅延時のリカバリー相談において強力な味方となります。',
+    'マイル期限実質無': 'ANAカードの維持やステータス特典により、貯めたマイルの失効を気にせず長期的な旅行計画が立てられます。'
+};
 
 let flights = JSON.parse(localStorage.getItem("sfc_v17_data")) || [];
 
+// UIヘルパー
 function getCode(name) { return airportMap[name] || (name ? name.toUpperCase() : ""); }
 function getName(code) { for(let n in airportMap) { if(airportMap[n] === code) return n; } return code; }
 function swapRoute() { const f = document.getElementById("from").value, t = document.getElementById("to").value; document.getElementById("from").value = t; document.getElementById("to").value = f; }
 function setRoute(f, t) { document.getElementById("from").value = f; document.getElementById("to").value = t; }
+function showBenefit(key) { alert(`${key}\n\n${benefits[key]}`); }
 
-function scheduleUG(dateStr, route) {
-    const ugDate = new Date(dateStr + "T00:00:00"); ugDate.setDate(ugDate.getDate() - 2); 
-    const startStr = ugDate.toISOString().replace(/-|:|\.\d+/g, "").split(".")[0];
-    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nDESCRIPTION:SFC修行用UG申込開始通知\nEND:VEVENT\nEND:VCALENDAR`;
-    if(confirm(`${ugDate.toLocaleDateString()}の通知を保存しますか？`)) {
-        const blob = new Blob([icsContent], {type: "text/calendar"});
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ug_alert.ics"; a.click();
-    }
-}
-
+// PP計算
 function calcPP(f, t, rStr, dateStr) {
     let key = f+"-"+t, rev = t+"-"+f;
     let base = distDB[key] || distDB[rev] || 0;
@@ -207,6 +214,7 @@ function calcPP(f, t, rStr, dateStr) {
     return (Math.floor(base * rate) * 2) + bonus;
 }
 
+// 登録・更新
 function addFlight() {
     const from = getCode(document.getElementById("from").value), to = getCode(document.getElementById("to").value);
     const date = document.getElementById("flightDate").value, trip = document.getElementById("trip").value;
@@ -233,6 +241,7 @@ function save() { localStorage.setItem("sfc_v17_data", JSON.stringify(flights));
 function del(id) { if(confirm("削除?")) { flights=flights.filter(f=>f.id!==id); save(); } }
 function toggleDone(id) { let f=flights.find(x=>x.id===id); if(f) f.done=!f.done; save(); }
 
+// 描画コア
 function render() {
     const table = document.getElementById("tableBody"), history = document.getElementById("historyList"), graph = document.getElementById("ppGraph");
     table.innerHTML = ""; history.innerHTML = ""; graph.innerHTML = "";
@@ -268,31 +277,24 @@ function render() {
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
     document.getElementById("paidBudget").innerText = "¥" + paidC.toLocaleString();
     
-    // PP単価の計算と表示
+    // PP単価
     const avgPaid = actualP > 0 ? (paidC / actualP).toFixed(2) : "0.00";
     const avgTotal = totalP > 0 ? (totalC / totalP).toFixed(2) : "0.00";
     document.getElementById("avgUnitPrice").innerText = `PP単価: 実績 ¥${avgPaid} / 全体 ¥${avgTotal}`;
 
-    // AI診断 & 応援メッセージ
+    // AI診断 & 応援 (実績ベース)
     let simpleNaha = 2954; 
     let simpleIshigaki = 3618; 
     let cheer = "";
-    if (totalP >= 50000) {
-        cheer = "【解脱確定】おめでとうございます！あとは搭乗を楽しむだけですね。一生モノのSFCまで秒読みです。";
-    } else if (totalP >= 40000) {
-        cheer = "【クライマックス】残り1万PPを切りました！金欠は辛いですが、ここが正念場。一生の価値が手に入ります。";
-    } else if (totalP >= 25000) {
-        cheer = "【折り返し地点】半分を超えました！空の旅にも慣れてきた頃でしょうか。後半戦も無理せずいきましょう。";
-    } else if (totalP > 0) {
-        cheer = "【修行の始まり】最初の一歩が一番大切です。サンディエゴの朗報など、幸運が舞い込むことを祈っています！";
-    } else {
-        cheer = "まずはプランを作成しましょう。私が全力でサポートします！";
-    }
+    if (actualP >= 50000) { cheer = "【完遂】解脱おめでとうございます！一生モノの特権をお楽しみください。"; }
+    else if (actualP >= 40000) { cheer = "【最終盤】あと1万PP！金欠の苦しみも、この一踏ん張りで報われます。頑張りましょう！"; }
+    else if (actualP >= 25000) { cheer = "【折返し】半分到達。空の旅が日常になってきましたね。サンディエゴの結果も待ち遠しいです。"; }
+    else if (actualP > 0) { cheer = "【修行中】着実に積み上がっています。焦らず、安いチケットを狙い撃ちしていきましょう。"; }
+    else { cheer = "【準備中】まずはプランを練りましょう。最高の効率化を目指してサポートします。"; }
     
-    document.getElementById("aiAdvice").innerHTML = `残り <b>${remainAfterPending.toLocaleString()} PP</b> (予約分除く)<br>【解脱戦略 (5/19〜新運賃)】<br>・石垣往復なら あと <b>${Math.ceil(remainAfterPending/simpleIshigaki)}回</b><br>・那覇往復なら あと <b>${Math.ceil(remainAfterPending/simpleNaha)}回</b><br>※当日UG成功で効率UP！`;
+    document.getElementById("aiAdvice").innerHTML = `残り <b>${remainAfterPending.toLocaleString()} PP</b> (予約分除く)<br>【解脱戦略 (5/19〜新運賃)】<br>・石垣往復なら あと <b>${Math.ceil(remainAfterPending/simpleIshigaki)}回</b><br>・那覇往復なら あと <b>${Math.ceil(remainAfterPending/simpleNaha)}回</b><br>※当日UG成功で石垣なら <b>+1,832 PP</b>、那覇なら <b>+1,476 PP</b> 加算！`;
     const cheerEl = document.getElementById("cheerMessage");
-    cheerEl.innerText = cheer;
-    cheerEl.style.display = "block";
+    cheerEl.innerText = cheer; cheerEl.style.display = "block";
 
     const maxPP = Math.max(...monthlyPP, 5000);
     monthlyPP.forEach((pp, i) => { 
@@ -303,17 +305,25 @@ function render() {
 
 function showBackup() { document.getElementById("backupArea").style.display="block"; document.getElementById("backupText").value = JSON.stringify(flights); }
 function importData() { let s = prompt("貼り付け:"); if(!s) return; try { let d = JSON.parse(s); if(Array.isArray(d)) { flights = d; save(); location.reload(); } } catch(e) { alert("ERROR"); } }
-
 function reuseFlight(id) {
     const f = flights.find(x => x.id === id); if(!f) return;
     document.getElementById("from").value = getName(f.from);
     document.getElementById("to").value = getName(f.to);
-    document.getElementById("price").value = f.price || 0;
+    document.getElementById("price").value = (f.price*2) || 0;
     document.getElementById("flightDate").value = f.date || "";
     document.getElementById("departTime").value = f.depart || "";
     document.getElementById("arriveTime").value = f.arrive || "";
     document.getElementById("rate").value = f.rateStr || "0.75";
     window.scrollTo({top: 150, behavior: 'smooth'});
+}
+function scheduleUG(dateStr, route) {
+    const ugDate = new Date(dateStr + "T00:00:00"); ugDate.setDate(ugDate.getDate() - 2); 
+    const startStr = ugDate.toISOString().replace(/-|:|\.\d+/g, "").split(".")[0];
+    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nDESCRIPTION:SFC修行用UG申込開始通知\nEND:VEVENT\nEND:VCALENDAR`;
+    if(confirm(`${ugDate.toLocaleDateString()}の通知を保存しますか？`)) {
+        const blob = new Blob([icsContent], {type: "text/calendar"});
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ug_alert.ics"; a.click();
+    }
 }
 render();
 </script>
