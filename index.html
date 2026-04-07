@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
 
-<title>SFC Manager v61 - Full Planner Edition</title>
+<title>SFC Manager v62 - Perfect Action Edition</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; --gold: #d4af37; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-top: env(safe-area-inset-top); padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -22,11 +22,12 @@
     .swap-btn{width:48px; height:48px; margin: 0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
 
     table{width:100%; border-collapse:collapse; font-size:10px; table-layout: fixed;}
-    th, td{border-bottom:1px solid #eee; padding:6px 1px; text-align:center; word-wrap: break-word; line-height: 1.2;}
+    th, td{border-bottom:1px solid #eee; padding:8px 1px; text-align:center; word-wrap: break-word; line-height: 1.2;}
+    tr.copyable:active { background-color: #e9ecef; }
     input[type="checkbox"] { width: 24px; height: 24px; margin: 0; cursor: pointer; border: 2px solid var(--main-blue); }
     .row-done { background-color: #f8f9fa; color: #aaa; }
-    .clickable-route { color: var(--accent-blue); text-decoration: underline; cursor: pointer; font-weight: bold; position: relative; }
-    .has-memo::after { content: "📝"; position: absolute; top: -8px; right: -8px; font-size: 10px; }
+    .memo-icon { display: inline-block; font-size: 14px; cursor: pointer; padding: 4px; background: #eee; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
+    .memo-icon.active { background: var(--warning); color: white; }
 
     .progress{background:#ddd; height:24px; border-radius:12px; margin:10px 0; overflow:hidden; position: relative;}
     .progress-inner{background:linear-gradient(90deg, var(--main-blue), var(--accent-blue)); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 2;}
@@ -34,9 +35,8 @@
     .ai-box{background:#f0f7ff; padding:15px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff; color: #003f88;}
     .ug-action-btn{background:var(--ug-purple); color:white; font-size:10px; padding:4px 6px; border-radius:5px; width:auto; margin:2px 0; display: inline-block;}
     
-    /* モーダル */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-content { background: white; width: 92%; max-width: 500px; border-radius: 20px; padding: 20px; max-height: 85vh; overflow-y: auto; position: relative; }
+    .modal-content { background: white; width: 92%; max-width: 500px; border-radius: 20px; padding: 20px; max-height: 85vh; overflow-y: auto; }
     .memo-area { background: #fffbe6; border: 1px solid #ffe58f; min-height: 100px; white-space: pre-wrap; font-size: 13px; padding: 12px; border-radius: 8px; margin-top: 10px; color: #444; line-height: 1.5; }
 
     .graph-container { width: 100%; height: 120px; display: flex; align-items: flex-end; justify-content: space-around; padding: 20px 0 20px 0; position: relative; }
@@ -47,13 +47,12 @@
     .history-item{font-size:13px; padding:14px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
     .unit-price { font-size: 11px; background: #fffbe6; padding: 4px 8px; border-radius: 6px; border: 1px solid #ffe58f; margin-top: 8px; text-align: center; }
     .benefit-tag { display: inline-block; font-size: 10px; padding: 6px 10px; background: var(--gold); color: white; border-radius: 20px; margin: 3px; cursor: pointer; transition: opacity 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .benefit-tag:active { opacity: 0.7; }
     .cheer-msg { font-style: italic; border-top: 1px solid #d0e3ff; margin-top: 10px; padding-top: 8px; font-weight: bold; color: #d9534f; }
 </style>
 </head>
 <body>
 
-<header>SFC Manager v61 - Integrated Planner</header>
+<header>SFC Manager v62</header>
 
 <div class="container">
     <div class="card">
@@ -142,7 +141,7 @@
     </div>
 
     <div class="card">
-        <h3>SFC解脱後の世界 (タップして詳細)</h3>
+        <h3>SFC解脱後の世界 (タップ詳細)</h3>
         <div style="font-size: 13px; line-height: 1.5;">
             <span class="benefit-tag" onclick="showBenefit('専用保安検査場')">専用保安検査場</span> 
             <span class="benefit-tag" onclick="showBenefit('ラウンジ利用')">ラウンジ利用</span> 
@@ -156,9 +155,9 @@
     </div>
 
     <div class="card">
-        <h3>フライトスケジュール (区間タップでしおり表示)</h3>
+        <h3>フライトスケジュール</h3>
         <div style="overflow-x:auto;"><table>
-            <thead><tr><th style="width:14%">日付</th><th style="width:38%">区間/待機</th><th style="width:14%">時刻</th><th style="width:12%">PP</th><th style="width:10%">済</th><th style="width:12%">操作</th></tr></thead>
+            <thead><tr><th style="width:14%">日付</th><th style="width:38%">区間/しおり</th><th style="width:14%">時刻</th><th style="width:12%">PP</th><th style="width:10%">済</th><th style="width:12%">操作</th></tr></thead>
             <tbody id="tableBody"></tbody>
         </table></div>
     </div>
@@ -176,11 +175,10 @@
 
 <div id="memoModal" class="modal">
     <div class="modal-content">
-        <h3 id="modalTitle" style="margin-top: 0;">修行しおり・メモ</h3>
-        <p style="font-size:11px; color:#666;">現地プランや酒蔵メモ、歴史的背景を記録してください。</p>
-        <textarea id="modalMemoInput" placeholder="プランやテイスティングノートを貼り付け..." style="height: 180px;"></textarea>
+        <h3 id="modalTitle" style="margin-top: 0;">修行しおり</h3>
+        <textarea id="modalMemoInput" placeholder="プランやメモを貼り付け..." style="height: 200px;"></textarea>
         <div style="display:flex; gap:10px;">
-            <button onclick="saveMemo()" style="flex:2; background:var(--success);">しおりを保存</button>
+            <button onclick="saveMemo()" style="flex:2; background:var(--success);">保存</button>
             <button onclick="closeModal()" style="flex:1; background:#666;">閉じる</button>
         </div>
         <div id="memoDisplay" class="memo-area"></div>
@@ -191,14 +189,14 @@
 const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","ホノルル":"HNL","クアラルンプール":"KUL","シドニー":"SYD","ジャカルタ":"CGK"};
 const distDB = {"HND-OKA":984, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1221, "HND-ITM":280, "OKA-ISG":247, "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-HNL":3831, "HND-KUL":3338, "HND-SYD":4930, "HND-CGK":3612};
 const benefits = {
-    '専用保安検査場': 'ANA PREMIUM CHECK-INが利用可能。GWや盆正月の数十分待ちの列をスキップして、数分で通過できます。',
-    'ラウンジ利用': 'ANA LOUNGEが本人＋同行者1名まで無料。ビールや軽食を楽しみながら搭乗を待てます。',
-    '優先搭乗': 'Group 2での搭乗が可能。機内持ち込み手荷物の収納場所を確実に確保できます。',
-    '手荷物優先受取': '「PRIORITY」タグにより、到着地で荷物が真っ先に出てきます。終電争いの数分を勝ち取れます。',
-    '特典枠拡大': '一般会員には開放されないマイル用の席が開放されます。家族旅行や繁忙期の予約が劇的に有利になります。',
-    'スタアラゴールド': '世界26社のスターアライアンス加盟航空会社で、ラウンジ利用や優先チェックインのVIP待遇が受けられます。',
-    '専用デスク': '電話が繋がりやすい専用ダイヤル。欠航や遅延時のリカバリー相談において強力な味方となります。',
-    'マイル期限実質無': 'ANAカードの維持やステータス特典により、貯めたマイルの失効を気にせず長期的な旅行計画が立てられます。'
+    '専用保安検査場': 'ANA PREMIUM CHECK-INが利用可能。GWや盆正月の列をスキップできます。',
+    'ラウンジ利用': 'ANA LOUNGEが本人＋同行者1名まで無料。ビールや軽食を楽しめます。',
+    '優先搭乗': 'Group 2での搭乗が可能。荷物棚を確実に確保できます。',
+    '手荷物優先受取': '「PRIORITY」タグにより、到着地で荷物が真っ先に出てきます。',
+    '特典枠拡大': '一般会員には開放されないマイル用の席が開放されます。',
+    'スタアラゴールド': '世界26社の航空会社でラウンジ利用等のVIP待遇が受けられます。',
+    '専用デスク': '電話が繋がりやすい専用ダイヤルでの相談が可能です。',
+    'マイル期限実質無': '貯めたマイルの失効を気にせず計画が立てられます。'
 };
 
 let flights = JSON.parse(localStorage.getItem("sfc_v17_data")) || [];
@@ -215,7 +213,6 @@ function calcPP(f, t, rStr, dateStr) {
     let base = distDB[key] || distDB[rev] || 0;
     if(base===0) return 0;
     const isNew = dateStr && new Date(dateStr) >= new Date("2026-05-19");
-
     if(rStr.includes("_intl")) {
         let rate = parseFloat(rStr);
         let multi = (["SIN","BKK","TSA","KUL","SYD","CGK"].includes(f) || ["SIN","BKK","TSA","KUL","SYD","CGK"].includes(t)) ? 1.5 : 1.0;
@@ -248,8 +245,7 @@ function addFlight() {
 }
 
 function tryUG(id) {
-    let f = flights.find(x => x.id === id);
-    if(!f) return;
+    let f = flights.find(x => x.id === id); if(!f) return;
     let base = distDB[f.from+"-"+f.to] || distDB[f.to+"-"+f.from] || 0;
     let ugPrice = (f.from==="OKA" && f.to==="ISG") || (f.from==="ISG" && f.to==="OKA") ? 4000 : 14000;
     if(confirm(`当日UG(${ugPrice.toLocaleString()}円 / +50%)を実行しますか？`)) {
@@ -257,13 +253,13 @@ function tryUG(id) {
     }
 }
 
-// メモ・モーダル関連
-function openMemo(id) {
+function openMemo(e, id) {
+    e.stopPropagation();
     currentEditingId = id;
     const f = flights.find(x => x.id === id);
     document.getElementById("modalTitle").innerText = `${getName(f.from)} → ${getName(f.to)} (${f.date})`;
     document.getElementById("modalMemoInput").value = f.memo || "";
-    document.getElementById("memoDisplay").innerText = f.memo || "メモはまだありません。現地プランを貼り付けてください。";
+    document.getElementById("memoDisplay").innerText = f.memo || "メモなし";
     document.getElementById("memoModal").style.display = "flex";
 }
 function saveMemo() {
@@ -273,8 +269,8 @@ function saveMemo() {
 function closeModal() { document.getElementById("memoModal").style.display = "none"; }
 
 function save() { localStorage.setItem("sfc_v17_data", JSON.stringify(flights)); render(); }
-function del(id) { if(confirm("削除?")) { flights=flights.filter(f=>f.id!==id); save(); } }
-function toggleDone(id) { let f=flights.find(x=>x.id===id); if(f) f.done=!f.done; save(); }
+function del(e, id) { e.stopPropagation(); if(confirm("削除?")) { flights=flights.filter(f=>f.id!==id); save(); } }
+function toggleDone(e, id) { e.stopPropagation(); let f=flights.find(x=>x.id===id); if(f) f.done=!f.done; save(); }
 
 function render() {
     const table = document.getElementById("tableBody"), history = document.getElementById("historyList"), graph = document.getElementById("ppGraph");
@@ -297,9 +293,18 @@ function render() {
                 if(diff >= 0 && diff < 1440) waitHtml = `<br><span style="background:var(--success); color:white; font-size:7px; padding:1px 2px; border-radius:3px;">${Math.floor(diff/60)}h${diff%60}m 待機</span>`;
             }
         }
-        let memoClass = f.memo ? "clickable-route has-memo" : "clickable-route";
-        let ugArea = f.isUG ? "UG済" : (!f.done ? `<button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button><br><button class="ug-action-btn" style="background:#666; margin-top:2px;" onclick="scheduleUG('${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>` : "-");
-        table.innerHTML += `<tr class="${f.done ? 'row-done' : ''}"><td>${f.date.slice(5).replace('-','/')}</td><td><span class="${memoClass}" onclick="openMemo(${f.id})">${getName(f.from)}→${getName(f.to)}</span>${waitHtml}</td><td>${f.depart||""}<br>↓<br>${f.arrive||""}</td><td>${f.pp.toLocaleString()}</td><td><input type="checkbox" ${f.done?'checked':''} onchange="toggleDone(${f.id})"></td><td>${ugArea}<br><span onclick="del(${f.id})" style="color:red; font-size:16px;">×</span></td></tr>`;
+        let ugArea = f.isUG ? "UG済" : (!f.done ? `<button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button><br><button class="ug-action-btn" style="background:#666; margin-top:2px;" onclick="scheduleUG(event,'${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>` : "-");
+        
+        let row = document.createElement("tr");
+        row.className = f.done ? "row-done copyable" : "copyable";
+        row.onclick = () => reuseFlight(f.id);
+        row.innerHTML = `<td>${f.date.slice(5).replace('-','/')}</td>
+            <td style="color:var(--accent-blue); font-weight:bold;">${getName(f.from)}→${getName(f.to)}<span class="memo-icon ${f.memo?'active':''}" onclick="openMemo(event, ${f.id})">📝</span>${waitHtml}</td>
+            <td>${f.depart||""}<br>↓<br>${f.arrive||""}</td>
+            <td>${f.pp.toLocaleString()}</td>
+            <td><input type="checkbox" ${f.done?'checked':''} onclick="toggleDone(event, ${f.id})"></td>
+            <td>${ugArea}<br><span onclick="del(event, ${f.id})" style="color:red; font-size:16px;">×</span></td>`;
+        table.appendChild(row);
     });
 
     const remainAfterPending = Math.max(0, 50000 - totalP);
@@ -348,10 +353,11 @@ function reuseFlight(id) {
     window.scrollTo({top: 150, behavior: 'smooth'});
 }
 
-function scheduleUG(dateStr, route) {
+function scheduleUG(e, dateStr, route) {
+    if(e) e.stopPropagation();
     const ugDate = new Date(dateStr + "T00:00:00"); ugDate.setDate(ugDate.getDate() - 2); 
     const startStr = ugDate.toISOString().replace(/-|:|\.\d+/g, "").split(".")[0];
-    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nDESCRIPTION:SFC修行用UG申込開始通知\nEND:VEVENT\nEND:VCALENDAR`;
+    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nEND:VEVENT\nEND:VCALENDAR`;
     if(confirm(`${ugDate.toLocaleDateString()}の通知を保存しますか？`)) {
         const blob = new Blob([icsContent], {type: "text/calendar"});
         const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ug_alert.ics"; a.click();
