@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
 
-<title>SFC Manager v62 - Perfect Action Edition</title>
+<title>SFC Manager v62 - Final Action Edition</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; --gold: #d4af37; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-top: env(safe-area-inset-top); padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -248,8 +248,12 @@ function addFlight() {
 function tryUG(id) {
     let f = flights.find(x => x.id === id); if(!f) return;
     let base = distDB[f.from+"-"+f.to] || distDB[f.to+"-"+f.from] || 0;
-    let ugPrice = (f.from==="OKA" && f.to==="ISG") || (f.from==="ISG" && f.to==="OKA") ? 4000 : 14000;
-    if(confirm(`当日UG(${ugPrice.toLocaleString()}円 / +50%)を実行しますか？`)) {
+    // 料金判定の修正: 羽田-石垣(ISG)は15,000円。那覇-石垣のみ4,000円。他(那覇-羽田)は14,000円
+    let ugPrice = 14000;
+    if((f.from==="OKA" && f.to==="ISG") || (f.from==="ISG" && f.to==="OKA")) ugPrice = 4000;
+    else if((f.from==="HND" && f.to==="ISG") || (f.from==="ISG" && f.to==="HND")) ugPrice = 15000;
+
+    if(confirm(`当日UG(${ugPrice.toLocaleString()}円 / +50%)を実行しますか？\n※搭乗ポイントは増えません。`)) {
         f.pp += (Math.floor(base * 0.5) * 2); f.price += ugPrice; f.isUG = true; save();
     }
 }
@@ -321,6 +325,7 @@ function render() {
     const avgTotal = totalP > 0 ? (totalC / totalP).toFixed(2) : "0.00";
     document.getElementById("avgUnitPrice").innerText = `PP単価: 実績 ¥${avgPaid} / 全体 ¥${avgTotal}`;
 
+    // 新運賃シミュレーション値の更新
     let simpleNaha = 2954; let simpleIshigaki = 3618; let cheer = "";
     if (actualP >= 50000) cheer = "【完遂】解脱おめでとうございます！一生モノの特権をお楽しみください。";
     else if (actualP >= 40000) cheer = "【最終盤】あと1万PP！金欠の苦しみも、この一踏ん張りで報われます。頑張りましょう！";
@@ -328,6 +333,7 @@ function render() {
     else if (actualP > 0) cheer = "【修行中】着実に積み上がっています。焦らず、安いチケットを狙い撃ちしていきましょう。";
     else cheer = "【準備中】まずはプランを練りましょう。最高の効率化を目指してサポートします。";
     
+    // コメントを正確な加算値に修正
     document.getElementById("aiAdvice").innerHTML = `残り <b>${remainAfterPending.toLocaleString()} PP</b> (予約分除く)<br>【解脱戦略 (5/19〜新運賃)】<br>・石垣往復なら あと <b>${Math.ceil(remainAfterPending/simpleIshigaki)}回</b><br>・那覇往復なら あと <b>${Math.ceil(remainAfterPending/simpleNaha)}回</b><br>※当日UG成功で石垣なら +1,221 PP、那覇なら +984 PP 純増！`;
     const cheerEl = document.getElementById("cheerMessage");
     cheerEl.innerText = cheer; cheerEl.style.display = "block";
