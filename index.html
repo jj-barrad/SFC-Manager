@@ -327,12 +327,13 @@ function render() {
 
     // 新運賃シミュレーション値の更新
     let simpleNaha = 2954; let simpleIshigaki = 3618; let cheer = "";
-    if (actualP >= 50000) cheer = "【完遂】解脱おめでとうございます！一生モノの特権をお楽しみください。";
-    else if (actualP >= 40000) cheer = "【最終盤】あと1万PP！金欠の苦しみも、この一踏ん張りで報われます。頑張りましょう！";
-    else if (actualP >= 25000) cheer = "【折返し】半分到達。空の旅が日常になってきましたね。サンディエゴの結果も待ち遠しいです。";
-    else if (actualP > 0) cheer = "【修行中】着実に積み上がっています。焦らず、安いチケットを狙い撃ちしていきましょう。";
-    else cheer = "【準備中】まずはプランを練りましょう。最高の効率化を目指してサポートします。";
-    
+    if (actualP >= 50000) {cheer = "【解脱】おめでとうございます！これからは『修行』ではなく『極上の旅』があなたを待っています。";} 
+    else if (actualP >= 40000) {cheer = "【調整局面】あと一息！機材変更や欠航のリスクを考慮しつつ、当日UGでの『PP微調整』が鍵を握ります。";} 
+    else if (actualP >= 25000) {cheer = "【実戦投入】半分突破！5/8の那覇やサンディエゴ等、確定済みの旅程を一つずつ確実に『済』に変えていきましょう。";} 
+    else if (actualP > 0) {cheer = "【離陸完了】修行の号砲は鳴らされました。Tabioriでの共有や座席調整、その一つ一つの手間が解脱への近道です。";} 
+    else {cheer = "【プランニング】1円でも安く、1PPでも多く。完璧なスケジュールを組む今の時間が、実は一番楽しいかもしれません。";}
+    // ------------------------------
+
     // コメントを正確な加算値に修正
     document.getElementById("aiAdvice").innerHTML = `残り <b>${remainAfterPending.toLocaleString()} PP</b> (予約分除く)<br>【解脱戦略 (5/19〜新運賃)】<br>・石垣往復なら あと <b>${Math.ceil(remainAfterPending/simpleIshigaki)}回</b><br>・那覇往復なら あと <b>${Math.ceil(remainAfterPending/simpleNaha)}回</b><br>※当日UG成功で石垣なら +1,221 PP、那覇なら +984 PP 純増！`;
     const cheerEl = document.getElementById("cheerMessage");
