@@ -20,9 +20,19 @@
     button{background:var(--main-blue); color:white; font-weight:bold; border:none; cursor: pointer;}
     .routeBtn{width:auto; padding:10px 14px; margin:4px 2px; font-size:12px; background:#e9ecef; color:#333; border:1px solid #ddd; border-radius: 8px;}
     .swap-btn{width:48px; height:48px; margin: 0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
-    table{width:100%; border-collapse:collapse; font-size:10px; table-layout: fixed;}
-    th, td{border-bottom:1px solid #eee; padding:8px 1px; text-align:center; word-wrap: break-word; line-height: 1.2;}
+    
+    /* フライトスケジュールの各サイズを小さく修正 */
+    table{width:100%; border-collapse:collapse; font-size:9px; table-layout: fixed;}
+    th, td{border-bottom:1px solid #eee; padding:6px 1px; text-align:center; word-wrap: break-word; line-height: 1.2;}
+    
     input[type="checkbox"] { width: 20px; height: 20px; vertical-align: middle; }
+    
+    /* UG試算のチェックボックスを小さく修正 */
+    .ug-sim-checkbox { width: 13px !important; height: 13px !important; }
+    
+    /* UG試算のチェックボックスを触った際の視覚的な変化を追加 */
+    .row-simulating { background-color: #f9f0ff !important; border-left: 3px solid var(--ug-purple); }
+    
     .row-done { background-color: #f8f9fa; color: #aaa; }
     .memo-icon { display: inline-block; font-size: 14px; cursor: pointer; padding: 4px; background: #eee; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
     .memo-icon.active { background: var(--warning); color: white; border: 1px solid #e67e22; }
@@ -347,12 +357,16 @@ function render() {
         
         let ugSimulateBtn = "";
         if(!f.done && !f.isUG && !f.rateStr.includes("_intl") && !f.rateStr.includes("1.25") && !f.rateStr.includes("1.2_new")) {
-            ugSimulateBtn = `<br><label style="font-size:9px; color:var(--ug-purple);"><input type="checkbox" style="width:12px;height:12px;" onchange="toggleUGSim(${f.id})" ${f.simUG ? 'checked' : ''}> UG試算</label>`;
+            ugSimulateBtn = `<br><label style="font-size:9px; color:var(--ug-purple);"><input type="checkbox" class="ug-sim-checkbox" onchange="toggleUGSim(${f.id})" ${f.simUG ? 'checked' : ''}> UG試算</label>`;
         }
         let ugArea = f.isUG ? "UG済" : (!f.done ? `<button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button>${ugSimulateBtn}<br><button class="ug-action-btn" style="background:#666; margin-top:2px;" onclick="scheduleUG(event,'${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>` : "-");
         
         let row = document.createElement("tr");
-        row.className = f.done ? "row-done copyable" : "copyable";
+        let classNames = ["copyable"];
+        if(f.done) classNames.push("row-done");
+        if(f.simUG) classNames.push("row-simulating");
+        row.className = classNames.join(" ");
+        
         row.innerHTML = `<td>${f.date.slice(5).replace('-','/')}</td>
             <td style="color:var(--accent-blue); font-weight:bold;" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}<span class="memo-icon ${f.memo?'active':''}" onclick="openMemo(event, ${f.id})">📝</span>${waitHtml}</td>
             <td>${f.depart||""}<br>↓<br>${f.arrive||""}</td>
