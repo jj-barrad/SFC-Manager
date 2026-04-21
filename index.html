@@ -21,18 +21,28 @@
     .routeBtn{width:auto; padding:10px 14px; margin:4px 2px; font-size:12px; background:#e9ecef; color:#333; border:1px solid #ddd; border-radius: 8px;}
     .swap-btn{width:48px; height:48px; margin: 0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
     
-    /* フライトスケジュールの各サイズを小さく修正 */
-    table{width:100%; border-collapse:collapse; font-size:9px; table-layout: fixed;}
-    th, td{border-bottom:1px solid #eee; padding:6px 1px; text-align:center; word-wrap: break-word; line-height: 1.2;}
+    /* フライトスケジュール修正：フォントを大きく、横幅を画面内に */
+    table{width:100%; border-collapse:collapse; font-size:11px; table-layout: auto;}
+    th, td{border-bottom:1px solid #eee; padding:6px 2px; text-align:center; word-wrap: break-word; line-height: 1.2;}
     
-    input[type="checkbox"] { width: 20px; height: 20px; vertical-align: middle; }
+    /* チェックボックスを少し小さく修正 */
+    input[type="checkbox"] { width: 16px; height: 16px; vertical-align: middle; }
     
-    /* UG試算のチェックボックスを小さく修正 */
-    .ug-sim-checkbox { width: 13px !important; height: 13px !important; margin: 0 2px 0 0 !important; }
+    /* 試算：チェックボックスをラベル内に格納しデザイン調整 */
+    .ug-sim-label { 
+        font-size: 9px; 
+        color: var(--ug-purple); 
+        display: inline-flex; 
+        align-items: center; 
+        white-space: nowrap; 
+        border: 1px solid var(--ug-purple);
+        padding: 2px 4px;
+        border-radius: 4px;
+        background: #f9f0ff;
+    }
+    .ug-sim-checkbox { width: 12px !important; height: 12px !important; margin: 0 2px 0 0 !important; }
     
-    /* UG試算のチェックボックスを触った際の視覚的な変化を追加 */
     .row-simulating { background-color: #f9f0ff !important; border-left: 3px solid var(--ug-purple); }
-    
     .row-done { background-color: #f8f9fa; color: #aaa; }
     .memo-icon { display: inline-block; font-size: 14px; cursor: pointer; padding: 4px; background: #eee; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
     .memo-icon.active { background: var(--warning); color: white; border: 1px solid #e67e22; }
@@ -41,11 +51,9 @@
     .progress-pending{background:rgba(42, 109, 244, 0.3); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 1;}
     .ai-box{background:#f0f7ff; padding:15px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff; color: #003f88;}
     
-    /* 操作エリアの横並び用スタイル追加 */
-    .action-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 3px; min-width: 60px; }
+    .action-container { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; min-width: 60px; }
     .ug-action-btn{background:var(--ug-purple); color:white; font-size:8px; padding:3px 4px; border-radius:4px; width:auto; margin:0; display: inline-block; white-space: nowrap;}
-    .delete-btn { color: red; font-size: 16px; margin-left: 2px; line-height: 1; }
-    .ug-sim-label { font-size: 8px; color: var(--ug-purple); display: flex; align-items: center; white-space: nowrap; margin-top: 1px; }
+    .delete-btn { color: red; font-size: 16px; margin-left: 2px; line-height: 1; cursor: pointer; }
 
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
     .modal-content { background: white; width: 92%; max-width: 500px; border-radius: 20px; padding: 20px; max-height: 85vh; overflow-y: auto; }
@@ -363,10 +371,10 @@ function render() {
         
         let ugSimulateBtn = "";
         if(!f.done && !f.isUG && !f.rateStr.includes("_intl") && !f.rateStr.includes("1.25") && !f.rateStr.includes("1.2_new")) {
+            // チェックボックスをラベル内に格納
             ugSimulateBtn = `<label class="ug-sim-label"><input type="checkbox" class="ug-sim-checkbox" onchange="toggleUGSim(${f.id})" ${f.simUG ? 'checked' : ''}>試算</label>`;
         }
 
-        // 操作カラムのHTMLを横並びレイアウトに変更
         let ugArea = "";
         if (f.isUG) {
             ugArea = `<div class="action-container"><span>UG済</span><span onclick="del(event, ${f.id})" class="delete-btn">×</span></div>`;
