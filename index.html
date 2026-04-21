@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
 
-<title>SFC Manager v70.1 - Strategic Upgrade Edition</title>
+<title>SFC Manager v71.0 - Professional Analysis Edition</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; --gold: #d4af37; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-top: env(safe-area-inset-top); padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -22,12 +22,10 @@
     .swap-btn{width:48px; height:48px; margin: 0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
     table{width:100%; border-collapse:collapse; font-size:10px; table-layout: fixed;}
     th, td{border-bottom:1px solid #eee; padding:8px 1px; text-align:center; word-wrap: break-word; line-height: 1.2;}
-    tr.copyable:active { background-color: #e9ecef; }
-    input[type="checkbox"] { width: 24px; height: 24px; margin: 0; cursor: pointer; border: 2px solid var(--main-blue); }
+    input[type="checkbox"] { width: 20px; height: 20px; vertical-align: middle; }
     .row-done { background-color: #f8f9fa; color: #aaa; }
     .memo-icon { display: inline-block; font-size: 14px; cursor: pointer; padding: 4px; background: #eee; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
     .memo-icon.active { background: var(--warning); color: white; border: 1px solid #e67e22; }
-    .cal-icon { display: inline-block; font-size: 14px; cursor: pointer; padding: 4px; background: #f0f7ff; border-radius: 4px; margin-left: 4px; vertical-align: middle; color: var(--accent-blue); }
     .progress{background:#ddd; height:24px; border-radius:12px; margin:10px 0; overflow:hidden; position: relative;}
     .progress-inner{background:linear-gradient(90deg, var(--main-blue), var(--accent-blue)); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 2;}
     .progress-pending{background:rgba(42, 109, 244, 0.3); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 1;}
@@ -48,7 +46,7 @@
 </head>
 <body>
 
-<header>SFC Manager v70.1</header>
+<header>SFC Manager v71.0</header>
 
 <div class="container">
     <div class="card">
@@ -143,7 +141,7 @@
     <div class="card">
         <h3>SFC解脱後の世界 (都市・特典詳細)</h3>
         <div style="font-size: 13px; line-height: 1.5;">
-            <span class="benefit-tag" onclick="showBenefit('SAN')">🇺🇸 SAN: ポラリス</span> 
+            <span class="benefit-tag" onclick="showBenefit('SAN')">🇺🇸 SAN: ラウンジ</span> 
             <span class="benefit-tag" onclick="showBenefit('BKK')">🇹🇭 BKK: 豪華ハシゴ</span> 
             <span class="benefit-tag" onclick="showBenefit('専用保安検査場')">専用保安検査場</span> 
             <span class="benefit-tag" onclick="showBenefit('ラウンジ利用')">ラウンジ利用</span> 
@@ -192,7 +190,7 @@
 const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","サンディエゴ":"SAN","ロサンゼルス":"LAX","サンフランシスコ":"SFO","ホノルル":"HNL","クアラルンプール":"KUL","シドニー":"SYD","ジャカルタ":"CGK"};
 const distDB = {"HND-OKA":984, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1221, "HND-ITM":280, "OKA-ISG":247, "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-SAN":5458, "HND-LAX":5477, "HND-SFO":5130, "HND-HNL":3831, "HND-KUL":3338, "HND-SYD":4930, "HND-CGK":3612};
 const benefits = {
-    'SAN': '【サンディエゴ】SFC(スタアラゴールド)ならUAポラリスラウンジが利用可能。長距離前にフルコースの食事とシャワーを。',
+    'SAN': '【サンディエゴ】SFC(スタアラゴールド)で、UAラウンジが利用可能。※ポラリスラウンジはUA上位クラス搭乗時のみですが、一般のUAクラブでもSANの開放感は格別です。',
     'BKK': '【バンコク】スワンナプームはラウンジの宝庫。タイ航空、エバー、シンガポール航空の豪華ラウンジをハシゴできます。',
     '専用保安検査場': 'ANA PREMIUM CHECK-INが利用可能。GWや盆正月の列をスキップできます。',
     'ラウンジ利用': 'ANA LOUNGEが本人＋同行者1名まで無料。ビールや軽食を楽しめます。',
@@ -252,27 +250,21 @@ function tryUG(id) {
     }
 }
 
+function toggleUGSim(id) {
+    let f = flights.find(x => x.id === id);
+    if(f) { f.simUG = !f.simUG; render(); }
+}
+
 function addFlight() {
     const from = getCode(document.getElementById("from").value), to = getCode(document.getElementById("to").value);
     const date = document.getElementById("flightDate").value, trip = document.getElementById("trip").value;
     const rStr = document.getElementById("rate").value, price = parseInt(document.getElementById("price").value) || 0;
     if(!from || !to || !date) return alert("入力不足");
     const pp = calcPP(from, to, rStr, date);
-    const fData = { id: Date.now()+Math.random(), from, to, date, depart: document.getElementById("departTime").value, arrive: document.getElementById("arriveTime").value, price: (trip==="round"?price/2:price), rateStr: rStr, pp: pp, done: false, isUG: false, memo: "" };
+    const fData = { id: Date.now()+Math.random(), from, to, date, depart: document.getElementById("departTime").value, arrive: document.getElementById("arriveTime").value, price: (trip==="round"?price/2:price), rateStr: rStr, pp: pp, done: false, isUG: false, simUG: false, memo: "" };
     flights.push(fData);
     if(trip === "round") flights.push({ ...fData, id: Date.now()+Math.random(), from: to, to: from, depart: document.getElementById("returnDepart").value, arrive: document.getElementById("returnArrive").value });
     save();
-}
-
-function addToCalendar(e, id) {
-    if(e) e.stopPropagation();
-    const f = flights.find(x => x.id === id); if(!f) return;
-    const start = f.date.replace(/-/g, '') + 'T' + (f.depart ? f.depart.replace(':', '') : '0900') + '00Z';
-    const end = f.date.replace(/-/g, '') + 'T' + (f.arrive ? f.arrive.replace(':', '') : '1100') + '00Z';
-    const title = `SFC修行: ${getName(f.from)}→${getName(f.to)}`;
-    const details = `PP獲得予定: ${f.pp}PP\nメモ: ${f.memo || 'なし'}`;
-    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}&details=${encodeURIComponent(details)}`;
-    window.open(url, '_blank');
 }
 
 function scheduleUG(e, dateStr, route) {
@@ -332,7 +324,7 @@ function render() {
         if(!f.isUG) f.pp = calcPP(f.from, f.to, f.rateStr || "0.75", f.date);
         totalP += f.pp; totalC += (f.price || 0);
 
-        if(!f.done && !f.isUG && !f.rateStr.includes("_intl") && !f.rateStr.includes("1.25") && !f.rateStr.includes("1.2_new")) {
+        if(!f.done && f.simUG) {
             let base = distDB[f.from+"-"+f.to] || distDB[f.to+"-"+f.from] || 0;
             potentialUG_PP += (Math.floor(base * 0.5) * 2);
         }
@@ -352,14 +344,20 @@ function render() {
                 }
             }
         }
-        let ugArea = f.isUG ? "UG済" : (!f.done ? `<button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button><br><button class="ug-action-btn" style="background:#666; margin-top:2px;" onclick="scheduleUG(event,'${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>` : "-");
+        
+        let ugSimulateBtn = "";
+        if(!f.done && !f.isUG && !f.rateStr.includes("_intl") && !f.rateStr.includes("1.25") && !f.rateStr.includes("1.2_new")) {
+            ugSimulateBtn = `<br><label style="font-size:9px; color:var(--ug-purple);"><input type="checkbox" style="width:12px;height:12px;" onchange="toggleUGSim(${f.id})" ${f.simUG ? 'checked' : ''}> UG試算</label>`;
+        }
+        let ugArea = f.isUG ? "UG済" : (!f.done ? `<button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button>${ugSimulateBtn}<br><button class="ug-action-btn" style="background:#666; margin-top:2px;" onclick="scheduleUG(event,'${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>` : "-");
+        
         let row = document.createElement("tr");
         row.className = f.done ? "row-done copyable" : "copyable";
         row.innerHTML = `<td>${f.date.slice(5).replace('-','/')}</td>
             <td style="color:var(--accent-blue); font-weight:bold;" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}<span class="memo-icon ${f.memo?'active':''}" onclick="openMemo(event, ${f.id})">📝</span>${waitHtml}</td>
             <td>${f.depart||""}<br>↓<br>${f.arrive||""}</td>
             <td>${f.pp.toLocaleString()}</td>
-            <td><input type="checkbox" ${f.done?'checked':''} onclick="toggleDone(event, ${f.id})"><br><span class="cal-icon" onclick="addToCalendar(event, ${f.id})">📅</span></td>
+            <td><input type="checkbox" ${f.done?'checked':''} onclick="toggleDone(event, ${f.id})"></td>
             <td>${ugArea}<br><span onclick="del(event, ${f.id})" style="color:red; font-size:16px;">×</span></td>`;
         table.appendChild(row);
     });
@@ -378,7 +376,7 @@ function render() {
     if(potentialUG_PP > 0 && totalP < 50000) {
         ugSection.style.display = "block";
         let maxWithUG = totalP + potentialUG_PP;
-        ugSection.innerHTML = `🚀 <b>UG影響分析</b><br>未搭乗の国内線を当日UGした場合: <b>+${potentialUG_PP.toLocaleString()} PP</b><br>合計予測は <b>${maxWithUG.toLocaleString()} PP</b> に向上します。${maxWithUG >= 50000 ? '<br>✨ サンディエゴ前に解脱が早まる可能性があります！' : ''}`;
+        ugSection.innerHTML = `🚀 <b>UG影響分析 (選択した便のみ)</b><br>当日UGを想定した場合の上乗せ: <b>+${potentialUG_PP.toLocaleString()} PP</b><br>合計予測は <b>${maxWithUG.toLocaleString()} PP</b> に向上します。${maxWithUG >= 50000 ? '<br>✨ このUGプランなら、サンディエゴ前に解脱可能です！' : ''}`;
     } else { ugSection.style.display = "none"; }
 
     let simpleNaha = 2954, simpleIshigaki = 3618, cheer = "";
@@ -386,7 +384,7 @@ function render() {
     const hasBKK = flights.some(f => (f.from === "BKK" || f.to === "BKK") && f.date.includes("-11-"));
 
     if (actualP >= 50000) cheer = hasBKK ? "【解脱】おめでとうございます！11月のバンコクは最高の『解脱記念旅行』になりますね。" : "【解脱】おめでとうございます！これからは『極上の旅』があなたを待っています。";
-    else if (hasSAN && totalP >= 50000) cheer = "【王手】10月のサンディエゴ出張で解脱予定です。体調管理に気をつけて、ポラリスラウンジを楽しみましょう！";
+    else if (hasSAN && totalP >= 50000) cheer = "【王手】10月のサンディエゴ出張で解脱予定です。体調管理に気をつけて、UAラウンジも楽しみましょう！";
     else if (actualP >= 25000) cheer = "【実戦投入】半分突破！5/8の那覇やサンディエゴ等、確定済みの旅程を確実に『済』に変えていきましょう。";
     else if (actualP > 0) cheer = "【離陸完了】修行の号砲は鳴らされました。Tabioriでの共有や座席調整、その一つ一つの手間が解脱への近道です。";
     else cheer = "【プランニング】1円でも安く、1PPでも多く。完璧なスケジュールを組む今の時間が、実は一番楽しいかもしれません。";
