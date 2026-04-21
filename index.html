@@ -28,7 +28,7 @@
     input[type="checkbox"] { width: 20px; height: 20px; vertical-align: middle; }
     
     /* UG試算のチェックボックスを小さく修正 */
-    .ug-sim-checkbox { width: 13px !important; height: 13px !important; }
+    .ug-sim-checkbox { width: 13px !important; height: 13px !important; margin: 0 2px 0 0 !important; }
     
     /* UG試算のチェックボックスを触った際の視覚的な変化を追加 */
     .row-simulating { background-color: #f9f0ff !important; border-left: 3px solid var(--ug-purple); }
@@ -40,7 +40,13 @@
     .progress-inner{background:linear-gradient(90deg, var(--main-blue), var(--accent-blue)); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 2;}
     .progress-pending{background:rgba(42, 109, 244, 0.3); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 1;}
     .ai-box{background:#f0f7ff; padding:15px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff; color: #003f88;}
-    .ug-action-btn{background:var(--ug-purple); color:white; font-size:10px; padding:4px 6px; border-radius:5px; width:auto; margin:2px 0; display: inline-block;}
+    
+    /* 操作エリアの横並び用スタイル追加 */
+    .action-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 3px; min-width: 60px; }
+    .ug-action-btn{background:var(--ug-purple); color:white; font-size:8px; padding:3px 4px; border-radius:4px; width:auto; margin:0; display: inline-block; white-space: nowrap;}
+    .delete-btn { color: red; font-size: 16px; margin-left: 2px; line-height: 1; }
+    .ug-sim-label { font-size: 8px; color: var(--ug-purple); display: flex; align-items: center; white-space: nowrap; margin-top: 1px; }
+
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
     .modal-content { background: white; width: 92%; max-width: 500px; border-radius: 20px; padding: 20px; max-height: 85vh; overflow-y: auto; }
     .memo-area { background: #fffbe6; border: 1px solid #ffe58f; min-height: 100px; white-space: pre-wrap; font-size: 13px; padding: 12px; border-radius: 8px; margin-top: 10px; color: #444; line-height: 1.5; }
@@ -357,9 +363,23 @@ function render() {
         
         let ugSimulateBtn = "";
         if(!f.done && !f.isUG && !f.rateStr.includes("_intl") && !f.rateStr.includes("1.25") && !f.rateStr.includes("1.2_new")) {
-            ugSimulateBtn = `<br><label style="font-size:9px; color:var(--ug-purple);"><input type="checkbox" class="ug-sim-checkbox" onchange="toggleUGSim(${f.id})" ${f.simUG ? 'checked' : ''}> UG試算</label>`;
+            ugSimulateBtn = `<label class="ug-sim-label"><input type="checkbox" class="ug-sim-checkbox" onchange="toggleUGSim(${f.id})" ${f.simUG ? 'checked' : ''}>試算</label>`;
         }
-        let ugArea = f.isUG ? "UG済" : (!f.done ? `<button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button>${ugSimulateBtn}<br><button class="ug-action-btn" style="background:#666; margin-top:2px;" onclick="scheduleUG(event,'${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>` : "-");
+
+        // 操作カラムのHTMLを横並びレイアウトに変更
+        let ugArea = "";
+        if (f.isUG) {
+            ugArea = `<div class="action-container"><span>UG済</span><span onclick="del(event, ${f.id})" class="delete-btn">×</span></div>`;
+        } else if (!f.done) {
+            ugArea = `<div class="action-container">
+                        <button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button>
+                        <button class="ug-action-btn" style="background:#666;" onclick="scheduleUG(event,'${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>
+                        ${ugSimulateBtn}
+                        <span onclick="del(event, ${f.id})" class="delete-btn">×</span>
+                      </div>`;
+        } else {
+            ugArea = `<div class="action-container"><span onclick="del(event, ${f.id})" class="delete-btn">×</span></div>`;
+        }
         
         let row = document.createElement("tr");
         let classNames = ["copyable"];
@@ -372,7 +392,7 @@ function render() {
             <td>${f.depart||""}<br>↓<br>${f.arrive||""}</td>
             <td>${f.pp.toLocaleString()}</td>
             <td><input type="checkbox" ${f.done?'checked':''} onclick="toggleDone(event, ${f.id})"></td>
-            <td>${ugArea}<br><span onclick="del(event, ${f.id})" style="color:red; font-size:16px;">×</span></td>`;
+            <td>${ugArea}</td>`;
         table.appendChild(row);
     });
 
