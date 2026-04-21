@@ -14,23 +14,23 @@
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-top: env(safe-area-inset-top); padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
     header{background:var(--main-blue); color:white; padding: 45px 15px 15px 15px; text-align:center; font-weight:bold; font-size:1.2em; position: sticky; top: 0; z-index: 100;}
     .container{padding:12px; max-width:720px; margin:auto;}
-    .card{background:white; border-radius:14px; padding:12px; margin-bottom:10px; box-shadow:0 4px 12px rgba(0,0,0,0.08);}
-    h3{margin: 0 0 8px 0; font-size: 1.1em; color: var(--main-blue); border-left: 4px solid var(--main-blue); padding-left: 10px;}
+    .card{background:white; border-radius:14px; padding:16px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+    h3{margin: 0 0 10px 0; font-size: 1.1em; color: var(--main-blue); border-left: 4px solid var(--main-blue); padding-left: 10px;}
     
-    /* 修正1：入力フォームの圧縮 */
+    /* 1. 縦の長さを圧縮: パディングとマージンを削減 */
     input, select, button, textarea{width:100%; padding:10px; margin:4px 0; border-radius:10px; border:1px solid #ccc; box-sizing: border-box; font-size:15px; -webkit-appearance: none;}
     button{background:var(--main-blue); color:white; font-weight:bold; border:none; cursor: pointer;}
-    .routeBtn{width:auto; padding:6px 12px; margin:2px 1px; font-size:12px; background:#e9ecef; color:#333; border:1px solid #ddd; border-radius: 8px;}
-    .swap-btn{width:44px; height:44px; margin: 0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
+    .routeBtn{width:auto; padding:10px 14px; margin:4px 2px; font-size:12px; background:#e9ecef; color:#333; border:1px solid #ddd; border-radius: 8px;}
+    .swap-btn{width:48px; height:48px; margin: 0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
     
-    /* 修正1：テーブル行の高さ圧縮 */
+    /* 1. テーブルの行の高さを絞る */
     table{width:100%; border-collapse:collapse; font-size:11px; table-layout: auto;}
-    th, td{border-bottom:1px solid #eee; padding:4px 2px; text-align:center; word-wrap: break-word; line-height: 1.0;}
+    th, td{border-bottom:1px solid #eee; padding:4px 2px; text-align:center; word-wrap: break-word; line-height: 1.1;}
     
-    /* 修正2：チェックボックスの最小化（14px） */
-    input[type="checkbox"] { width: 14px; height: 14px; vertical-align: middle; cursor: pointer; }
+    /* 2. チェックボックスを14pxへ */
+    input[type="checkbox"] { width: 14px; height: 14px; vertical-align: middle; }
     
-    /* 修正3：「試算」ボタンの一体型デザイン修正 */
+    /* 3. 「試算」ラベル一体型デザイン */
     .ug-sim-label { 
         font-size: 9px; 
         color: var(--ug-purple); 
@@ -38,27 +38,25 @@
         align-items: center; 
         white-space: nowrap; 
         border: 1px solid var(--ug-purple);
-        padding: 2px 5px;
+        padding: 2px 4px;
         border-radius: 4px;
-        background: #fff;
+        background: #f9f0ff;
         cursor: pointer;
-        transition: background 0.2s;
     }
-    .ug-sim-label:has(.ug-sim-checkbox:checked) { background: #f0e0ff; font-weight: bold; }
-    .ug-sim-checkbox { width: 10px !important; height: 10px !important; margin: 0 3px 0 0 !important; pointer-events: none; }
+    .ug-sim-checkbox { width: 12px !important; height: 12px !important; margin: 0 2px 0 0 !important; cursor: pointer; }
     
     .row-simulating { background-color: #f9f0ff !important; border-left: 3px solid var(--ug-purple); }
     .row-done { background-color: #f8f9fa; color: #aaa; }
-    .memo-icon { display: inline-block; font-size: 13px; cursor: pointer; padding: 2px 4px; background: #eee; border-radius: 4px; margin-left: 2px; vertical-align: middle; }
+    .memo-icon { display: inline-block; font-size: 14px; cursor: pointer; padding: 4px; background: #eee; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
     .memo-icon.active { background: var(--warning); color: white; border: 1px solid #e67e22; }
     .progress{background:#ddd; height:24px; border-radius:12px; margin:10px 0; overflow:hidden; position: relative;}
     .progress-inner{background:linear-gradient(90deg, var(--main-blue), var(--accent-blue)); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 2;}
     .progress-pending{background:rgba(42, 109, 244, 0.3); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 1;}
-    .ai-box{background:#f0f7ff; padding:12px; border-radius:10px; font-size:13px; line-height:1.4; border:1px solid #d0e3ff; color: #003f88;}
+    .ai-box{background:#f0f7ff; padding:15px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff; color: #003f88;}
     
-    .action-container { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px; min-width: 60px; }
-    .ug-action-btn{background:var(--ug-purple); color:white; font-size:8px; padding:2px 4px; border-radius:4px; width:auto; margin:0; display: inline-block; white-space: nowrap;}
-    .delete-btn { color: red; font-size: 14px; margin-left: 2px; line-height: 1; cursor: pointer; }
+    .action-container { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; min-width: 60px; }
+    .ug-action-btn{background:var(--ug-purple); color:white; font-size:8px; padding:3px 4px; border-radius:4px; width:auto; margin:0; display: inline-block; white-space: nowrap;}
+    .delete-btn { color: red; font-size: 16px; margin-left: 2px; line-height: 1; cursor: pointer; }
 
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
     .modal-content { background: white; width: 92%; max-width: 500px; border-radius: 20px; padding: 20px; max-height: 85vh; overflow-y: auto; }
@@ -67,10 +65,10 @@
     .graph-bar { width: calc(100% / 12 - 4px); background: var(--accent-blue); border-radius: 4px 4px 0 0; position: relative; min-height: 2px;}
     .graph-val { position: absolute; top: -14px; width: 100%; text-align: center; font-size: 8px; color: #666;}
     .graph-label { position: absolute; bottom: -18px; width: 100%; text-align: center; font-size: 9px; color: #999;}
-    .history-item{font-size:13px; padding:10px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
+    .history-item{font-size:13px; padding:14px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
     .unit-price { font-size: 11px; background: #fffbe6; padding: 4px 8px; border-radius: 6px; border: 1px solid #ffe58f; margin-top: 8px; text-align: center; }
     .benefit-tag { display: inline-block; font-size: 10px; padding: 6px 10px; background: var(--gold); color: white; border-radius: 20px; margin: 3px; cursor: pointer; transition: opacity 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .cheer-msg { font-style: italic; border-top: 1px solid #d0e3ff; margin-top: 8px; padding-top: 8px; font-weight: bold; color: #d9534f; }
+    .cheer-msg { font-style: italic; border-top: 1px solid #d0e3ff; margin-top: 10px; padding-top: 8px; font-weight: bold; color: #d9534f; }
 </style>
 </head>
 <body>
@@ -96,12 +94,12 @@
 
     <div class="card">
         <h3>フライト追加</h3>
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom: 4px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom: 5px;">
             <input id="from" placeholder="出発地" style="flex:1">
             <button class="swap-btn" onclick="swapRoute()">⇄</button>
             <input id="to" placeholder="到着地" style="flex:1">
         </div>
-        <div style="margin-bottom:6px; display: flex; flex-wrap: wrap; gap: 3px;">
+        <div style="margin-bottom:10px; display: flex; flex-wrap: wrap; gap: 4px;">
             <button class="routeBtn" onclick="setRoute('羽田','那覇')">羽田-那覇</button>
             <button class="routeBtn" onclick="setRoute('那覇','石垣')">那覇-石垣</button>
             <button class="routeBtn" onclick="setRoute('羽田','石垣')">羽田-石垣</button>
@@ -143,26 +141,26 @@
         <select id="trip" onchange="document.getElementById('returnArea').style.display = (this.value=='round'?'block':'none')">
             <option value="oneway">片道</option><option value="round" selected>往復</option>
         </select>
-        <div id="returnArea" style="border-top:1px dashed #ccc; padding-top:8px;">
+        <div id="returnArea" style="border-top:1px dashed #ccc; padding-top:10px;">
             <div style="display:flex; gap:10px;">
                 <div style="flex:1">帰り出発<input type="time" id="returnDepart"></div>
                 <div style="flex:1">帰り到着<input type="time" id="returnArrive"></div>
             </div>
         </div>
-        <button onclick="addFlight()" style="margin-top:8px; background: var(--accent-blue); height: 48px; font-size: 1.1em;">プランに追加</button>
+        <button onclick="addFlight()" style="margin-top:10px; background: var(--accent-blue); height: 52px; font-size: 1.1em;">プランに追加</button>
     </div>
 
     <div class="card">
         <h3>AI修行診断 & 管理</h3>
         <div id="aiAdvice" class="ai-box"></div>
-        <div id="ugImpactSection" class="ai-box" style="margin-top:6px; border-color:var(--ug-purple); background:#f9f0ff; color:#6c3483; display:none;"></div>
-        <div id="cheerMessage" class="ai-box cheer-msg" style="margin-top:6px; display:none;"></div>
-        <div style="display:flex; gap:8px; margin-top:8px;">
-            <button style="flex:1; background:#6c757d; font-size:12px; padding:10px;" onclick="showBackup()">バックアップ作成</button>
-            <button style="flex:1; background:#6c757d; font-size:12px; padding:10px;" onclick="importData()">復元</button>
+        <div id="ugImpactSection" class="ai-box" style="margin-top:8px; border-color:var(--ug-purple); background:#f9f0ff; color:#6c3483; display:none;"></div>
+        <div id="cheerMessage" class="ai-box cheer-msg" style="margin-top:8px; display:none;"></div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button style="flex:1; background:#6c757d; font-size:12px;" onclick="showBackup()">バックアップ作成</button>
+            <button style="flex:1; background:#6c757d; font-size:12px;" onclick="importData()">復元</button>
         </div>
-        <div id="backupArea" style="display:none; margin-top:8px;">
-            <textarea id="backupText" readonly style="width:100%; height:80px; font-size:10px; font-family:monospace;"></textarea>
+        <div id="backupArea" style="display:none; margin-top:10px;">
+            <textarea id="backupText" readonly style="width:100%; height:100px; font-size:10px; font-family:monospace;"></textarea>
             <button onclick="document.getElementById('backupArea').style.display='none'">閉じる</button>
         </div>
     </div>
@@ -185,7 +183,7 @@
 
     <div class="card">
         <h3>フライトスケジュール</h3>
-        <div style="font-size: 10px; color: #888; margin-bottom: 4px;">※区間タップでフォームに再利用</div>
+        <div style="font-size: 10px; color: #888; margin-bottom: 5px;">※区間タップでフォームに再利用</div>
         <div style="overflow-x:auto;"><table>
             <thead><tr><th style="width:14%">日付</th><th style="width:38%">区間/しおり</th><th style="width:14%">時刻</th><th style="width:12%">PP</th><th style="width:10%">済</th><th style="width:12%">操作</th></tr></thead>
             <tbody id="tableBody"></tbody>
@@ -206,7 +204,7 @@
 <div id="memoModal" class="modal">
     <div class="modal-content">
         <h3 id="modalTitle" style="margin-top: 0;">修行しおり</h3>
-        <textarea id="modalMemoInput" placeholder="プランやメモを貼り付け..." style="height: 180px;"></textarea>
+        <textarea id="modalMemoInput" placeholder="プランやメモを貼り付け..." style="height: 200px;"></textarea>
         <div style="display:flex; gap:10px;">
             <button onclick="saveMemo()" style="flex:2; background:var(--success);">保存</button>
             <button onclick="closeModal()" style="flex:1; background:#666;">閉じる</button>
@@ -369,14 +367,14 @@ function render() {
                 let diff = (new Date(f.date + "T" + next.depart) - new Date(f.date + "T" + f.arrive)) / 60000;
                 if(diff > 0 && diff < 1440) {
                     let color = diff < 60 ? "var(--money)" : "var(--success)";
-                    waitHtml = `<br><span style="background:${color}; color:white; font-size:9px; padding:1px 3px; border-radius:4px; display:inline-block; margin-top:1px;">⏱ ${Math.floor(diff/60)}h${diff%60}m 待機</span>`;
+                    waitHtml = `<br><span style="background:${color}; color:white; font-size:9px; padding:2px 4px; border-radius:4px; display:inline-block; margin-top:2px;">⏱ ${Math.floor(diff/60)}h${diff%60}m 待機</span>`;
                 }
             }
         }
         
         let ugSimulateBtn = "";
         if(!f.done && !f.isUG && !f.rateStr.includes("_intl") && !f.rateStr.includes("1.25") && !f.rateStr.includes("1.2_new")) {
-            /* 修正3：「試算」チェックボックス一体型 */
+            // 修正3：チェックボックスと文字をラベルで囲む（タップ領域拡大・デザイン圧縮）
             ugSimulateBtn = `<label class="ug-sim-label"><input type="checkbox" class="ug-sim-checkbox" onchange="toggleUGSim(${f.id})" ${f.simUG ? 'checked' : ''}>試算</label>`;
         }
 
@@ -400,11 +398,11 @@ function render() {
         if(f.simUG) classNames.push("row-simulating");
         row.className = classNames.join(" ");
         
-        /* 修正2：済チェックボックスを14pxへ */
-        row.innerHTML = `<td>${f.date.slice(5).replace('-','/')}</td>
+        // 各セルにonclick="reuseFlight(${f.id})"を維持
+        row.innerHTML = `<td onclick="reuseFlight(${f.id})">${f.date.slice(5).replace('-','/')}</td>
             <td style="color:var(--accent-blue); font-weight:bold;" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}<span class="memo-icon ${f.memo?'active':''}" onclick="openMemo(event, ${f.id})">📝</span>${waitHtml}</td>
-            <td>${f.depart||""}<br>↓<br>${f.arrive||""}</td>
-            <td>${f.pp.toLocaleString()}</td>
+            <td onclick="reuseFlight(${f.id})">${f.depart||""}<br>↓<br>${f.arrive||""}</td>
+            <td onclick="reuseFlight(${f.id})">${f.pp.toLocaleString()}</td>
             <td><input type="checkbox" ${f.done?'checked':''} onclick="toggleDone(event, ${f.id})"></td>
             <td>${ugArea}</td>`;
         table.appendChild(row);
