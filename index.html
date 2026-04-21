@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
 
-<title>SFC Manager v70.0 - Mission Complete Edition</title>
+<title>SFC Manager v70.1 - Strategic Upgrade Edition</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; --gold: #d4af37; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-top: env(safe-area-inset-top); padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -48,7 +48,7 @@
 </head>
 <body>
 
-<header>SFC Manager v70.0</header>
+<header>SFC Manager v70.1</header>
 
 <div class="container">
     <div class="card">
@@ -128,6 +128,7 @@
     <div class="card">
         <h3>AI修行診断 & 管理</h3>
         <div id="aiAdvice" class="ai-box"></div>
+        <div id="ugImpactSection" class="ai-box" style="margin-top:8px; border-color:var(--ug-purple); background:#f9f0ff; color:#6c3483; display:none;"></div>
         <div id="cheerMessage" class="ai-box cheer-msg" style="margin-top:8px; display:none;"></div>
         <div style="display:flex; gap:10px; margin-top:10px;">
             <button style="flex:1; background:#6c757d; font-size:12px;" onclick="showBackup()">バックアップ作成</button>
@@ -140,8 +141,10 @@
     </div>
 
     <div class="card">
-        <h3>SFC解脱後の世界 (タップ詳細)</h3>
+        <h3>SFC解脱後の世界 (都市・特典詳細)</h3>
         <div style="font-size: 13px; line-height: 1.5;">
+            <span class="benefit-tag" onclick="showBenefit('SAN')">🇺🇸 SAN: ポラリス</span> 
+            <span class="benefit-tag" onclick="showBenefit('BKK')">🇹🇭 BKK: 豪華ハシゴ</span> 
             <span class="benefit-tag" onclick="showBenefit('専用保安検査場')">専用保安検査場</span> 
             <span class="benefit-tag" onclick="showBenefit('ラウンジ利用')">ラウンジ利用</span> 
             <span class="benefit-tag" onclick="showBenefit('優先搭乗')">優先搭乗</span> 
@@ -155,6 +158,7 @@
 
     <div class="card">
         <h3>フライトスケジュール</h3>
+        <div style="font-size: 10px; color: #888; margin-bottom: 5px;">※区間タップでフォームに再利用</div>
         <div style="overflow-x:auto;"><table>
             <thead><tr><th style="width:14%">日付</th><th style="width:38%">区間/しおり</th><th style="width:14%">時刻</th><th style="width:12%">PP</th><th style="width:10%">済</th><th style="width:12%">操作</th></tr></thead>
             <tbody id="tableBody"></tbody>
@@ -188,6 +192,8 @@
 const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","サンディエゴ":"SAN","ロサンゼルス":"LAX","サンフランシスコ":"SFO","ホノルル":"HNL","クアラルンプール":"KUL","シドニー":"SYD","ジャカルタ":"CGK"};
 const distDB = {"HND-OKA":984, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1221, "HND-ITM":280, "OKA-ISG":247, "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-SAN":5458, "HND-LAX":5477, "HND-SFO":5130, "HND-HNL":3831, "HND-KUL":3338, "HND-SYD":4930, "HND-CGK":3612};
 const benefits = {
+    'SAN': '【サンディエゴ】SFC(スタアラゴールド)ならUAポラリスラウンジが利用可能。長距離前にフルコースの食事とシャワーを。',
+    'BKK': '【バンコク】スワンナプームはラウンジの宝庫。タイ航空、エバー、シンガポール航空の豪華ラウンジをハシゴできます。',
     '専用保安検査場': 'ANA PREMIUM CHECK-INが利用可能。GWや盆正月の列をスキップできます。',
     'ラウンジ利用': 'ANA LOUNGEが本人＋同行者1名まで無料。ビールや軽食を楽しめます。',
     '優先搭乗': 'Group 2での搭乗が可能。荷物棚を確実に確保できます。',
@@ -319,12 +325,18 @@ function reuseFlight(id) {
 function render() {
     const table = document.getElementById("tableBody"), history = document.getElementById("historyList"), graph = document.getElementById("ppGraph");
     table.innerHTML = ""; history.innerHTML = ""; graph.innerHTML = "";
-    let actualP=0, totalP=0, totalC=0, paidC=0, monthlyPP = Array(12).fill(0);
+    let actualP=0, totalP=0, totalC=0, paidC=0, monthlyPP = Array(12).fill(0), potentialUG_PP = 0;
     flights.sort((a,b) => (a.date + (a.depart || "23:59")).localeCompare(b.date + (b.depart || "23:59")));
 
     flights.forEach((f, idx) => {
         if(!f.isUG) f.pp = calcPP(f.from, f.to, f.rateStr || "0.75", f.date);
         totalP += f.pp; totalC += (f.price || 0);
+
+        if(!f.done && !f.isUG && !f.rateStr.includes("_intl") && !f.rateStr.includes("1.25") && !f.rateStr.includes("1.2_new")) {
+            let base = distDB[f.from+"-"+f.to] || distDB[f.to+"-"+f.from] || 0;
+            potentialUG_PP += (Math.floor(base * 0.5) * 2);
+        }
+
         if(f.done) {
             actualP += f.pp; paidC += (f.price || 0);
             let m = parseInt(f.date.slice(5, 7)); if (m >= 1 && m <= 12) monthlyPP[m - 1] += f.pp;
@@ -344,7 +356,7 @@ function render() {
         let row = document.createElement("tr");
         row.className = f.done ? "row-done copyable" : "copyable";
         row.innerHTML = `<td>${f.date.slice(5).replace('-','/')}</td>
-            <td style="color:var(--accent-blue); font-weight:bold;">${getName(f.from)}→${getName(f.to)}<span class="memo-icon ${f.memo?'active':''}" onclick="openMemo(event, ${f.id})">📝</span>${waitHtml}</td>
+            <td style="color:var(--accent-blue); font-weight:bold;" onclick="reuseFlight(${f.id})">${getName(f.from)}→${getName(f.to)}<span class="memo-icon ${f.memo?'active':''}" onclick="openMemo(event, ${f.id})">📝</span>${waitHtml}</td>
             <td>${f.depart||""}<br>↓<br>${f.arrive||""}</td>
             <td>${f.pp.toLocaleString()}</td>
             <td><input type="checkbox" ${f.done?'checked':''} onclick="toggleDone(event, ${f.id})"><br><span class="cal-icon" onclick="addToCalendar(event, ${f.id})">📅</span></td>
@@ -361,6 +373,13 @@ function render() {
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
     document.getElementById("paidBudget").innerText = "¥" + paidC.toLocaleString();
     document.getElementById("avgUnitPrice").innerText = `PP単価: 実績 ¥${actualP > 0 ? (paidC / actualP).toFixed(2) : "0.00"} / 全体 ¥${totalP > 0 ? (totalC / totalP).toFixed(2) : "0.00"}`;
+
+    const ugSection = document.getElementById("ugImpactSection");
+    if(potentialUG_PP > 0 && totalP < 50000) {
+        ugSection.style.display = "block";
+        let maxWithUG = totalP + potentialUG_PP;
+        ugSection.innerHTML = `🚀 <b>UG影響分析</b><br>未搭乗の国内線を当日UGした場合: <b>+${potentialUG_PP.toLocaleString()} PP</b><br>合計予測は <b>${maxWithUG.toLocaleString()} PP</b> に向上します。${maxWithUG >= 50000 ? '<br>✨ サンディエゴ前に解脱が早まる可能性があります！' : ''}`;
+    } else { ugSection.style.display = "none"; }
 
     let simpleNaha = 2954, simpleIshigaki = 3618, cheer = "";
     const hasSAN = flights.some(f => (f.from === "SAN" || f.to === "SAN"));
