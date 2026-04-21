@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
 
-<title>SFC Manager v71.7 - Professional Content Fixed</title>
+<title>SFC Manager v71.8 - Professional Logical Complete</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; --gold: #d4af37; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-top: env(safe-area-inset-top); padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -22,29 +22,21 @@
     .routeBtn{width:auto; padding:10px 14px; margin:4px 2px; font-size:12px; background:#e9ecef; color:#333; border:1px solid #ddd; border-radius: 8px;}
     .swap-btn{width:48px; height:48px; margin: 0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
     
-    /* フライトスケジュール欄の高さ改善 */
+    /* 改善: フライトスケジュールの高さ圧縮 */
     table{width:100%; border-collapse:collapse; font-size:11px; table-layout: auto;}
-    th, td{border-bottom:1px solid #eee; padding:6px 2px; text-align:center; word-wrap: break-word; line-height: 1.2;}
+    th, td{border-bottom:1px solid #eee; padding:5px 2px; text-align:center; word-wrap: break-word; line-height: 1.15;}
     
-    /* 試算ボタンの改良 */
+    /* 改善: UG試算ラベル（チェックボックス一体型） */
     .ug-sim-label { 
-        font-size: 9px; 
-        color: var(--ug-purple); 
-        display: inline-flex; 
-        align-items: center; 
-        white-space: nowrap; 
-        border: 1px solid var(--ug-purple);
-        padding: 2px 3px;
-        border-radius: 4px;
-        background: #f9f0ff;
-        cursor: pointer;
-        grid-column: span 1;
+        font-size: 9px; color: var(--ug-purple); display: inline-flex; align-items: center; 
+        white-space: nowrap; border: 1px solid var(--ug-purple); padding: 2px 4px;
+        border-radius: 4px; background: #f9f0ff; cursor: pointer; grid-column: span 1;
     }
-    .ug-sim-checkbox { width: 10px !important; height: 10px !important; margin: 0 1px 0 0 !important; cursor: pointer; }
+    .ug-sim-checkbox { width: 12px !important; height: 12px !important; margin: 0 2px 0 0 !important; cursor: pointer; }
     
     .row-simulating { background-color: #f9f0ff !important; border-left: 3px solid var(--ug-purple); }
     .row-done { background-color: #f8f9fa; color: #aaa; }
-    .memo-icon { display: inline-block; font-size: 14px; cursor: pointer; padding: 2px 4px; background: #eee; border-radius: 4px; margin-left: 2px; vertical-align: middle; }
+    .memo-icon { display: inline-block; font-size: 14px; cursor: pointer; padding: 4px; background: #eee; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
     .memo-icon.active { background: var(--warning); color: white; border: 1px solid #e67e22; }
     
     .progress{background:#ddd; height:24px; border-radius:12px; margin:10px 0; overflow:hidden; position: relative;}
@@ -52,25 +44,22 @@
     .progress-pending{background:rgba(42, 109, 244, 0.3); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 1;}
     .ai-box{background:#f0f7ff; padding:15px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff; color: #003f88;}
     
-    /* 操作欄を2列グリッド化 */
+    /* 改善: 操作欄の2列化 */
     .action-container { 
-        display: grid; 
-        grid-template-columns: 1fr 1fr; 
-        gap: 3px; 
-        min-width: 75px; 
-        justify-items: center;
-        align-items: center;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 4px; min-width: 80px; 
+        justify-items: center; align-items: center; 
     }
-    .ug-action-btn{background:var(--ug-purple); color:white; font-size:8px; padding:3px 2px; border-radius:4px; width:100%; margin:0; text-align:center; white-space: nowrap;}
-    .delete-btn { color: #ccc; font-size: 18px; cursor: pointer; grid-column: span 1; }
+    .ug-action-btn{background:var(--ug-purple); color:white; font-size:9px; padding:3px 0; border-radius:4px; width:100%; text-align:center; white-space: nowrap;}
+    .delete-btn { color: #d9534f; font-size: 18px; cursor: pointer; grid-column: span 1; font-weight: bold; }
 
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
     .modal-content { background: white; width: 92%; max-width: 500px; border-radius: 20px; padding: 20px; max-height: 85vh; overflow-y: auto; }
-    .memo-area { background: #fffbe6; border: 1px solid #ffe58f; min-height: 80px; white-space: pre-wrap; font-size: 13px; padding: 12px; border-radius: 8px; margin-top: 10px; color: #444; line-height: 1.5; }
+    .memo-area { background: #fffbe6; border: 1px solid #ffe58f; min-height: 100px; white-space: pre-wrap; font-size: 13px; padding: 12px; border-radius: 8px; margin-top: 10px; color: #444; line-height: 1.5; }
     .graph-container { width: 100%; height: 120px; display: flex; align-items: flex-end; justify-content: space-around; padding: 20px 0 20px 0; position: relative; }
     .graph-bar { width: calc(100% / 12 - 4px); background: var(--accent-blue); border-radius: 4px 4px 0 0; position: relative; min-height: 2px;}
     .graph-val { position: absolute; top: -14px; width: 100%; text-align: center; font-size: 8px; color: #666;}
     .graph-label { position: absolute; bottom: -18px; width: 100%; text-align: center; font-size: 9px; color: #999;}
+    .history-item{font-size:13px; padding:14px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
     .unit-price { font-size: 11px; background: #fffbe6; padding: 4px 8px; border-radius: 6px; border: 1px solid #ffe58f; margin-top: 8px; text-align: center; }
     .benefit-tag { display: inline-block; font-size: 10px; padding: 6px 10px; background: var(--gold); color: white; border-radius: 20px; margin: 3px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .cheer-msg { font-style: italic; border-top: 1px solid #d0e3ff; margin-top: 10px; padding-top: 8px; font-weight: bold; color: #d9534f; }
@@ -78,7 +67,7 @@
 </head>
 <body>
 
-<header>SFC Manager v71.7</header>
+<header>SFC Manager v71.8</header>
 
 <div class="container">
     <div class="card">
@@ -109,6 +98,8 @@
             <button class="routeBtn" onclick="setRoute('那覇','石垣')">那覇-石垣</button>
             <button class="routeBtn" onclick="setRoute('羽田','石垣')">羽田-石垣</button>
             <button class="routeBtn" onclick="setRoute('羽田','サンディエゴ')">SAN</button>
+            <button class="routeBtn" onclick="setRoute('羽田','ロサンゼルス')">LAX</button>
+            <button class="routeBtn" onclick="setRoute('羽田','サンフランシスコ')">SFO</button>
             <button class="routeBtn" onclick="setRoute('羽田','シンガポール')">SIN</button>
             <button class="routeBtn" onclick="setRoute('羽田','バンコク')">BKK</button>
         </div>
@@ -179,6 +170,8 @@
             <span class="benefit-tag" onclick="showBenefit('手荷物優先受取')">手荷物優先受取</span> 
             <span class="benefit-tag" onclick="showBenefit('特典枠拡大')">特典枠拡大</span> 
             <span class="benefit-tag" onclick="showBenefit('スタアラゴールド')">スタアラゴールド</span>
+            <span class="benefit-tag" onclick="showBenefit('専用デスク')">専用デスク</span> 
+            <span class="benefit-tag" onclick="showBenefit('マイル期限実質無')">マイル期限実質無</span>
         </div>
     </div>
 
@@ -186,7 +179,7 @@
         <h3>フライトスケジュール</h3>
         <div style="font-size: 10px; color: #888; margin-bottom: 5px;">※区間タップでフォームに再利用</div>
         <div style="overflow-x:auto;"><table>
-            <thead><tr><th style="width:14%">日付</th><th style="width:36%">区間/しおり</th><th style="width:12%">時刻</th><th style="width:10%">PP</th><th style="width:8%">済</th><th style="width:20%">操作</th></tr></thead>
+            <thead><tr><th style="width:14%">日付</th><th style="width:34%">区間/しおり</th><th style="width:12%">時刻</th><th style="width:10%">PP</th><th style="width:8%">済</th><th style="width:22%">操作</th></tr></thead>
             <tbody id="tableBody"></tbody>
         </table></div>
     </div>
@@ -215,18 +208,19 @@
 </div>
 
 <script>
-// 基本データ・計算ロジック（省略・簡略化なし）
 const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","サンディエゴ":"SAN","ロサンゼルス":"LAX","サンフランシスコ":"SFO","ホノルル":"HNL","クアラルンプール":"KUL","シドニー":"SYD","ジャカルタ":"CGK"};
 const distDB = {"HND-OKA":984, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1221, "HND-ITM":280, "OKA-ISG":247, "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-SAN":5458, "HND-LAX":5477, "HND-SFO":5130, "HND-HNL":3831, "HND-KUL":3338, "HND-SYD":4930, "HND-CGK":3612};
 const benefits = {
-    'SAN': '【サンディエゴ】SFC(スタアラゴールド)で、UAラウンジが利用可能。',
-    'BKK': '【バンコク】タイ航空、エバー、シンガポール航空の豪華ラウンジをハシゴ。',
-    '専用保安検査場': 'ANA PREMIUM CHECK-INが利用可能。',
-    'ラウンジ利用': 'ANA LOUNGEが本人＋同行者1名まで無料。',
-    '優先搭乗': 'Group 2での搭乗が可能。荷物棚確保が容易に。',
-    '手荷物優先受取': '「PRIORITY」タグにより優先返却。',
-    '特典枠拡大': '一般非公開の特典席が開放されます。',
-    'スタアラゴールド': '世界26社でVIP待遇。'
+    'SAN': '【サンディエゴ】SFC(スタアラゴールド)で、UAラウンジが利用可能。※一般のUAクラブでもSANの開放感は格別です。',
+    'BKK': '【バンコク】スワンナプームはラウンジの宝庫。タイ航空、エバー、シンガポール航空の豪華ラウンジをハシゴできます。',
+    '専用保安検査場': 'ANA PREMIUM CHECK-INが利用可能。混雑期でもスムーズです。',
+    'ラウンジ利用': 'ANA LOUNGEが本人＋同行者1名まで無料。ビールや軽食を楽しめます。',
+    '優先搭乗': 'Group 2での搭乗が可能。',
+    '手荷物優先受取': '「PRIORITY」タグにより、到着地で荷物が優先的に出てきます。',
+    '特典枠拡大': '一般会員には開放されないマイル用の席が開放されます。',
+    'スタアラゴールド': '世界26社の航空会社でラウンジ利用等のVIP待遇が受けられます。',
+    '専用デスク': '電話が繋がりやすい専用ダイヤルでの相談が可能です。',
+    'マイル期限実質無': '貯めたマイルの失効を気にせず計画が立てられます。'
 };
 
 let flights = JSON.parse(localStorage.getItem("sfc_v17_data")) || [];
@@ -243,7 +237,6 @@ function calcPP(f, t, rStr, dateStr) {
     let base = distDB[key] || distDB[rev] || 0;
     if(base===0) return 0;
     const isNew = dateStr && new Date(dateStr) >= new Date("2026-05-19");
-    
     if(rStr.includes("_intl")) {
         let rate = parseFloat(rStr);
         let multi = (["SIN","BKK","TSA","KUL","SYD","CGK"].includes(f) || ["SIN","BKK","TSA","KUL","SYD","CGK"].includes(t)) ? 1.5 : 1.0;
@@ -265,14 +258,13 @@ function calcPP(f, t, rStr, dateStr) {
 function tryUG(id) {
     let f = flights.find(x => x.id === id); if(!f) return;
     const isNewPrice = new Date(f.date) >= new Date("2026-05-19");
-    let ugPrice = 14000;
-    if (isNewPrice) ugPrice = 18000;
-    else {
+    let ugPrice = (isNewPrice) ? 18000 : 14000;
+    if(!isNewPrice){
         if((f.from==="OKA" && f.to==="ISG") || (f.from==="ISG" && f.to==="OKA")) ugPrice = 4000;
         else if((f.from==="HND" && f.to==="ISG") || (f.from==="ISG" && f.to==="HND")) ugPrice = 15000;
     }
     let base = distDB[f.from+"-"+f.to] || distDB[f.to+"-"+f.from] || 0;
-    if(confirm(`当日UG(${ugPrice.toLocaleString()}円 / +50%)を実行しますか？\n${isNewPrice ? '【新価格18,000円適用】' : ''}`)) {
+    if(confirm(`当日UG(${ugPrice.toLocaleString()}円 / +50%)を実行しますか？`)) {
         f.pp += (Math.floor(base * 0.5) * 2); f.price += ugPrice; f.isUG = true; save();
     }
 }
@@ -299,7 +291,7 @@ function scheduleUG(e, dateStr, route) {
     const ugDate = new Date(dateStr + "T00:00:00"); ugDate.setDate(ugDate.getDate() - 2); 
     const startStr = ugDate.toISOString().replace(/-|:|\.\d+/g, "").split(".")[0];
     const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nEND:VEVENT\nEND:VCALENDAR`;
-    if(confirm(`${ugDate.toLocaleDateString()}の通知をカレンダー形式で保存しますか？`)) {
+    if(confirm(`${ugDate.toLocaleDateString()}の通知を保存しますか？`)) {
         const blob = new Blob([icsContent], {type: "text/calendar"});
         const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ug_alert.ics"; a.click();
     }
@@ -359,7 +351,7 @@ function render() {
         if(f.done) {
             actualP += f.pp; paidC += (f.price || 0);
             let m = parseInt(f.date.slice(5, 7)); if (m >= 1 && m <= 12) monthlyPP[m - 1] += f.pp;
-            history.innerHTML += `<div class="history-item" onclick="reuseFlight(${f.id})" style="font-size:13px; padding:10px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between;"><span>${f.date.slice(5)} ${getName(f.from)}→${getName(f.to)}</span><b>+${f.pp.toLocaleString()} PP</b></div>`;
+            history.innerHTML += `<div class="history-item" onclick="reuseFlight(${f.id})"><span>${f.date.slice(5)} ${getName(f.from)}→${getName(f.to)}</span><b>+${f.pp.toLocaleString()} PP</b></div>`;
         }
         
         let waitHtml = ""; if(idx < flights.length - 1) {
@@ -368,19 +360,18 @@ function render() {
                 let diff = (new Date(f.date + "T" + next.depart) - new Date(f.date + "T" + f.arrive)) / 60000;
                 if(diff > 0 && diff < 1440) {
                     let color = diff < 60 ? "var(--money)" : "var(--success)";
-                    waitHtml = `<br><span style="background:${color}; color:white; font-size:8px; padding:1px 3px; border-radius:3px; display:inline-block; margin-top:2px;">⏱${Math.floor(diff/60)}h${diff%60}m</span>`;
+                    waitHtml = `<br><span style="background:${color}; color:white; font-size:8px; padding:1px 3px; border-radius:3px; display:inline-block; margin-top:2px;">⏱ ${Math.floor(diff/60)}h${diff%60}m</span>`;
                 }
             }
         }
         
-        // 操作エリアの生成（2列グリッド）
         let ugArea = "";
         if (f.isUG) {
-            ugArea = `<div class="action-container"><span>UG済</span><span onclick="del(event, ${f.id})" class="delete-btn">×</span></div>`;
+            ugArea = `<div class="action-container"><span style="grid-column: span 1; font-size:10px;">UG済</span><span onclick="del(event, ${f.id})" class="delete-btn">×</span></div>`;
         } else if (!f.done) {
             let ugSimulateBtn = "";
             if(!f.rateStr.includes("_intl") && !f.rateStr.includes("1.25") && !f.rateStr.includes("1.2_new")) {
-                ugSimulateBtn = `<label class="ug-sim-label"><input type="checkbox" class="ug-sim-checkbox" onchange="toggleUGSim(${f.id})" ${f.simUG ? 'checked' : ''}>試</label>`;
+                ugSimulateBtn = `<label class="ug-sim-label"><input type="checkbox" class="ug-sim-checkbox" onchange="toggleUGSim(${f.id})" ${f.simUG ? 'checked' : ''}>試算</label>`;
             }
             ugArea = `<div class="action-container">
                         <button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button>
@@ -400,14 +391,13 @@ function render() {
             <td style="color:var(--accent-blue); font-weight:bold; text-align:left;" onclick="reuseFlight(${f.id})">
                 ${getName(f.from)}→${getName(f.to)}<span class="memo-icon ${f.memo?'active':''}" onclick="openMemo(event, ${f.id})">📝</span>${waitHtml}
             </td>
-            <td onclick="reuseFlight(${f.id})">${f.depart||""}<br>${f.arrive||""}</td>
+            <td onclick="reuseFlight(${f.id})">${f.depart||""}<br>↓<br>${f.arrive||""}</td>
             <td onclick="reuseFlight(${f.id})">${f.pp.toLocaleString()}</td>
             <td><input type="checkbox" ${f.done?'checked':''} onclick="toggleDone(event, ${f.id})"></td>
             <td>${ugArea}</td>`;
         table.appendChild(row);
     });
 
-    // 集計・アドバイス・グラフ（ベースコードの機能を完全維持）
     const remainAfterPending = Math.max(0, 50000 - totalP);
     document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000 PP";
     document.getElementById("pendingTotalText").innerText = "(予約込合計: " + totalP.toLocaleString() + " PP)";
@@ -422,15 +412,22 @@ function render() {
     if(potentialUG_PP > 0 && totalP < 50000) {
         ugSection.style.display = "block";
         let maxWithUG = totalP + potentialUG_PP;
-        ugSection.innerHTML = `🚀 <b>UG影響分析</b><br>当日UG想定: +${potentialUG_PP.toLocaleString()} PP (合計予測: ${maxWithUG.toLocaleString()} PP)`;
+        ugSection.innerHTML = `🚀 <b>UG影響分析 (選択した便のみ)</b><br>当日UGを想定した場合の上乗せ: <b>+${potentialUG_PP.toLocaleString()} PP</b><br>合計予測は <b>${maxWithUG.toLocaleString()} PP</b> に向上します。${maxWithUG >= 50000 ? '<br>✨ このUGプランなら、サンディエゴ前に解脱可能です！' : ''}`;
     } else { ugSection.style.display = "none"; }
 
-    let simpleNaha = 2954, simpleIshigaki = 3618;
-    document.getElementById("aiAdvice").innerHTML = `残り <b>${remainAfterPending.toLocaleString()} PP</b> (予約分除く)<br>【解脱戦略】<br>・石垣往復なら あと <b>${Math.ceil(remainAfterPending/simpleIshigaki)}回</b><br>・那覇往復なら あと <b>${Math.ceil(remainAfterPending/simpleNaha)}回</b>`;
-    
+    let simpleNaha = 2954, simpleIshigaki = 3618, cheer = "";
+    const hasSAN = flights.some(f => (f.from === "SAN" || f.to === "SAN"));
+    const hasBKK = flights.some(f => (f.from === "BKK" || f.to === "BKK") && f.date.includes("-11-"));
+
+    if (actualP >= 50000) cheer = hasBKK ? "【解脱】おめでとうございます！11月のバンコクは最高の『解脱記念旅行』になりますね。" : "【解脱】おめでとうございます！これからは『極上の旅』があなたを待っています。";
+    else if (hasSAN && totalP >= 50000) cheer = "【王手】10月のサンディエゴ出張で解脱予定です。体調管理に気をつけて、UAラウンジも楽しみましょう！";
+    else if (actualP >= 25000) cheer = "【実戦投入】半分突破！5/8の那覇やサンディエゴ等、確定済みの旅程を確実に『済』に変えていきましょう。";
+    else if (actualP > 0) cheer = "【離陸完了】修行の号砲は鳴らされました。Tabioriでの共有や座席調整、その一つ一つの手間が解脱への近道です。";
+    else cheer = "【プランニング】1円でも安く、1PPでも多く。完璧なスケジュールを組む今の時間が、実は一番楽しいかもしれません。";
+
+    document.getElementById("aiAdvice").innerHTML = `残り <b>${remainAfterPending.toLocaleString()} PP</b> (予約分除く)<br>【解脱戦略 (5/19〜新運賃)】<br>・石垣往復なら あと <b>${Math.ceil(remainAfterPending/simpleIshigaki)}回</b><br>・那覇往復なら あと <b>${Math.ceil(remainAfterPending/simpleNaha)}回</b>`;
     const cheerEl = document.getElementById("cheerMessage");
-    cheerEl.innerText = actualP >= 50000 ? "【解脱】おめでとうございます！" : "【修行中】解脱への道を着実に進んでいます。";
-    cheerEl.style.display = "block";
+    cheerEl.innerText = cheer; cheerEl.style.display = "block";
 
     const maxPP = Math.max(...monthlyPP, 5000);
     monthlyPP.forEach((pp, i) => { 
