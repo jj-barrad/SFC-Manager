@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
 
-<title>SFC Manager v73.4 - Mileage Edition</title>
+<title>SFC Manager v73.5 - Mileage Edition</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; --gold: #d4af37; --mile-orange: #f39c12; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-top: env(safe-area-inset-top); padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -55,6 +55,7 @@
     .graph-container { width: 100%; height: 120px; display: flex; align-items: flex-end; justify-content: space-around; padding: 20px 0 20px 0; position: relative; }
     .graph-bar { width: calc(100% / 12 - 4px); background: var(--accent-blue); border-radius: 4px 4px 0 0; position: relative; min-height: 2px;}
     .graph-val { position: absolute; top: -14px; width: 100%; text-align: center; font-size: 8px; color: #666;}
+    .graph-val-pending { position: absolute; top: -26px; width: 100%; text-align: center; font-size: 8px; color: var(--accent-blue); font-weight: bold;}
     .graph-label { position: absolute; bottom: -18px; width: 100%; text-align: center; font-size: 9px; color: #999;}
     .history-item{font-size:13px; padding:14px; border-bottom:1px dashed #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
     .unit-price { font-size: 11px; background: #fffbe6; padding: 4px 8px; border-radius: 6px; border: 1px solid #ffe58f; margin-top: 8px; text-align: center; }
@@ -71,7 +72,7 @@
 </head>
 <body>
 
-<header>SFC Manager v73.4</header>
+<header>SFC Manager v73.5</header>
 
 <div class="container">
     <div class="card">
@@ -223,17 +224,18 @@ const distDB = {
     "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-SAN":5458, "HND-LAX":5477, "HND-SFO":5130,
     "NRT-LAX":5458, "LAX-SAN":109, "SAN-SFO":447, "SFO-HND":5130
 };
+// 解脱後の世界：内容復元版
 const benefits = {
-    'LAX-Polaris': '【LAXポラリス】T7に位置。NH006(ビジネス)到着時に利用可能。オーダー式のダイニングで「ポラリス・バーガー」を。',
-    'SFO-Polaris': '【SFOポラリス】国際線ターミナルG。NH107出発前に利用可能。シャワー完備で深夜便前のリセットに最適。',
-    'SAN': '【サンディエゴ】SFC(スタアラゴールド)で、United Clubが利用可能。こぢんまりしていますが開放感があります。',
-    'BKK': '【バンコク】スワンナプームはラウンジの宝庫。タイ航空、エバー、シンガポール航空の豪華ラウンジをハシゴ可能。',
-    '専用保安検査場': 'ANA PREMIUM CHECK-INが利用可能。混雑期でもスムーズです。',
-    'ラウンジ利用': 'ANA LOUNGEが本人＋同行者1名まで無料。ビールや軽食を楽しめます。',
-    '優先搭乗': 'Group 2での搭乗が可能。',
-    '手荷物優先受取': '「PRIORITY」タグにより、到着地で荷物が優先的に出てきます。',
-    '特典枠拡大': '一般会員には開放されないマイル用の席が開放されます。',
-    'スタアラゴールド': '世界26社の航空会社でラウンジ利用等のVIP待遇が受けられます。'
+    'LAX-Polaris': '【LAXポラリス】T7に位置。NH006(ビジネス)搭乗時に利用可能。オーダー式のダイニング「Polaris Grill」で、名物のポラリス・バーガーを。',
+    'SFO-Polaris': '【SFOポラリス】国際線ターミナルG、エスカレーターを上がった先にあります。NH107出発前に利用可能。広大な空間とシャワー完備で、深夜便前のリセットに最適。',
+    'SAN': '【サンディエゴ】SFC(スタアラゴールド)があれば、ターミナル2のUnited Clubが利用可能。こぢんまりしていますが、大きな窓から飛行機を眺められ、開放感があります。',
+    'BKK': '【バンコク】スワンナプームはSFCの真骨頂。タイ航空の複数のラウンジに加え、エバー航空、シンガポール航空、トルコ航空など、スタアラ加盟各社の豪華ラウンジをハシゴ(ラウンジホッピング)可能です。',
+    '専用保安検査場': 'ANA PREMIUM CHECK-INが利用可能。羽田などの混雑期でも、専用の入口からスムーズに保安検査を通過できます。',
+    'ラウンジ利用': 'ANA LOUNGEが本人＋同行者1名まで無料。国内線ならプレミアムモルツ等のビール、国際線ならカレーやヌードルバーを楽しめます。',
+    '優先搭乗': '一般搭乗に先駆け、Group 2(スターアライアンス・ゴールド)のタイミングで優先的に機内へ案内されます。',
+    '手荷物優先受取': '「PRIORITY」タグにより、到着地のターンテーブルで荷物が優先的に出てきます。海外の空港でも非常に重宝する特典です。',
+    '特典枠拡大': '一般会員には開放されない「SFC専用の特典航空券枠」が開放されます。人気のハワイや欧米路線のビジネスクラスなども、格段に予約しやすくなります。',
+    'スタアラゴールド': '世界26社のスターアライアンス加盟航空会社で、ラウンジ利用、優先チェックイン、優先搭乗、手荷物許容量の優待など、世界中どこへ行ってもVIP待遇を受けられます。まさに「世界へのパスポート」です。'
 };
 
 let flights = JSON.parse(localStorage.getItem("sfc_v17_data")) || [];
@@ -389,7 +391,7 @@ function render() {
     const mileInput = document.getElementById("currentMiles");
     if(document.activeElement !== mileInput) mileInput.value = savedMiles;
 
-    let actualP=0, totalP=0, totalC=0, paidC=0, monthlyPP = Array(12).fill(0), potentialUG_PP = 0, potentialMilesNeeded = 0;
+    let actualP=0, totalP=0, totalC=0, paidC=0, monthlyPP = Array(12).fill(0), monthlyPendingPP = Array(12).fill(0), potentialUG_PP = 0, potentialMilesNeeded = 0;
     flights.sort((a,b) => (a.date + (a.depart || "23:59")).localeCompare(b.date + (b.depart || "23:59")));
 
     let cumulativePP = 0;
@@ -412,10 +414,13 @@ function render() {
             potentialMilesNeeded += resources.mile;
         }
 
+        let m = parseInt(f.date.slice(5, 7));
         if(f.done) {
             actualP += f.pp; paidC += (f.price || 0);
-            let m = parseInt(f.date.slice(5, 7)); if (m >= 1 && m <= 12) monthlyPP[m - 1] += f.pp;
+            if (m >= 1 && m <= 12) monthlyPP[m - 1] += f.pp;
             history.innerHTML += `<div class="history-item" onclick="reuseFlight(${f.id})"><span>${f.date.slice(5)} ${getName(f.from)}→${getName(f.to)}</span><b>+${f.pp.toLocaleString()} PP</b></div>`;
+        } else {
+            if (m >= 1 && m <= 12) monthlyPendingPP[m - 1] += f.pp;
         }
         
         let waitHtml = ""; if(idx < flights.length - 1) {
@@ -482,19 +487,13 @@ function render() {
         ugSection.innerHTML = `🚀 <b>UG影響分析 (PP上乗せ)</b><br>当日UG想定: <b>+${potentialUG_PP.toLocaleString()} PP</b><br>合計予測: <b>${maxWithUG.toLocaleString()} PP</b>${maxWithUG >= 50000 ? '<br>✨ このUGプランなら、サンディエゴ前に解脱可能です！' : ''}`;
     } else { ugSection.style.display = "none"; }
 
-    // マイルUG試算状況の表示ロジック（最新修正版）
     const mileSection = document.getElementById("mileImpactSection");
     if(potentialMilesNeeded > 0) {
         mileSection.style.display = "block";
-        
-        // チェックを入れた便のリストを取得
         const selectedFlights = flights.filter(f => !f.done && f.simUG);
         const hasOld = selectedFlights.some(f => new Date(f.date) < new Date("2026-05-19"));
         const hasNew = selectedFlights.some(f => new Date(f.date) >= new Date("2026-05-19"));
-        
-        // 合計マイル数をカンマ区切りで取得
         const formattedMiles = potentialMilesNeeded.toLocaleString();
-        
         let compText = "";
         if(hasOld && hasNew) {
             compText = `※期間中に制度改定を跨いでいます。合計 ${formattedMiles} マイルでのUG試算です。`;
@@ -503,7 +502,6 @@ function render() {
         } else {
             compText = `※5/18までの現行制度にて、計 ${formattedMiles} マイルでUG可能です。`;
         }
-
         mileSection.innerHTML = `🧡 <b>マイルUG試算状況</b><br>選択便の合計: <b>${formattedMiles} マイル</b><br><small>${compText}</small>`;
     } else {
         mileSection.style.display = "none";
@@ -522,10 +520,19 @@ function render() {
     const cheerEl = document.getElementById("cheerMessage");
     cheerEl.innerText = cheer; cheerEl.style.display = "block";
 
-    const maxPP = Math.max(...monthlyPP, 5000);
+    const maxPP = Math.max(...monthlyPP.map((val, idx) => val + monthlyPendingPP[idx]), 5000);
     monthlyPP.forEach((pp, i) => { 
-        const h = (pp / maxPP) * 100; 
-        graph.innerHTML += `<div class="graph-bar" style="height:${h}%">${pp>0?`<span class="graph-val">${pp}</span>`:''}<span class="graph-label">${i+1}月</span></div>`; 
+        const pending = monthlyPendingPP[i];
+        const hActual = (pp / maxPP) * 100;
+        const hPending = (pending / maxPP) * 100;
+        graph.innerHTML += `
+            <div class="graph-bar" style="height:${hActual}%">
+                ${pp>0?`<span class="graph-val">${pp}</span>`:''}
+                <div style="position:absolute; bottom:100%; left:0; width:100%; height:${(pending/pp)*100}%; background:rgba(42,109,244,0.3); border-radius:4px 4px 0 0; min-height:${pending>0?2:0}px;">
+                    ${pending>0?`<span class="graph-val-pending">${pending}</span>`:''}
+                </div>
+                <span class="graph-label">${i+1}月</span>
+            </div>`; 
     });
 }
 render();
