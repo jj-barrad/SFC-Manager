@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
 
-<title>SFC Manager v73.2 - Mileage Edition</title>
+<title>SFC Manager v73.4 - Mileage Edition</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; --gold: #d4af37; --mile-orange: #f39c12; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-top: env(safe-area-inset-top); padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -71,7 +71,7 @@
 </head>
 <body>
 
-<header>SFC Manager v73.2</header>
+<header>SFC Manager v73.4</header>
 
 <div class="container">
     <div class="card">
@@ -482,28 +482,32 @@ function render() {
         ugSection.innerHTML = `🚀 <b>UG影響分析 (PP上乗せ)</b><br>当日UG想定: <b>+${potentialUG_PP.toLocaleString()} PP</b><br>合計予測: <b>${maxWithUG.toLocaleString()} PP</b>${maxWithUG >= 50000 ? '<br>✨ このUGプランなら、サンディエゴ前に解脱可能です！' : ''}`;
     } else { ugSection.style.display = "none"; }
 
-   // マイルUG試算状況の表示ロジック（より厳密な判定）
-const mileSection = document.getElementById("mileImpactSection");
-if(potentialMilesNeeded > 0) {
-    mileSection.style.display = "block";
-    
-    // チェックを入れた便のリストを取得
-    const selectedFlights = flights.filter(f => !f.done && f.simUG);
-    const hasOld = selectedFlights.some(f => new Date(f.date) < new Date("2026-05-19"));
-    const hasNew = selectedFlights.some(f => new Date(f.date) >= new Date("2026-05-19"));
-    
-    let compText = "";
-    if(hasOld && hasNew) {
-        compText = "※期間中に制度改定を跨いでいます。5/18までは1.5万円、5/19以降は1.8万円(羽田-石垣等)との比較になります。";
-    } else if(hasNew) {
-        compText = "※5/19〜の新料金(1.8万円)に対し、9,000マイル(1m=2円換算)でのUGは非常に効率的です。";
+    // マイルUG試算状況の表示ロジック（最新修正版）
+    const mileSection = document.getElementById("mileImpactSection");
+    if(potentialMilesNeeded > 0) {
+        mileSection.style.display = "block";
+        
+        // チェックを入れた便のリストを取得
+        const selectedFlights = flights.filter(f => !f.done && f.simUG);
+        const hasOld = selectedFlights.some(f => new Date(f.date) < new Date("2026-05-19"));
+        const hasNew = selectedFlights.some(f => new Date(f.date) >= new Date("2026-05-19"));
+        
+        // 合計マイル数をカンマ区切りで取得
+        const formattedMiles = potentialMilesNeeded.toLocaleString();
+        
+        let compText = "";
+        if(hasOld && hasNew) {
+            compText = `※期間中に制度改定を跨いでいます。合計 ${formattedMiles} マイルでのUG試算です。`;
+        } else if(hasNew) {
+            compText = `※5/19〜の新制度にて、計 ${formattedMiles} マイルでUG可能です。現金で支払うよりマイル効率が良い路線です。`;
+        } else {
+            compText = `※5/18までの現行制度にて、計 ${formattedMiles} マイルでUG可能です。`;
+        }
+
+        mileSection.innerHTML = `🧡 <b>マイルUG試算状況</b><br>選択便の合計: <b>${formattedMiles} マイル</b><br><small>${compText}</small>`;
     } else {
-        compText = "※5/18までの現行料金(1.4〜1.5万円)に対し、9,000〜12,000マイルでのUG試算です。";
+        mileSection.style.display = "none";
     }
-
-    mileSection.innerHTML = `🧡 <b>マイルUG試算状況</b><br>選択便の合計: <b>${potentialMilesNeeded.toLocaleString()} マイル</b><br><small>${compText}</small>`;
-}
-
 
     let simpleNaha = 2954, simpleIshigaki = 3618, cheer = "";
     const hasSAN = flights.some(f => (f.from === "SAN" || f.to === "SAN"));
