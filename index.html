@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
 
-<title>SFC Manager v73.1 - Mileage Edition</title>
+<title>SFC Manager v73.2 - Mileage Edition</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; --gold: #d4af37; --mile-orange: #f39c12; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-top: env(safe-area-inset-top); padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -71,7 +71,7 @@
 </head>
 <body>
 
-<header>SFC Manager v73.1</header>
+<header>SFC Manager v73.2</header>
 
 <div class="container">
     <div class="card">
@@ -257,17 +257,14 @@ function calcPP(f, t, rStr, dateStr) {
     if(base===0) return 0;
     const isNew = dateStr && new Date(dateStr) >= new Date("2026-05-19");
     
-    // 国際線計算（北米ビジネス特典等への対応）
     if(rStr.includes("_intl")) {
         let rate = parseFloat(rStr);
         let multi = (["SIN","BKK","TSA","KUL","SYD","CGK"].includes(f) || ["SIN","BKK","TSA","KUL","SYD","CGK"].includes(t)) ? 1.5 : 1.0;
-        // Zクラス(1.25)なら北米でも400付与。それ以外(70%等)の北米は0。
         let isNorthAmerica = (f === "LAX" || f === "SAN" || f === "SFO" || t === "LAX" || t === "SAN" || t === "SFO");
         let bonus = (rStr === "1.25_intl" || !isNorthAmerica) ? 400 : 0; 
         return Math.floor(base * rate * multi) + bonus;
     }
     
-    // 5/19以降の新体系
     if(isNew) {
         if(rStr === "1.2_new") return (Math.floor(base * 1.2) * 2) + 400;
         if(rStr === "0.7_new") return (Math.floor(base * 0.7) * 2) + 100;
@@ -276,7 +273,6 @@ function calcPP(f, t, rStr, dateStr) {
         if(rStr === "1.0_new") return (Math.floor(base * 1.0) * 2) + 400;
         return (Math.floor(base * parseFloat(rStr)) * 2);
     }
-    // 旧体系
     let rate = parseFloat(rStr);
     let bonus = (rStr.includes("plus") || ["1.0","1.25"].includes(rStr)) ? 400 : 0;
     return (Math.floor(base * rate) * 2) + bonus;
@@ -486,10 +482,16 @@ function render() {
         ugSection.innerHTML = `🚀 <b>UG影響分析 (PP上乗せ)</b><br>当日UG想定: <b>+${potentialUG_PP.toLocaleString()} PP</b><br>合計予測: <b>${maxWithUG.toLocaleString()} PP</b>${maxWithUG >= 50000 ? '<br>✨ このUGプランなら、サンディエゴ前に解脱可能です！' : ''}`;
     } else { ugSection.style.display = "none"; }
 
+    // 試算コメントロジックの修正
     const mileSection = document.getElementById("mileImpactSection");
     if(potentialMilesNeeded > 0) {
         mileSection.style.display = "block";
-        mileSection.innerHTML = `🧡 <b>マイルUG試算状況</b><br>選択便のUGに必要な合計: <b>${potentialMilesNeeded.toLocaleString()} マイル</b><br><small>※18,000円を払うより、9,000マイル(1マイル=2円換算)を使用する方がキャッシュアウトを抑えられます。</small>`;
+        const hasNewSystemFlight = flights.some(f => !f.done && f.simUG && new Date(f.date) >= new Date("2026-05-19"));
+        let compText = hasNewSystemFlight 
+            ? "※5/19以降の新制度では、18,000円を払うより9,000マイル(1マイル=2円換算)を使う方がお得なケースが多いです。"
+            : "※5/18までの現行制度では、路線により14,000〜15,000円、または9,000〜12,000マイルが必要です。";
+
+        mileSection.innerHTML = `🧡 <b>マイルUG試算状況</b><br>選択便の合計: <b>${potentialMilesNeeded.toLocaleString()} マイル</b><br><small>${compText}</small>`;
     } else { mileSection.style.display = "none"; }
 
     let simpleNaha = 2954, simpleIshigaki = 3618, cheer = "";
