@@ -482,17 +482,28 @@ function render() {
         ugSection.innerHTML = `🚀 <b>UG影響分析 (PP上乗せ)</b><br>当日UG想定: <b>+${potentialUG_PP.toLocaleString()} PP</b><br>合計予測: <b>${maxWithUG.toLocaleString()} PP</b>${maxWithUG >= 50000 ? '<br>✨ このUGプランなら、サンディエゴ前に解脱可能です！' : ''}`;
     } else { ugSection.style.display = "none"; }
 
-    // 試算コメントロジックの修正
-    const mileSection = document.getElementById("mileImpactSection");
-    if(potentialMilesNeeded > 0) {
-        mileSection.style.display = "block";
-        const hasNewSystemFlight = flights.some(f => !f.done && f.simUG && new Date(f.date) >= new Date("2026-05-19"));
-        let compText = hasNewSystemFlight 
-            ? "※5/19以降の新制度では、18,000円を払うより9,000マイル(1マイル=2円換算)を使う方がお得なケースが多いです。"
-            : "※5/18までの現行制度では、路線により14,000〜15,000円、または9,000〜12,000マイルが必要です。";
+   // マイルUG試算状況の表示ロジック（より厳密な判定）
+const mileSection = document.getElementById("mileImpactSection");
+if(potentialMilesNeeded > 0) {
+    mileSection.style.display = "block";
+    
+    // チェックを入れた便のリストを取得
+    const selectedFlights = flights.filter(f => !f.done && f.simUG);
+    const hasOld = selectedFlights.some(f => new Date(f.date) < new Date("2026-05-19"));
+    const hasNew = selectedFlights.some(f => new Date(f.date) >= new Date("2026-05-19"));
+    
+    let compText = "";
+    if(hasOld && hasNew) {
+        compText = "※期間中に制度改定を跨いでいます。5/18までは1.5万円、5/19以降は1.8万円(羽田-石垣等)との比較になります。";
+    } else if(hasNew) {
+        compText = "※5/19〜の新料金(1.8万円)に対し、9,000マイル(1m=2円換算)でのUGは非常に効率的です。";
+    } else {
+        compText = "※5/18までの現行料金(1.4〜1.5万円)に対し、9,000〜12,000マイルでのUG試算です。";
+    }
 
-        mileSection.innerHTML = `🧡 <b>マイルUG試算状況</b><br>選択便の合計: <b>${potentialMilesNeeded.toLocaleString()} マイル</b><br><small>${compText}</small>`;
-    } else { mileSection.style.display = "none"; }
+    mileSection.innerHTML = `🧡 <b>マイルUG試算状況</b><br>選択便の合計: <b>${potentialMilesNeeded.toLocaleString()} マイル</b><br><small>${compText}</small>`;
+}
+
 
     let simpleNaha = 2954, simpleIshigaki = 3618, cheer = "";
     const hasSAN = flights.some(f => (f.from === "SAN" || f.to === "SAN"));
