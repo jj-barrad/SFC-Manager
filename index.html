@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
 
-<title>SFC Manager v73.0 - Mileage Edition</title>
+<title>SFC Manager v73.1 - Mileage Edition</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; --gold: #d4af37; --mile-orange: #f39c12; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-top: env(safe-area-inset-top); padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -64,7 +64,6 @@
     .sfc-badge { background:var(--gold); color:white; font-size:9px; padding:1px 4px; border-radius:10px; font-weight:bold; display:inline-block; margin-top:2px; }
     .pre-sfc-badge { background:#666; color:white; font-size:9px; padding:1px 4px; border-radius:10px; display:inline-block; margin-top:2px; }
 
-    /* マイル用スタイル追加 */
     .mile-badge { background: var(--mile-orange); color: white; padding: 2px 6px; border-radius: 6px; font-size: 10px; margin-top: 4px; display: inline-block; }
     .mileage-input-group { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
     .mileage-input-group input { flex: 1; border: 2px solid var(--mile-orange); }
@@ -72,7 +71,7 @@
 </head>
 <body>
 
-<header>SFC Manager v73.0</header>
+<header>SFC Manager v73.1</header>
 
 <div class="container">
     <div class="card">
@@ -258,14 +257,17 @@ function calcPP(f, t, rStr, dateStr) {
     if(base===0) return 0;
     const isNew = dateStr && new Date(dateStr) >= new Date("2026-05-19");
     
+    // 国際線計算（北米ビジネス特典等への対応）
     if(rStr.includes("_intl")) {
         let rate = parseFloat(rStr);
         let multi = (["SIN","BKK","TSA","KUL","SYD","CGK"].includes(f) || ["SIN","BKK","TSA","KUL","SYD","CGK"].includes(t)) ? 1.5 : 1.0;
-        let bonus = (f === "LAX" || f === "SAN" || f === "SFO" || t === "LAX" || t === "SAN" || t === "SFO") ? 0 : 400; 
-        if(rStr === "1.25_intl") return Math.floor(base * rate * multi) + 400;
-        return Math.floor(base * rate * multi);
+        // Zクラス(1.25)なら北米でも400付与。それ以外(70%等)の北米は0。
+        let isNorthAmerica = (f === "LAX" || f === "SAN" || f === "SFO" || t === "LAX" || t === "SAN" || t === "SFO");
+        let bonus = (rStr === "1.25_intl" || !isNorthAmerica) ? 400 : 0; 
+        return Math.floor(base * rate * multi) + bonus;
     }
     
+    // 5/19以降の新体系
     if(isNew) {
         if(rStr === "1.2_new") return (Math.floor(base * 1.2) * 2) + 400;
         if(rStr === "0.7_new") return (Math.floor(base * 0.7) * 2) + 100;
@@ -274,6 +276,7 @@ function calcPP(f, t, rStr, dateStr) {
         if(rStr === "1.0_new") return (Math.floor(base * 1.0) * 2) + 400;
         return (Math.floor(base * parseFloat(rStr)) * 2);
     }
+    // 旧体系
     let rate = parseFloat(rStr);
     let bonus = (rStr.includes("plus") || ["1.0","1.25"].includes(rStr)) ? 400 : 0;
     return (Math.floor(base * rate) * 2) + bonus;
@@ -290,7 +293,6 @@ function getUGResources(f) {
         else if(base <= 700) { cash = 12000; mile = 7000; }
         else { cash = 18000; mile = 9000; }
     } else {
-        // 現行制度
         if((f.from==="OKA" && f.to==="ISG") || (f.from==="ISG" && f.to==="OKA")) { cash = 4000; mile = 5000; }
         else if((f.from==="HND" && f.to==="ISG") || (f.from==="ISG" && f.to==="HND")) { cash = 15000; mile = 12000; }
         else { cash = 14000; mile = 9000; }
@@ -303,17 +305,14 @@ function tryUG(id) {
     const resources = getUGResources(f);
     let base = distDB[f.from+"-"+f.to] || distDB[f.to+"-"+f.from] || 0;
     
-    // 判定ロジック：1マイル2円換算でどちらが安いか
     const mileValue = resources.mile * 2;
     const recommendation = resources.cash < mileValue ? "【現金がお得】" : "【マイルがお得】";
 
     const choice = confirm(`${recommendation}\nアップグレード方法を選んでください：\nOK：現金 (${resources.cash.toLocaleString()}円)\nキャンセル：マイル (${resources.mile.toLocaleString()}マイル)`);
     
     if(choice) {
-        // 現金
         f.pp += (Math.floor(base * 0.5) * 2); f.price += resources.cash; f.isUG = true; f.ugMethod = "cash";
     } else {
-        // マイル
         let current = parseInt(localStorage.getItem("sfc_miles") || 0);
         if(current < resources.mile) return alert("マイルが足りません！");
         f.pp += (Math.floor(base * 0.5) * 2); f.isUG = true; f.ugMethod = "mile"; f.usedMiles = resources.mile;
@@ -343,7 +342,7 @@ function scheduleUG(e, dateStr, route) {
     if(e) e.stopPropagation();
     const ugDate = new Date(dateStr + "T00:00:00"); ugDate.setDate(ugDate.getDate() - 2); 
     const startStr = ugDate.toISOString().replace(/-|:|\.\d+/g, "").split(".")[0];
-    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nEND:VEVENT\nEND:VCALENDAR`;
+    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nEND:VCALENDAR\nEND:VCALENDAR`;
     if(confirm(`${ugDate.toLocaleDateString()}の通知を保存しますか？`)) {
         const blob = new Blob([icsContent], {type: "text/calendar"});
         const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ug_alert.ics"; a.click();
@@ -390,9 +389,9 @@ function render() {
     const table = document.getElementById("tableBody"), history = document.getElementById("historyList"), graph = document.getElementById("ppGraph");
     table.innerHTML = ""; history.innerHTML = ""; graph.innerHTML = "";
     
-    // マイル初期表示
     const savedMiles = localStorage.getItem("sfc_miles") || "0";
-    document.getElementById("currentMiles").value = savedMiles;
+    const mileInput = document.getElementById("currentMiles");
+    if(document.activeElement !== mileInput) mileInput.value = savedMiles;
 
     let actualP=0, totalP=0, totalC=0, paidC=0, monthlyPP = Array(12).fill(0), potentialUG_PP = 0, potentialMilesNeeded = 0;
     flights.sort((a,b) => (a.date + (a.depart || "23:59")).localeCompare(b.date + (b.depart || "23:59")));
@@ -490,7 +489,7 @@ function render() {
     const mileSection = document.getElementById("mileImpactSection");
     if(potentialMilesNeeded > 0) {
         mileSection.style.display = "block";
-        mileSection.innerHTML = `🧡 <b>マイルUG試算状況</b><br>選択便のUGに必要な合計: <b>${potentialMilesNeeded.toLocaleString()} マイル</b><br><small>※1マイル=2円換算で現金18,000円よりマイル利用(9,000m)がお得です。</small>`;
+        mileSection.innerHTML = `🧡 <b>マイルUG試算状況</b><br>選択便のUGに必要な合計: <b>${potentialMilesNeeded.toLocaleString()} マイル</b><br><small>※18,000円を払うより、9,000マイル(1マイル=2円換算)を使用する方がキャッシュアウトを抑えられます。</small>`;
     } else { mileSection.style.display = "none"; }
 
     let simpleNaha = 2954, simpleIshigaki = 3618, cheer = "";
@@ -498,7 +497,7 @@ function render() {
     const hasBKK = flights.some(f => (f.from === "BKK" || f.to === "BKK") && f.date.includes("-11-"));
 
     if (actualP >= 50000) cheer = hasBKK ? "【祝・解脱】11月のバンコクはSFCとして、最高のラウンジホッピングを楽しめますね！" : "【祝・解脱】おめでとうございます！これからは全ての旅が特別になります。";
-    else if (hasSAN && totalP >= 50000) cheer = "【解脱確定】10月のサンディエゴ出張(Zクラス)で解脱予定です。LAX・SFOのポラリスラウンジを心ゆくまで堪能してください！";
+    else if (hasSAN && totalP >= 50000) cheer = "【解脱確定】10月のサンディエゴ出張(Zクラス想定)で解脱予定です。LAX・SFOのポラリスラウンジを心ゆくまで堪能してください！";
     else if (actualP > 0) cheer = "【修行中】一歩ずつ着実に。Tabioriで彼女さんとも予定を共有しつつ、完璧な計画を完遂しましょう。";
     else cheer = "【準備万端】理想のスケジュールを組む今の時間が、解脱への第一歩です。";
 
