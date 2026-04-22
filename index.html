@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
 
-<title>SFC Manager v71.8 - Professional Logical Complete</title>
+<title>SFC Manager v72.0 - Global Edition</title>
 <style>
     :root { --main-blue: #003f88; --accent-blue: #2a6df4; --bg-gray: #f3f6fa; --success: #28a745; --money: #d9534f; --warning: #f0ad4e; --ug-purple: #9b59b6; --gold: #d4af37; }
     body{font-family:-apple-system, sans-serif; background:var(--bg-gray); margin:0; padding-top: env(safe-area-inset-top); padding-bottom:80px; color:#333; -webkit-tap-highlight-color:transparent;}
@@ -22,11 +22,9 @@
     .routeBtn{width:auto; padding:10px 14px; margin:4px 2px; font-size:12px; background:#e9ecef; color:#333; border:1px solid #ddd; border-radius: 8px;}
     .swap-btn{width:48px; height:48px; margin: 0; background:#f8f9fa; color:var(--main-blue); border:1px solid #ccc; border-radius:50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
     
-    /* 改善: フライトスケジュールの高さ圧縮 */
     table{width:100%; border-collapse:collapse; font-size:11px; table-layout: auto;}
     th, td{border-bottom:1px solid #eee; padding:5px 2px; text-align:center; word-wrap: break-word; line-height: 1.15;}
     
-    /* 改善: UG試算ラベル（チェックボックス一体型） */
     .ug-sim-label { 
         font-size: 9px; color: var(--ug-purple); display: inline-flex; align-items: center; 
         white-space: nowrap; border: 1px solid var(--ug-purple); padding: 2px 4px;
@@ -44,7 +42,6 @@
     .progress-pending{background:rgba(42, 109, 244, 0.3); height:100%; width:0%; transition: width 0.8s; position: absolute; z-index: 1;}
     .ai-box{background:#f0f7ff; padding:15px; border-radius:10px; font-size:13px; line-height:1.6; border:1px solid #d0e3ff; color: #003f88;}
     
-    /* 改善: 操作欄の2列化 */
     .action-container { 
         display: grid; grid-template-columns: 1fr 1fr; gap: 4px; min-width: 80px; 
         justify-items: center; align-items: center; 
@@ -63,11 +60,15 @@
     .unit-price { font-size: 11px; background: #fffbe6; padding: 4px 8px; border-radius: 6px; border: 1px solid #ffe58f; margin-top: 8px; text-align: center; }
     .benefit-tag { display: inline-block; font-size: 10px; padding: 6px 10px; background: var(--gold); color: white; border-radius: 20px; margin: 3px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .cheer-msg { font-style: italic; border-top: 1px solid #d0e3ff; margin-top: 10px; padding-top: 8px; font-weight: bold; color: #d9534f; }
+    
+    /* 追加: SFCバッジスタイル */
+    .sfc-badge { background:var(--gold); color:white; font-size:9px; padding:1px 4px; border-radius:10px; font-weight:bold; display:inline-block; margin-top:2px; }
+    .pre-sfc-badge { background:#666; color:white; font-size:9px; padding:1px 4px; border-radius:10px; display:inline-block; margin-top:2px; }
 </style>
 </head>
 <body>
 
-<header>SFC Manager v71.8</header>
+<header>SFC Manager v72.0</header>
 
 <div class="container">
     <div class="card">
@@ -95,12 +96,10 @@
         </div>
         <div style="margin-bottom:10px; display: flex; flex-wrap: wrap; gap: 4px;">
             <button class="routeBtn" onclick="setRoute('羽田','那覇')">羽田-那覇</button>
-            <button class="routeBtn" onclick="setRoute('那覇','石垣')">那覇-石垣</button>
-            <button class="routeBtn" onclick="setRoute('羽田','石垣')">羽田-石垣</button>
-            <button class="routeBtn" onclick="setRoute('羽田','サンディエゴ')">SAN</button>
-            <button class="routeBtn" onclick="setRoute('羽田','ロサンゼルス')">LAX</button>
-            <button class="routeBtn" onclick="setRoute('羽田','サンフランシスコ')">SFO</button>
-            <button class="routeBtn" onclick="setRoute('羽田','シンガポール')">SIN</button>
+            <button class="routeBtn" onclick="setRoute('成田','ロサンゼルス')">NRT-LAX</button>
+            <button class="routeBtn" onclick="setRoute('ロサンゼルス','サンディエゴ')">LAX-SAN</button>
+            <button class="routeBtn" onclick="setRoute('サンディエゴ','サンフランシスコ')">SAN-SFO</button>
+            <button class="routeBtn" onclick="setRoute('サンフランシスコ','羽田')">SFO-HND</button>
             <button class="routeBtn" onclick="setRoute('羽田','バンコク')">BKK</button>
         </div>
         
@@ -135,7 +134,7 @@
         <select id="trip" onchange="document.getElementById('returnArea').style.display = (this.value=='round'?'block':'none')">
             <option value="oneway">片道</option><option value="round" selected>往復</option>
         </select>
-        <div id="returnArea" style="border-top:1px dashed #ccc; padding-top:10px;">
+        <div id="returnArea" style="border-top:1px dashed #ccc; padding-top:10px; display:none;">
             <div style="display:flex; gap:10px;">
                 <div style="flex:1">帰り出発<input type="time" id="returnDepart"></div>
                 <div style="flex:1">帰り到着<input type="time" id="returnArrive"></div>
@@ -162,7 +161,9 @@
     <div class="card">
         <h3>SFC解脱後の世界 (都市・特典詳細)</h3>
         <div style="font-size: 13px; line-height: 1.5;">
-            <span class="benefit-tag" onclick="showBenefit('SAN')">🇺🇸 SAN: ラウンジ</span> 
+            <span class="benefit-tag" onclick="showBenefit('LAX-Polaris')">🇺🇸 LAX: ポラリス</span>
+            <span class="benefit-tag" onclick="showBenefit('SFO-Polaris')">🇺🇸 SFO: ポラリス</span>
+            <span class="benefit-tag" onclick="showBenefit('SAN')">🇺🇸 SAN: UAクラブ</span> 
             <span class="benefit-tag" onclick="showBenefit('BKK')">🇹🇭 BKK: 豪華ハシゴ</span> 
             <span class="benefit-tag" onclick="showBenefit('専用保安検査場')">専用保安検査場</span> 
             <span class="benefit-tag" onclick="showBenefit('ラウンジ利用')">ラウンジ利用</span> 
@@ -170,8 +171,6 @@
             <span class="benefit-tag" onclick="showBenefit('手荷物優先受取')">手荷物優先受取</span> 
             <span class="benefit-tag" onclick="showBenefit('特典枠拡大')">特典枠拡大</span> 
             <span class="benefit-tag" onclick="showBenefit('スタアラゴールド')">スタアラゴールド</span>
-            <span class="benefit-tag" onclick="showBenefit('専用デスク')">専用デスク</span> 
-            <span class="benefit-tag" onclick="showBenefit('マイル期限実質無')">マイル期限実質無</span>
         </div>
     </div>
 
@@ -208,19 +207,23 @@
 </div>
 
 <script>
-const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","サンディエゴ":"SAN","ロサンゼルス":"LAX","サンフランシスコ":"SFO","ホノルル":"HNL","クアラルンプール":"KUL","シドニー":"SYD","ジャカルタ":"CGK"};
-const distDB = {"HND-OKA":984, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1221, "HND-ITM":280, "OKA-ISG":247, "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-SAN":5458, "HND-LAX":5477, "HND-SFO":5130, "HND-HNL":3831, "HND-KUL":3338, "HND-SYD":4930, "HND-CGK":3612};
+const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","サンディエゴ":"SAN","ロサンゼルス":"LAX","サンフランシスコ":"SFO"};
+const distDB = {
+    "HND-OKA":984, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1221, "HND-ITM":280, "OKA-ISG":247, 
+    "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-SAN":5458, "HND-LAX":5477, "HND-SFO":5130,
+    "NRT-LAX":5458, "LAX-SAN":109, "SAN-SFO":447, "SFO-HND":5130 // サンディエゴ経由ルート用データを追加
+};
 const benefits = {
-    'SAN': '【サンディエゴ】SFC(スタアラゴールド)で、UAラウンジが利用可能。※一般のUAクラブでもSANの開放感は格別です。',
-    'BKK': '【バンコク】スワンナプームはラウンジの宝庫。タイ航空、エバー、シンガポール航空の豪華ラウンジをハシゴできます。',
+    'LAX-Polaris': '【LAXポラリス】T7に位置。NH006(ビジネス)到着時に利用可能。オーダー式のダイニングで「ポラリス・バーガー」を。',
+    'SFO-Polaris': '【SFOポラリス】国際線ターミナルG。NH107出発前に利用可能。シャワー完備で深夜便前のリセットに最適。',
+    'SAN': '【サンディエゴ】SFC(スタアラゴールド)で、United Clubが利用可能。こぢんまりしていますが開放感があります。',
+    'BKK': '【バンコク】スワンナプームはラウンジの宝庫。タイ航空、エバー、シンガポール航空の豪華ラウンジをハシゴ可能。',
     '専用保安検査場': 'ANA PREMIUM CHECK-INが利用可能。混雑期でもスムーズです。',
     'ラウンジ利用': 'ANA LOUNGEが本人＋同行者1名まで無料。ビールや軽食を楽しめます。',
     '優先搭乗': 'Group 2での搭乗が可能。',
     '手荷物優先受取': '「PRIORITY」タグにより、到着地で荷物が優先的に出てきます。',
     '特典枠拡大': '一般会員には開放されないマイル用の席が開放されます。',
-    'スタアラゴールド': '世界26社の航空会社でラウンジ利用等のVIP待遇が受けられます。',
-    '専用デスク': '電話が繋がりやすい専用ダイヤルでの相談が可能です。',
-    'マイル期限実質無': '貯めたマイルの失効を気にせず計画が立てられます。'
+    'スタアラゴールド': '世界26社の航空会社でラウンジ利用等のVIP待遇が受けられます。'
 };
 
 let flights = JSON.parse(localStorage.getItem("sfc_v17_data")) || [];
@@ -237,11 +240,17 @@ function calcPP(f, t, rStr, dateStr) {
     let base = distDB[key] || distDB[rev] || 0;
     if(base===0) return 0;
     const isNew = dateStr && new Date(dateStr) >= new Date("2026-05-19");
+    
+    // 国際線/スタアラ便の計算
     if(rStr.includes("_intl")) {
         let rate = parseFloat(rStr);
         let multi = (["SIN","BKK","TSA","KUL","SYD","CGK"].includes(f) || ["SIN","BKK","TSA","KUL","SYD","CGK"].includes(t)) ? 1.5 : 1.0;
-        return Math.floor(base * rate * multi) + 400;
+        let bonus = (f === "LAX" || f === "SAN" || f === "SFO" || t === "LAX" || t === "SAN" || t === "SFO") ? 0 : 400; 
+        // ANA便名なら400加算（暫定：北米内のUA区間は0、ANA国際線区間は400をユーザーがrate選択で調整可能とする）
+        if(rStr === "1.25_intl") return Math.floor(base * rate * multi) + 400;
+        return Math.floor(base * rate * multi);
     }
+    
     if(isNew) {
         if(rStr === "1.2_new") return (Math.floor(base * 1.2) * 2) + 400;
         if(rStr === "0.7_new") return (Math.floor(base * 0.7) * 2) + 100;
@@ -339,9 +348,19 @@ function render() {
     let actualP=0, totalP=0, totalC=0, paidC=0, monthlyPP = Array(12).fill(0), potentialUG_PP = 0;
     flights.sort((a,b) => (a.date + (a.depart || "23:59")).localeCompare(b.date + (b.depart || "23:59")));
 
+    let cumulativePP = 0;
+
     flights.forEach((f, idx) => {
         if(!f.isUG) f.pp = calcPP(f.from, f.to, f.rateStr || "0.75", f.date);
         totalP += f.pp; totalC += (f.price || 0);
+        cumulativePP += f.pp;
+
+        // SFCバッジ判定（11月のバンコク用）
+        let sfcBadge = "";
+        if (f.to === "BKK" || f.from === "BKK") {
+            if (cumulativePP >= 50000) sfcBadge = `<br><span class="sfc-badge">✨ SFC旅行確定</span>`;
+            else sfcBadge = `<br><span class="pre-sfc-badge">⚠️ 解脱前予定</span>`;
+        }
 
         if(!f.done && f.simUG) {
             let base = distDB[f.from+"-"+f.to] || distDB[f.to+"-"+f.from] || 0;
@@ -389,7 +408,7 @@ function render() {
         
         row.innerHTML = `<td onclick="reuseFlight(${f.id})">${f.date.slice(5).replace('-','/')}</td>
             <td style="color:var(--accent-blue); font-weight:bold; text-align:left;" onclick="reuseFlight(${f.id})">
-                ${getName(f.from)}→${getName(f.to)}<span class="memo-icon ${f.memo?'active':''}" onclick="openMemo(event, ${f.id})">📝</span>${waitHtml}
+                ${getName(f.from)}→${getName(f.to)}${sfcBadge}<span class="memo-icon ${f.memo?'active':''}" onclick="openMemo(event, ${f.id})">📝</span>${waitHtml}
             </td>
             <td onclick="reuseFlight(${f.id})">${f.depart||""}<br>↓<br>${f.arrive||""}</td>
             <td onclick="reuseFlight(${f.id})">${f.pp.toLocaleString()}</td>
@@ -419,11 +438,10 @@ function render() {
     const hasSAN = flights.some(f => (f.from === "SAN" || f.to === "SAN"));
     const hasBKK = flights.some(f => (f.from === "BKK" || f.to === "BKK") && f.date.includes("-11-"));
 
-    if (actualP >= 50000) cheer = hasBKK ? "【解脱】おめでとうございます！11月のバンコクは最高の『解脱記念旅行』になりますね。" : "【解脱】おめでとうございます！これからは『極上の旅』があなたを待っています。";
-    else if (hasSAN && totalP >= 50000) cheer = "【王手】10月のサンディエゴ出張で解脱予定です。体調管理に気をつけて、UAラウンジも楽しみましょう！";
-    else if (actualP >= 25000) cheer = "【実戦投入】半分突破！5/8の那覇やサンディエゴ等、確定済みの旅程を確実に『済』に変えていきましょう。";
-    else if (actualP > 0) cheer = "【離陸完了】修行の号砲は鳴らされました。Tabioriでの共有や座席調整、その一つ一つの手間が解脱への近道です。";
-    else cheer = "【プランニング】1円でも安く、1PPでも多く。完璧なスケジュールを組む今の時間が、実は一番楽しいかもしれません。";
+    if (actualP >= 50000) cheer = hasBKK ? "【祝・解脱】11月のバンコクはSFCとして、最高のラウンジホッピングを楽しめますね！" : "【祝・解脱】おめでとうございます！これからは全ての旅が特別になります。";
+    else if (hasSAN && totalP >= 50000) cheer = "【解脱確定】10月のサンディエゴ出張(Zクラス)で解脱予定です。LAX・SFOのポラリスラウンジを心ゆくまで堪能してください！";
+    else if (actualP > 0) cheer = "【修行中】一歩ずつ着実に。Tabioriで彼女さんとも予定を共有しつつ、完璧な計画を完遂しましょう。";
+    else cheer = "【準備万端】理想のスケジュールを組む今の時間が、解脱への第一歩です。";
 
     document.getElementById("aiAdvice").innerHTML = `残り <b>${remainAfterPending.toLocaleString()} PP</b> (予約分除く)<br>【解脱戦略 (5/19〜新運賃)】<br>・石垣往復なら あと <b>${Math.ceil(remainAfterPending/simpleIshigaki)}回</b><br>・那覇往復なら あと <b>${Math.ceil(remainAfterPending/simpleNaha)}回</b>`;
     const cheerEl = document.getElementById("cheerMessage");
