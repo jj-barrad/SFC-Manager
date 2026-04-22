@@ -61,7 +61,6 @@
     .benefit-tag { display: inline-block; font-size: 10px; padding: 6px 10px; background: var(--gold); color: white; border-radius: 20px; margin: 3px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .cheer-msg { font-style: italic; border-top: 1px solid #d0e3ff; margin-top: 10px; padding-top: 8px; font-weight: bold; color: #d9534f; }
     
-    /* 追加: SFCバッジスタイル */
     .sfc-badge { background:var(--gold); color:white; font-size:9px; padding:1px 4px; border-radius:10px; font-weight:bold; display:inline-block; margin-top:2px; }
     .pre-sfc-badge { background:#666; color:white; font-size:9px; padding:1px 4px; border-radius:10px; display:inline-block; margin-top:2px; }
 </style>
@@ -96,6 +95,8 @@
         </div>
         <div style="margin-bottom:10px; display: flex; flex-wrap: wrap; gap: 4px;">
             <button class="routeBtn" onclick="setRoute('羽田','那覇')">羽田-那覇</button>
+            <button class="routeBtn" onclick="setRoute('羽田','石垣')">羽田-石垣</button>
+            <button class="routeBtn" onclick="setRoute('那覇','石垣')">那覇-石垣</button>
             <button class="routeBtn" onclick="setRoute('成田','ロサンゼルス')">NRT-LAX</button>
             <button class="routeBtn" onclick="setRoute('ロサンゼルス','サンディエゴ')">LAX-SAN</button>
             <button class="routeBtn" onclick="setRoute('サンディエゴ','サンフランシスコ')">SAN-SFO</button>
@@ -211,7 +212,7 @@ const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG",
 const distDB = {
     "HND-OKA":984, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1221, "HND-ITM":280, "OKA-ISG":247, 
     "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-SAN":5458, "HND-LAX":5477, "HND-SFO":5130,
-    "NRT-LAX":5458, "LAX-SAN":109, "SAN-SFO":447, "SFO-HND":5130 // サンディエゴ経由ルート用データを追加
+    "NRT-LAX":5458, "LAX-SAN":109, "SAN-SFO":447, "SFO-HND":5130
 };
 const benefits = {
     'LAX-Polaris': '【LAXポラリス】T7に位置。NH006(ビジネス)到着時に利用可能。オーダー式のダイニングで「ポラリス・バーガー」を。',
@@ -241,12 +242,10 @@ function calcPP(f, t, rStr, dateStr) {
     if(base===0) return 0;
     const isNew = dateStr && new Date(dateStr) >= new Date("2026-05-19");
     
-    // 国際線/スタアラ便の計算
     if(rStr.includes("_intl")) {
         let rate = parseFloat(rStr);
         let multi = (["SIN","BKK","TSA","KUL","SYD","CGK"].includes(f) || ["SIN","BKK","TSA","KUL","SYD","CGK"].includes(t)) ? 1.5 : 1.0;
         let bonus = (f === "LAX" || f === "SAN" || f === "SFO" || t === "LAX" || t === "SAN" || t === "SFO") ? 0 : 400; 
-        // ANA便名なら400加算（暫定：北米内のUA区間は0、ANA国際線区間は400をユーザーがrate選択で調整可能とする）
         if(rStr === "1.25_intl") return Math.floor(base * rate * multi) + 400;
         return Math.floor(base * rate * multi);
     }
@@ -267,12 +266,19 @@ function calcPP(f, t, rStr, dateStr) {
 function tryUG(id) {
     let f = flights.find(x => x.id === id); if(!f) return;
     const isNewPrice = new Date(f.date) >= new Date("2026-05-19");
-    let ugPrice = (isNewPrice) ? 18000 : 14000;
-    if(!isNewPrice){
+    let base = distDB[f.from+"-"+f.to] || distDB[f.to+"-"+f.from] || 0;
+    
+    // 2026/5/19以降の最新料金判定
+    let ugPrice = 14000;
+    if(isNewPrice) {
+        if(base <= 200) ugPrice = 6000;
+        else if(base <= 700) ugPrice = 12000;
+        else ugPrice = 18000;
+    } else {
         if((f.from==="OKA" && f.to==="ISG") || (f.from==="ISG" && f.to==="OKA")) ugPrice = 4000;
         else if((f.from==="HND" && f.to==="ISG") || (f.from==="ISG" && f.to==="HND")) ugPrice = 15000;
     }
-    let base = distDB[f.from+"-"+f.to] || distDB[f.to+"-"+f.from] || 0;
+    
     if(confirm(`当日UG(${ugPrice.toLocaleString()}円 / +50%)を実行しますか？`)) {
         f.pp += (Math.floor(base * 0.5) * 2); f.price += ugPrice; f.isUG = true; save();
     }
@@ -355,7 +361,6 @@ function render() {
         totalP += f.pp; totalC += (f.price || 0);
         cumulativePP += f.pp;
 
-        // SFCバッジ判定（11月のバンコク用）
         let sfcBadge = "";
         if (f.to === "BKK" || f.from === "BKK") {
             if (cumulativePP >= 50000) sfcBadge = `<br><span class="sfc-badge">✨ SFC旅行確定</span>`;
