@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
 
-<title>SFC Manager v77.0 - Definitive Edition</title>
+<title>SFC Manager v78.0 - Definitive Edition</title>
 <style>
     :root { 
         --main-blue: #003f88; 
@@ -130,11 +130,13 @@
     .sfc-badge { background: var(--gold); color: white; font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: 900; display: inline-block; margin-top: 2px; }
     .gedatsu-flash { animation: gold-glow 2s infinite; }
     @keyframes gold-glow { 0% { box-shadow: 0 0 5px var(--gold); } 50% { box-shadow: 0 0 15px var(--gold); } 100% { box-shadow: 0 0 5px var(--gold); } }
+    
+    .toggle-section { font-size: 10px; color: var(--accent-blue); text-decoration: underline; cursor: pointer; float: right; font-weight: normal; }
 </style>
 </head>
 <body>
 
-<header>SFC Manager v77.0</header>
+<header>SFC Manager v78.0</header>
 
 <div class="container">
     <div class="card" id="mainStatusCard">
@@ -162,74 +164,76 @@
         <div id="avgUnitPrice" class="unit-price">PP単価を分析中...</div>
     </div>
 
-    <div class="card">
-        <h3>フライト追加</h3>
-        <div style="display:flex; align-items:center; gap:8px;">
-            <input id="from" placeholder="出発地" style="flex:1; font-weight: 800; text-align: center;">
-            <button class="swap-btn" onclick="swapRoute()">⇄</button>
-            <input id="to" placeholder="到着地" style="flex:1; font-weight: 800; text-align: center;">
-        </div>
-        
-        <div style="margin: 8px 0; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;">
-            <button class="routeBtn" onclick="setRoute('羽田','那覇')">羽田-那覇</button>
-            <button class="routeBtn" onclick="setRoute('羽田','石垣')">羽田-石垣</button>
-            <button class="routeBtn" onclick="setRoute('那覇','石垣')">那覇-石垣</button>
-            <button class="routeBtn" onclick="setRoute('成田','ロサンゼルス')">NRT-LAX</button>
-            <button class="routeBtn" onclick="setRoute('ロサンゼルス','サンディエゴ')">LAX-SAN</button>
-            <button class="routeBtn" onclick="setRoute('サンディエゴ','成田')">SAN-NRT</button>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div>
-                <label style="font-size: 11px; font-weight: 800; color: #8e8e93;">航空券代金</label>
-                <input id="price" type="number" placeholder="¥">
+    <div class="card" id="flightInputCard">
+        <h3>フライト追加 <span class="toggle-section" onclick="toggleFlightInput()">表示/非表示</span></h3>
+        <div id="flightInputArea">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <input id="from" placeholder="出発地" style="flex:1; font-weight: 800; text-align: center;">
+                <button class="swap-btn" onclick="swapRoute()">⇄</button>
+                <input id="to" placeholder="到着地" style="flex:1; font-weight: 800; text-align: center;">
             </div>
-            <div>
-                <label style="font-size: 11px; font-weight: 800; color: #8e8e93;">往路搭乗日</label>
-                <input type="date" id="flightDate">
+            
+            <div style="margin: 8px 0; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;">
+                <button class="routeBtn" onclick="setRoute('羽田','那覇')">羽田-那覇</button>
+                <button class="routeBtn" onclick="setRoute('羽田','石垣')">羽田-石垣</button>
+                <button class="routeBtn" onclick="setRoute('那覇','石垣')">那覇-石垣</button>
+                <button class="routeBtn" onclick="setRoute('成田','ロサンゼルス')">NRT-LAX</button>
+                <button class="routeBtn" onclick="setRoute('ロサンゼルス','サンディエゴ')">LAX-SAN</button>
+                <button class="routeBtn" onclick="setRoute('サンディエゴ','成田')">SAN-NRT</button>
             </div>
-        </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <label style="font-size: 11px; font-weight: 800; color: #8e8e93;">航空券代金</label>
+                    <input id="price" type="number" placeholder="¥">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: 800; color: #8e8e93;">往路搭乗日</label>
+                    <input type="date" id="flightDate">
+                </div>
+            </div>
 
-        <div style="display:flex; gap:10px;">
-            <div style="flex:1">出発<input type="time" id="departTime"></div>
-            <div style="flex:1">到着<input type="time" id="arriveTime"></div>
-        </div>
-
-        <select id="rate" style="margin-top:4px;">
-            <optgroup label="【〜2026/5/18 現行国内線】">
-                <option value="1.25">国内:プレミアム(125%) +400</option>
-                <option value="0.75" selected>国内:SV/バリュー(75%) +0</option>
-                <option value="0.75_plus">国内:バリュー/特割等(75%) +400</option>
-                <option value="1.0">国内:フレックス等(100%) +400</option>
-            </optgroup>
-            <optgroup label="【2026/5/19〜 新運賃】">
-                <option value="1.2_new">国内:新プレミアム(120%) +400</option>
-                <option value="0.7_new">国内:新シンプル(70%) +100</option>
-                <option value="0.8_new">国内:新スタンダード(80%) +100</option>
-                <option value="1.0_new">国内:新フレックス(100%) +400</option>
-            </optgroup>
-            <optgroup label="【国際線】">
-                <option value="1.25_intl">海外:125% (ビジネスZ,D) +400</option>
-                <option value="1.0_intl">海外:100% (プレエコ等) +400</option>
-                <option value="0.7_intl">海外:70% (エコノミー) +400</option>
-                <option value="0.5_intl">海外:50% (格安エコノミー) +0</option>
-            </optgroup>
-        </select>
-        
-        <select id="trip" onchange="toggleReturn(this.value)" style="background:#f0f7ff; border-color:#d0e3ff; font-weight:bold;">
-            <option value="oneway">片道</option><option value="round" selected>往復</option>
-        </select>
-        
-        <div id="returnArea" style="background: #f2f2f7; border-radius: 12px; padding: 12px; margin-top: 6px;">
-            <div style="font-size: 11px; font-weight: 800; margin-bottom: 4px; color: var(--main-blue);">復路スケ（日付/時刻）</div>
-            <input type="date" id="returnDate">
             <div style="display:flex; gap:10px;">
-                <div style="flex:1"><input type="time" id="returnDepart"></div>
-                <div style="flex:1"><input type="time" id="returnArrive"></div>
+                <div style="flex:1">出発<input type="time" id="departTime"></div>
+                <div style="flex:1">到着<input type="time" id="arriveTime"></div>
             </div>
+
+            <select id="rate" style="margin-top:4px;">
+                <optgroup label="【〜2026/5/18 現行国内線】">
+                    <option value="1.25">国内:プレミアム(125%) +400</option>
+                    <option value="0.75" selected>国内:SV/バリュー(75%) +0</option>
+                    <option value="0.75_plus">国内:バリュー/特割等(75%) +400</option>
+                    <option value="1.0">国内:フレックス等(100%) +400</option>
+                </optgroup>
+                <optgroup label="【2026/5/19〜 新運賃】">
+                    <option value="1.2_new">国内:新プレミアム(120%) +400</option>
+                    <option value="0.7_new">国内:新シンプル(70%) +100</option>
+                    <option value="0.8_new">国内:新スタンダード(80%) +100</option>
+                    <option value="1.0_new">国内:新フレックス(100%) +400</option>
+                </optgroup>
+                <optgroup label="【国際線】">
+                    <option value="1.25_intl">海外:125% (ビジネスZ,D) +400</option>
+                    <option value="1.0_intl">海外:100% (プレエコ等) +400</option>
+                    <option value="0.7_intl">海外:70% (エコノミー) +400</option>
+                    <option value="0.5_intl">海外:50% (格安エコノミー) +0</option>
+                </optgroup>
+            </select>
+            
+            <select id="trip" onchange="toggleReturn(this.value)" style="background:#f0f7ff; border-color:#d0e3ff; font-weight:bold;">
+                <option value="oneway">片道</option><option value="round" selected>往復</option>
+            </select>
+            
+            <div id="returnArea" style="background: #f2f2f7; border-radius: 12px; padding: 12px; margin-top: 6px;">
+                <div style="font-size: 11px; font-weight: 800; margin-bottom: 4px; color: var(--main-blue);">復路スケ（日付/時刻）</div>
+                <input type="date" id="returnDate">
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1"><input type="time" id="returnDepart"></div>
+                    <div style="flex:1"><input type="time" id="returnArrive"></div>
+                </div>
+            </div>
+            
+            <button onclick="addFlight()" style="margin-top:10px; background: var(--accent-blue); height: 50px; border-radius: 14px;">プランに追加する</button>
         </div>
-        
-        <button onclick="addFlight()" style="margin-top:10px; background: var(--accent-blue); height: 50px; border-radius: 14px;">プランに追加する</button>
     </div>
 
     <div class="card">
@@ -319,6 +323,11 @@ const benefits = {
 let flights = JSON.parse(localStorage.getItem("sfc_v17_data")) || [];
 let currentEditingId = null;
 
+function toggleFlightInput() {
+    const area = document.getElementById('flightInputArea');
+    area.style.display = (area.style.display === 'none' ? 'block' : 'none');
+}
+
 function toggleReturn(val) {
     document.getElementById('returnArea').style.display = (val === 'round' ? 'block' : 'none');
     if(val === 'round' && !document.getElementById('returnDate').value) {
@@ -363,6 +372,14 @@ function calcPP(f, t, rStr, dateStr) {
     return (Math.floor(base * 2) * rate) + bonus;
 }
 
+// マイル積算計算（簡略版：基本マイル×積算率）
+function calcAccruedMile(f, t, rStr) {
+    let key = f+"-"+t, rev = t+"-"+f;
+    let base = distDB[key] || distDB[rev] || 0;
+    let rate = parseFloat(rStr);
+    return Math.floor(base * rate);
+}
+
 function getUGResources(f) {
     const isNewPrice = new Date(f.date) >= new Date("2026-05-19");
     let base = distDB[f.from+"-"+f.to] || distDB[f.to+"-"+f.from] || 0;
@@ -391,6 +408,7 @@ function tryUG(id) {
         if(cur < res.mile) return alert("マイル不足");
         f.pp += (Math.floor(base * 2) * 0.5); f.isUG = true; f.ugMethod = "mile";
         localStorage.setItem("sfc_miles", cur - res.mile);
+        document.getElementById("currentMiles").value = cur - res.mile;
     }
     save();
 }
@@ -407,7 +425,8 @@ function addFlight() {
     if(!from || !to || !date) return alert("入力不足");
     
     const pp = calcPP(from, to, rStr, date);
-    const fData = { id: Date.now()+Math.random(), from, to, date, depart: document.getElementById("departTime").value, arrive: document.getElementById("arriveTime").value, price: (trip==="round"?price/2:price), rateStr: rStr, pp: pp, done: false, isUG: false, simUG: false, memo: "" };
+    const accruedMile = calcAccruedMile(from, to, rStr);
+    const fData = { id: Date.now()+Math.random(), from, to, date, depart: document.getElementById("departTime").value, arrive: document.getElementById("arriveTime").value, price: (trip==="round"?price/2:price), rateStr: rStr, pp: pp, accruedMile: accruedMile, done: false, isUG: false, simUG: false, memo: "" };
     flights.push(fData);
     
     if(trip === "round") {
@@ -415,17 +434,6 @@ function addFlight() {
         flights.push({ ...fData, id: Date.now()+Math.random(), from: to, to: from, date: retDate, depart: document.getElementById("returnDepart").value, arrive: document.getElementById("returnArrive").value });
     }
     save();
-}
-
-function scheduleUG(e, dateStr, route) {
-    if(e) e.stopPropagation();
-    const ugDate = new Date(dateStr + "T00:00:00"); ugDate.setDate(ugDate.getDate() - 2); 
-    const startStr = ugDate.toISOString().replace(/-|:|\.\d+/g, "").split(".")[0];
-    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nEND:VEVENT\nEND:VCALENDAR`;
-    if(confirm(`${ugDate.toLocaleDateString()}の通知(ICS)を生成しますか？`)) {
-        const blob = new Blob([icsContent], {type: "text/calendar"});
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ug_alert.ics"; a.click();
-    }
 }
 
 function save() { localStorage.setItem("sfc_v17_data", JSON.stringify(flights)); render(); }
@@ -454,14 +462,17 @@ function render() {
     const table = document.getElementById("tableBody"), graph = document.getElementById("ppGraph");
     table.innerHTML = ""; graph.innerHTML = "";
     
-    let actualP=0, totalP=0, totalC=0, paidC=0, monthlyPP = Array(12).fill(0), monthlyPend = Array(12).fill(0), potUG_PP = 0, potMile = 0;
+    let actualP=0, totalP=0, totalC=0, paidC=0, monthlyPP = Array(12).fill(0), monthlyPend = Array(12).fill(0), potUG_PP = 0, potMileUse = 0, estAccruedMile = 0;
     flights.sort((a,b) => (a.date + (a.depart || "23:59")).localeCompare(b.date + (b.depart || "23:59")));
 
     let cumPP = 0;
     flights.forEach((f, idx) => {
         if(!f.isUG) f.pp = calcPP(f.from, f.to, f.rateStr, f.date);
+        if(!f.accruedMile) f.accruedMile = calcAccruedMile(f.from, f.to, f.rateStr);
+        
         totalP += f.pp; totalC += (f.price || 0);
         cumPP += f.pp;
+        if(!f.done) estAccruedMile += f.accruedMile;
 
         let badge = "";
         if (cumPP >= 50000 && !f.done && (cumPP - f.pp < 50000)) {
@@ -471,7 +482,7 @@ function render() {
         const res = getUGResources(f);
         if(!f.done && f.simUG) {
             let base = distDB[f.from+"-"+f.to] || distDB[f.to+"-"+f.from] || 0;
-            potUG_PP += (Math.floor(base * 2) * 0.5); potMile += res.mile;
+            potUG_PP += (Math.floor(base * 2) * 0.5); potMileUse += res.mile;
         }
 
         let m = parseInt(f.date.slice(5, 7)) - 1;
@@ -517,6 +528,10 @@ function render() {
         table.appendChild(row);
     });
 
+    // マイル表示の更新
+    let baseMiles = parseInt(localStorage.getItem("sfc_miles") || 0);
+    document.getElementById("currentMiles").value = baseMiles;
+
     document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000";
     if(actualP >= 50000) document.getElementById("mainStatusCard").classList.add("gedatsu-flash");
     document.getElementById("pendingTotalText").innerText = "(合計: " + totalP.toLocaleString() + " PP)";
@@ -529,15 +544,32 @@ function render() {
 
     const ugS = document.getElementById("ugImpactSection"), miS = document.getElementById("mileImpactSection");
     if(potUG_PP > 0) { ugS.style.display="block"; ugS.innerHTML = `🚀 <b>UG上乗せ: +${potUG_PP.toLocaleString()} PP</b> (計 ${(totalP+potUG_PP).toLocaleString()})`; } else { ugS.style.display="none"; }
-    if(potMile > 0) { miS.style.display="block"; miS.innerHTML = `🧡 <b>必要マイル: ${potMile.toLocaleString()} m</b>`; } else { miS.style.display="none"; }
+    
+    // マイルインパクトセクションの強化
+    if(estAccruedMile > 0 || potMileUse > 0) {
+        miS.style.display="block";
+        miS.innerHTML = `🧡 <b>獲得予定: +${estAccruedMile.toLocaleString()} m</b><br>
+                         💸 <b>UG試算消費: -${potMileUse.toLocaleString()} m</b><br>
+                         📈 <b>着地予想: ${(baseMiles + estAccruedMile - potMileUse).toLocaleString()} m</b>`;
+    } else { miS.style.display="none"; }
 
     const rem = Math.max(0, 50000 - totalP);
-    document.getElementById("aiAdvice").innerHTML = `残り <b>${rem.toLocaleString()} PP</b><br>那覇往復なら あと <b>${Math.ceil(rem/2952)}回</b> で解脱。`;
+    const nahaRem = Math.ceil(rem/2952); // SV75%
+    const ishigakiRem = Math.ceil(rem/3662); // SV75%
+    
+    document.getElementById("aiAdvice").innerHTML = `残り <b>${rem.toLocaleString()} PP</b> で解脱。<br>
+        那覇往復なら あと <b>${nahaRem}回</b>、<br>
+        石垣往復なら あと <b>${ishigakiRem}回</b> です。`;
 
-    let cheer = "【準備万端】理想のスケジュール。";
-    if (actualP >= 50000) cheer = "【祝・解脱】ANAラウンジへようこそ！";
-    else if (totalP >= 50000) cheer = "【解脱確定】あとは飛ぶだけです。";
-    else if (actualP > 0) cheer = "【修行中】一歩ずつ着実に。";
+    // 応援コメントの強化
+    let cheer = "【準備万端】これからの修行、楽しんでいきましょう！";
+    if (actualP >= 50000) cheer = "【祝・解脱】ANAラウンジ、専用保安検査場…全ての扉が開かれました。おめでとうございます！";
+    else if (totalP >= 50000) cheer = "【解脱確定】プランは完璧です。あとは体調を整えて搭乗の日を待つのみですね！";
+    else if (totalP >= 40000) cheer = "【ラストスパート】ついにブロンズの先が見えてきました。解脱まであと一息！";
+    else if (totalP >= 30000) cheer = "【折り返し地点】修行も後半戦。プラチナカードが現実味を帯びてきました。";
+    else if (actualP > 0) cheer = "【修行の道】一歩ずつ、空のステータスへと近づいています。";
+    else cheer = "【修行前夜】ワクワクする旅程ですね。最初の1レグが待ち遠しいです！";
+    
     const cheerEl = document.getElementById("cheerMessage"); cheerEl.innerText = cheer; cheerEl.style.display="block";
 
     const maxPP = Math.max(...monthlyPP.map((v, i) => v + monthlyPend[i]), 5000);
