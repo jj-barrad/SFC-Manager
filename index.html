@@ -360,12 +360,12 @@ function calcPP(f, t, rStr, dateStr) {
         return Math.floor(base * rate * multi) + bonus;
     }
     
-    if(isNew) {
-        if(rStr === "1.2_new") return (Math.floor(base * 2) * 1.2) + 400;
-        if(rStr === "0.7_new") return (Math.floor(base * 2) * 0.7) + 100;
-        if(rStr === "0.8_new") return (Math.floor(base * 2) * 0.8) + 100;
-        if(rStr === "1.0_new") return (Math.floor(base * 2) * 1.0) + 400;
-        return (Math.floor(base * 2) * parseFloat(rStr));
+        if(isNew) {
+        if(rStr === "1.2_new") return Math.round(Math.floor(base * 2) * 1.2) + 400;
+        if(rStr === "0.7_new") return Math.round(Math.floor(base * 2) * 0.7) + 100;
+        if(rStr === "0.8_new") return Math.round(Math.floor(base * 2) * 0.8) + 100;
+        if(rStr === "1.0_new") return Math.round(Math.floor(base * 2) * 1.0) + 400;
+        return Math.round(Math.floor(base * 2) * parseFloat(rStr));
     }
     let rate = parseFloat(rStr);
     let bonus = (rStr.includes("plus") || ["1.0","1.25"].includes(rStr)) ? 400 : 0;
@@ -572,12 +572,18 @@ function render() {
     
     const cheerEl = document.getElementById("cheerMessage"); cheerEl.innerText = cheer; cheerEl.style.display="block";
 
-    const maxPP = Math.max(...monthlyPP.map((v, i) => v + monthlyPend[i]), 5000);
+        const activeMonthlyTotals = monthlyPP.map((v, i) => v + monthlyPend[i]);
+    const maxPP = Math.max(...activeMonthlyTotals, 1000); 
+
     monthlyPP.forEach((pp, i) => { 
         const pend = monthlyPend[i];
-        graph.innerHTML += `<div class="graph-bar" style="height:${(pp/maxPP)*100}%">
-            ${pp>0?`<span class="graph-val">${pp}</span>`:''}
-            <div style="position:absolute; bottom:100%; left:0; width:100%; height:${(pend/pp)*100 || (pend/maxPP)*100}%; background:rgba(0,122,255,0.2); min-height:${pend>0?2:0}px;"></div>
+        const totalMonthPP = pp + pend;
+        const barHeight = totalMonthPP > 0 ? (totalMonthPP / maxPP) * 85 : 0;
+        
+        graph.innerHTML += `<div class="graph-bar" style="height:${barHeight}%">
+            ${totalMonthPP > 0 ? `<span class="graph-val">${totalMonthPP.toLocaleString()}</span>` : ''}
+            <div style="position:absolute; bottom:0; left:0; width:100%; height:${(pp/totalMonthPP)*100 || 0}%; background:var(--main-blue); border-radius: 0 0 1px 1px;"></div>
+            <div style="position:absolute; bottom:${(pp/totalMonthPP)*100 || 0}%; left:0; width:100%; height:${(pend/totalMonthPP)*100 || 0}%; background:rgba(0,122,255,0.3); border-radius: 3px 3px 0 0;"></div>
             <span class="graph-label">${i+1}月</span></div>`; 
     });
 }
