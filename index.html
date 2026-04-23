@@ -80,9 +80,10 @@
         align-items: center; justify-content: center; flex-shrink: 0;
     }
     
-    table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+    /* iPhone 13 向け最適化: 文字サイズとパディングを微調整 */
+    table { width: 100%; border-collapse: collapse; font-size: 10.5px; table-layout: fixed; }
     th { border-bottom: 2px solid #f2f2f7; padding: 10px 2px; color: #8e8e93; font-weight: 700; }
-    td { border-bottom: 1px solid #f2f2f7; padding: 8px 2px; text-align: center; vertical-align: middle; }
+    td { border-bottom: 1px solid #f2f2f7; padding: 8px 1px; text-align: center; vertical-align: middle; }
     
     .ug-sim-label { 
         font-size: 9px; color: var(--ug-purple); display: inline-flex; align-items: center; 
@@ -106,7 +107,7 @@
     .delete-btn { color: #ff3b30; font-size: 20px; cursor: pointer; padding: 4px; }
 
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 2000; justify-content: center; align-items: flex-end; }
-    .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 24px 24px 0 0; padding: 25px; animation: slideUp 0.3s ease-out; }
+    .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 24px 24px 0 0; padding: 25px; padding-bottom: calc(25px + env(safe-area-inset-bottom)); animation: slideUp 0.3s ease-out; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     
     .graph-container { width: 100%; height: 140px; display: flex; align-items: flex-end; justify-content: space-around; padding: 20px 0 30px 0; position: relative; }
@@ -170,16 +171,16 @@
             <button class="routeBtn" onclick="setRoute('那覇','石垣')">那覇-石垣</button>
             <button class="routeBtn" onclick="setRoute('成田','ロサンゼルス')">NRT-LAX</button>
             <button class="routeBtn" onclick="setRoute('ロサンゼルス','サンディエゴ')">LAX-SAN</button>
-            <button class="routeBtn" onclick="setRoute('羽田','バンコク')">BKK</button>
+            <button class="routeBtn" onclick="setRoute('サンディエゴ','成田')">SAN-NRT</button>
         </div>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div>
-                <label style="font-size: 11px; font-weight: 800; color: #8e8e93;">航空券代金</label>
+                <label style="font-size: 11px; font-weight: 800; color: #8e8e93;">航空券代金(往復は総額)</label>
                 <input id="price" type="number" placeholder="¥">
             </div>
             <div>
-                <label style="font-size: 11px; font-weight: 800; color: #8e8e93;">搭乗日</label>
+                <label style="font-size: 11px; font-weight: 800; color: #8e8e93;">往路搭乗日</label>
                 <input type="date" id="flightDate">
             </div>
         </div>
@@ -206,6 +207,7 @@
                 <option value="1.25_intl">海外:125% (ビジネスZ,D) +400</option>
                 <option value="1.0_intl">海外:100% (プレエコ等) +400</option>
                 <option value="0.7_intl">海外:70% (エコノミー) +400</option>
+                <option value="0.5_intl">海外:50% (格安エコノミー) +0</option>
             </optgroup>
         </select>
         
@@ -214,7 +216,8 @@
         </select>
         
         <div id="returnArea" style="background: #f2f2f7; border-radius: 12px; padding: 12px; margin-top: 8px;">
-            <div style="font-size: 11px; font-weight: 800; margin-bottom: 4px; color: var(--main-blue);">復路スケジュール</div>
+            <div style="font-size: 11px; font-weight: 800; margin-bottom: 4px; color: var(--main-blue);">復路スケジュール（翌日以降の場合は日付を変更）</div>
+            <input type="date" id="returnDate">
             <div style="display:flex; gap:10px;">
                 <div style="flex:1">出発時刻<input type="time" id="returnDepart"></div>
                 <div style="flex:1">到着時刻<input type="time" id="returnArrive"></div>
@@ -243,6 +246,8 @@
             <span class="benefit-tag" onclick="showBenefit('ラウンジ利用')">ANAラウンジ</span> 
             <span class="benefit-tag" onclick="showBenefit('特典枠拡大')">特典枠拡大</span> 
             <span class="benefit-tag" onclick="showBenefit('スタアラゴールド')">スタアラゴールド</span>
+            <span class="benefit-tag" onclick="showBenefit('優先搭乗')">優先搭乗</span>
+            <span class="benefit-tag" onclick="showBenefit('マイル積算率')">マイル積算率+35%~</span>
         </div>
     </div>
 
@@ -291,17 +296,19 @@ const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG",
 const distDB = {
     "HND-OKA":984, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1221, "HND-ITM":280, "OKA-ISG":247, 
     "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-SAN":5458, "HND-LAX":5477, "HND-SFO":5130,
-    "NRT-LAX":5458, "LAX-SAN":109, "SAN-SFO":447, "SFO-HND":5130, "HND-KUL":3338, "HND-SYD":4863
+    "NRT-LAX":5458, "NRT-SAN":5458, "LAX-SAN":109, "SAN-SFO":447, "SFO-HND":5130, "HND-KUL":3338, "HND-SYD":4863
 };
 const benefits = {
-    'LAX-Polaris': '【LAXポラリス】T7に位置。ユナイテッド・ポラリス・バーガーを堪能できます。',
-    'SFO-Polaris': '【SFOポラリス】国際線ターミナルG。広大な空間とシャワー、ダイニング完備。',
-    'SAN': '【サンディエゴ】ターミナル2のUnited Club。窓が大きく開放的です。',
-    'BKK': '【バンコク】タイ航空、シンガポール航空、エバー航空等のラウンジをホッピング可能。',
-    '専用保安検査場': 'ANA PREMIUM CHECK-INが利用可能。混雑を回避できます。',
-    'ラウンジ利用': 'ANA LOUNGEが本人＋同行者1名まで無料。ビールやカレーを楽しめます。',
-    '特典枠拡大': '一般には開放されない「SFC専用の特典航空券枠」が開放されます。',
-    'スタアラゴールド': '世界26社の加盟航空会社でVIP待遇。世界へのパスポートです。'
+    'LAX-Polaris': '【LAXポラリス】T7に位置。SFC会員がスタアラ国際線ビジネスクラスを利用する際の聖域。オーダー式のダイニング「The Dining Room」でポラリス・バーガーを堪能できます。',
+    'SFO-Polaris': '【SFOポラリス】国際線ターミナルG。広大な空間に、高級ホテルのようなシャワールームと仮眠用のデイベッドを完備。長距離便の前に完璧なリフレッシュが可能です。',
+    'SAN': '【サンディエゴ】ターミナル2のUnited Club。窓が大きく、サンディエゴの青い空と離着陸する機体を眺めながら、無料の軽食とカクテルで出発前の静かな時間を過ごせます。',
+    'BKK': '【バンコク】スワンナプーム。スタアラゴールド（SFC）の特権で、タイ航空、シンガポール航空、エバー航空のラウンジをホッピング可能。各国の名物料理を楽しめます。',
+    '専用保安検査場': '【ANA PREMIUM CHECK-IN】羽田や成田の大混雑を横目に、専用カウンターと直結の保安検査場を通過。出発前のストレスが皆無になります。',
+    'ラウンジ利用': '【ANA LOUNGE】国内線・国際線ともに本人＋同行者1名まで無料。名物のANAカレーや生ビールを、出発前のルーティーンに。',
+    '特典枠拡大': '【特典航空券の優先予約】一般会員には開放されない「SFC専用枠」が利用可能に。激戦のホノルル便やビジネスクラスの予約が劇的に取りやすくなります。',
+    'スタアラゴールド': '【世界中でVIP待遇】スタアラ加盟26社で共通のゴールド特典。海外の空港でも優先チェックイン、ラウンジ、優先手荷物受け取りが約束されます。',
+    '優先搭乗': '機内持ち込み手荷物のスペース確保に悩む必要はありません。グループ2での優先搭乗により、余裕を持って着席し、旅の始まりを迎えられます。',
+    'マイル積算率': 'SFCカードを保有するだけで、搭乗ごとのマイル積算率が35%〜50%アップ。次の特典航空券（無料旅行）へのスピードが加速します。'
 };
 
 let flights = JSON.parse(localStorage.getItem("sfc_v17_data")) || [];
@@ -309,6 +316,9 @@ let currentEditingId = null;
 
 function toggleReturn(val) {
     document.getElementById('returnArea').style.display = (val === 'round' ? 'block' : 'none');
+    if(val === 'round' && !document.getElementById('returnDate').value) {
+        document.getElementById('returnDate').value = document.getElementById('flightDate').value;
+    }
 }
 
 function saveMiles() {
@@ -333,20 +343,20 @@ function calcPP(f, t, rStr, dateStr) {
         const multi15 = ["SIN","BKK","TSA","KUL","SYD","CGK","MNL","SGN","HAN"];
         let multi = (multi15.includes(f) || multi15.includes(t)) ? 1.5 : 1.0;
         let isNorthAmerica = (f === "LAX" || f === "SAN" || f === "SFO" || t === "LAX" || t === "SAN" || t === "SFO");
-        let bonus = (rStr === "1.25_intl" || !isNorthAmerica) ? 400 : 0; 
+        let bonus = (rStr === "1.25_intl" || rStr === "1.0_intl" || rStr === "0.7_intl") ? 400 : 0; 
         return Math.floor(base * rate * multi) + bonus;
     }
     
     if(isNew) {
-        if(rStr === "1.2_new") return (Math.floor(base * 1.2) * 2) + 400;
-        if(rStr === "0.7_new") return (Math.floor(base * 0.7) * 2) + 100;
-        if(rStr === "0.8_new") return (Math.floor(base * 0.8) * 2) + 100;
-        if(rStr === "1.0_new") return (Math.floor(base * 1.0) * 2) + 400;
-        return (Math.floor(base * parseFloat(rStr)) * 2);
+        if(rStr === "1.2_new") return (Math.floor(base * 2) * 1.2) + 400;
+        if(rStr === "0.7_new") return (Math.floor(base * 2) * 0.7) + 100;
+        if(rStr === "0.8_new") return (Math.floor(base * 2) * 0.8) + 100;
+        if(rStr === "1.0_new") return (Math.floor(base * 2) * 1.0) + 400;
+        return (Math.floor(base * 2) * parseFloat(rStr));
     }
     let rate = parseFloat(rStr);
     let bonus = (rStr.includes("plus") || ["1.0","1.25"].includes(rStr)) ? 400 : 0;
-    return (Math.floor(base * rate) * 2) + bonus;
+    return (Math.floor(base * 2) * rate) + bonus;
 }
 
 function getUGResources(f) {
@@ -371,11 +381,11 @@ function tryUG(id) {
     const choice = confirm(`UG方法の選択（マイル価値=2円換算）\n${res.cash < res.mile*2 ? '★現金推奨' : '★マイル推奨'}\n\nOK: 現金(${res.cash}円)\nキャンセル: マイル(${res.mile}m)`);
     let base = distDB[f.from+"-"+f.to] || distDB[f.to+"-"+f.from] || 0;
     if(choice) {
-        f.pp += (Math.floor(base * 0.5) * 2); f.price += res.cash; f.isUG = true; f.ugMethod = "cash";
+        f.pp += (Math.floor(base * 2) * 0.5); f.price += res.cash; f.isUG = true; f.ugMethod = "cash";
     } else {
         let cur = parseInt(localStorage.getItem("sfc_miles") || 0);
         if(cur < res.mile) return alert("マイル不足");
-        f.pp += (Math.floor(base * 0.5) * 2); f.isUG = true; f.ugMethod = "mile";
+        f.pp += (Math.floor(base * 2) * 0.5); f.isUG = true; f.ugMethod = "mile";
         localStorage.setItem("sfc_miles", cur - res.mile);
     }
     save();
@@ -397,7 +407,8 @@ function addFlight() {
     flights.push(fData);
     
     if(trip === "round") {
-        flights.push({ ...fData, id: Date.now()+Math.random(), from: to, to: from, depart: document.getElementById("returnDepart").value, arrive: document.getElementById("returnArrive").value });
+        const retDate = document.getElementById("returnDate").value || date;
+        flights.push({ ...fData, id: Date.now()+Math.random(), from: to, to: from, date: retDate, depart: document.getElementById("returnDepart").value, arrive: document.getElementById("returnArrive").value });
     }
     save();
 }
@@ -449,16 +460,14 @@ function render() {
         cumPP += f.pp;
 
         let badge = "";
-        if (f.to === "BKK" || f.from === "BKK") {
-            badge = cumPP >= 50000 ? `<br><span class="sfc-badge">✨ SFC旅行確定</span>` : `<br><span class="pre-sfc-badge">⚠️ 解脱前予定</span>`;
-        } else if (cumPP >= 50000 && !f.done && (cumPP - f.pp < 50000)) {
+        if (cumPP >= 50000 && !f.done && (cumPP - f.pp < 50000)) {
             badge = `<br><span class="sfc-badge">🏁 解脱予定便</span>`;
         }
 
         const res = getUGResources(f);
         if(!f.done && f.simUG) {
             let base = distDB[f.from+"-"+f.to] || distDB[f.to+"-"+f.from] || 0;
-            potUG_PP += (Math.floor(base * 0.5) * 2); potMile += res.mile;
+            potUG_PP += (Math.floor(base * 2) * 0.5); potMile += res.mile;
         }
 
         let m = parseInt(f.date.slice(5, 7)) - 1;
@@ -467,12 +476,14 @@ function render() {
 
         let waitHtml = ""; if(idx < flights.length - 1) {
             let next = flights[idx+1];
-            if(f.date === next.date && f.arrive && next.depart) {
-                let diff = (new Date(f.date + "T" + next.depart) - new Date(f.date + "T" + f.arrive)) / 60000;
-                if(diff > 0 && diff < 1440) {
-                    let color = diff < 60 ? "var(--money)" : "var(--success)";
-                    waitHtml = `<br><span style="background:${color}; color:white; font-size:8px; padding:2px 4px; border-radius:4px; display:inline-block; margin-top:4px;">⏱ ${Math.floor(diff/60)}h${diff%60}m</span>`;
-                }
+            let d1 = new Date(f.date + "T" + (f.arrive || "00:00"));
+            let d2 = new Date(next.date + "T" + (next.depart || "23:59"));
+            let diff = (d2 - d1) / 60000;
+            if(diff > 0 && diff < 1440) {
+                let color = diff < 60 ? "var(--money)" : "var(--success)";
+                waitHtml = `<br><span style="background:${color}; color:white; font-size:8px; padding:2px 4px; border-radius:4px; display:inline-block; margin-top:4px;">⏱ ${Math.floor(diff/60)}h${Math.round(diff%60)}m</span>`;
+            } else if (diff >= 1440) {
+                waitHtml = `<br><span style="background:var(--main-blue); color:white; font-size:8px; padding:2px 4px; border-radius:4px; display:inline-block; margin-top:4px;">🏨 翌日以降</span>`;
             }
         }
         
@@ -513,15 +524,14 @@ function render() {
     if(potUG_PP > 0) { ugS.style.display="block"; ugS.innerHTML = `🚀 <b>UG上乗せ試算: +${potUG_PP.toLocaleString()} PP</b><br>合計予測: ${(totalP+potUG_PP).toLocaleString()} PP`; } else { ugS.style.display="none"; }
     if(potMile > 0) { miS.style.display="block"; miS.innerHTML = `🧡 <b>必要マイル: ${potMile.toLocaleString()} m</b>`; } else { miS.style.display="none"; }
 
+    const rem = Math.max(0, 50000 - totalP);
+    document.getElementById("aiAdvice").innerHTML = `残り <b>${rem.toLocaleString()} PP</b><br>那覇往復なら あと <b>${Math.ceil(rem/2952)}回</b> で解脱可能です。`;
+
     let cheer = "【準備万端】理想のスケジュールを組む今の時間が、解脱への第一歩です。";
-    const hasSAN = flights.some(f => f.from === "SAN" || f.to === "SAN");
-    const hasBKK = flights.some(f => (f.from === "BKK" || f.to === "BKK") && f.date.includes("-11-"));
-    if (actualP >= 50000) cheer = hasBKK ? "【祝・解脱】11月のバンコクはSFCとして、最高のラウンジホッピングを楽しめますね！" : "【祝・解脱】おめでとうございます！これからは全ての旅が特別になります。";
-    else if (totalP >= 50000) cheer = hasSAN ? "【解脱確定】サンディエゴ出張で解脱予定です。LAX・SFOのポラリスラウンジを堪能してください！" : "【解脱確定】計画通り搭乗すればプラチナ到達です！Tabioriの共有も忘れずに。";
+    if (actualP >= 50000) cheer = "【祝・解脱】おめでとうございます！世界中のANAラウンジやポラリスラウンジがあなたの居場所になります。";
+    else if (totalP >= 50000) cheer = "【解脱確定】計画通り搭乗すればプラチナ到達です！Tabioriの共有も忘れずに。";
     else if (actualP > 0) cheer = "【修行中】一歩ずつ着実に。彼女さんとも予定を共有しつつ、完遂しましょう。";
     const cheerEl = document.getElementById("cheerMessage"); cheerEl.innerText = cheer; cheerEl.style.display="block";
-
-    document.getElementById("aiAdvice").innerHTML = `残り <b>${Math.max(0, 50000-totalP).toLocaleString()} PP</b><br>那覇往復なら あと <b>${Math.ceil(Math.max(0, 50000-totalP)/2954)}回</b> で解脱`;
 
     const maxPP = Math.max(...monthlyPP.map((v, i) => v + monthlyPend[i]), 5000);
     monthlyPP.forEach((pp, i) => { 
