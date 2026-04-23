@@ -8,16 +8,16 @@
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
 
-<title>SFC Manager v74.0 - Premium Edition</title>
+<title>SFC Manager v75.0 - Ultimate</title>
 <style>
     :root { 
         --main-blue: #003f88; 
-        --accent-blue: #007aff; /* iOS Standard Blue */
-        --bg-gray: #f2f2f7; /* iOS System Gray 6 */
-        --success: #34c759; /* iOS Success Green */
-        --money: #ff3b30; /* iOS Destructive Red */
-        --warning: #ff9500; /* iOS Orange */
-        --ug-purple: #af52de; /* iOS Purple */
+        --accent-blue: #007aff; 
+        --bg-gray: #f2f2f7; 
+        --success: #34c759; 
+        --money: #ff3b30; 
+        --warning: #ff9500; 
+        --ug-purple: #af52de; 
         --gold: #b2943e; 
         --mile-orange: #f39c12;
         --card-shadow: 0 8px 24px rgba(0,0,0,0.06);
@@ -27,7 +27,7 @@
         background: var(--bg-gray);
         margin: 0;
         padding-top: env(safe-area-inset-top);
-        padding-bottom: 100px;
+        padding-bottom: 120px;
         color: #1c1c1e;
         -webkit-tap-highlight-color: transparent;
         line-height: 1.4;
@@ -39,25 +39,26 @@
         color: white;
         padding: 50px 20px 15px 20px;
         text-align: center;
-        font-weight: 700;
-        font-size: 1.1em;
+        font-weight: 800;
+        font-size: 1.2em;
         position: sticky;
         top: 0;
         z-index: 1000;
-        letter-spacing: 0.5px;
+        letter-spacing: 1px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     .container { padding: 16px; max-width: 720px; margin: auto; }
     .card {
         background: white;
-        border-radius: 18px;
-        padding: 20px;
+        border-radius: 20px;
+        padding: 22px;
         margin-bottom: 16px;
         box-shadow: var(--card-shadow);
-        border: 1px solid rgba(0,0,0,0.02);
+        border: 1px solid rgba(0,0,0,0.03);
     }
     h3 {
-        margin: 0 0 14px 0;
-        font-size: 1.05em;
+        margin: 0 0 16px 0;
+        font-size: 1.1em;
         color: var(--main-blue);
         display: flex;
         align-items: center;
@@ -67,28 +68,29 @@
         content: "";
         display: inline-block;
         width: 4px;
-        height: 18px;
+        height: 20px;
         background: var(--main-blue);
-        margin-right: 10px;
-        border-radius: 2px;
+        margin-right: 12px;
+        border-radius: 4px;
     }
     
     input, select, button, textarea {
         width: 100%;
-        padding: 12px;
-        margin: 6px 0;
-        border-radius: 12px;
-        border: 1px solid #e5e5ea;
+        padding: 14px;
+        margin: 8px 0;
+        border-radius: 14px;
+        border: 1.5px solid #e5e5ea;
         box-sizing: border-box;
-        font-size: 16px; /* iOSでズームしないサイズ */
+        font-size: 16px;
         -webkit-appearance: none;
-        background: #fdfdfd;
-        transition: all 0.2s;
+        background: #fafafa;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     input:focus, select:focus {
         border-color: var(--accent-blue);
         outline: none;
         background: white;
+        box-shadow: 0 0 0 4px rgba(0,122,255,0.1);
     }
     button {
         background: var(--main-blue);
@@ -96,119 +98,131 @@
         font-weight: 700;
         border: none;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0, 63, 136, 0.2);
+        box-shadow: 0 4px 15px rgba(0, 63, 136, 0.2);
     }
-    button:active { transform: scale(0.98); opacity: 0.9; }
+    button:active { transform: scale(0.96); opacity: 0.9; }
     
     .routeBtn {
         width: auto;
-        padding: 8px 14px;
-        margin: 4px 2px;
+        padding: 10px 16px;
+        margin: 4px 4px;
         font-size: 13px;
         background: #fff;
         color: var(--main-blue);
-        border: 1px solid #e5e5ea;
-        font-weight: 600;
+        border: 1.5px solid #e5e5ea;
+        font-weight: 700;
+        border-radius: 12px;
     }
     .swap-btn {
-        width: 44px; height: 44px; margin: 0;
-        background: #fff; color: var(--main-blue);
-        border: 1px solid #e5e5ea; border-radius: 50%;
+        width: 48px; height: 48px; margin: 0;
+        background: #f2f2f7; color: var(--main-blue);
+        border: none; border-radius: 50%;
         display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        font-size: 20px;
     }
     
-    table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: auto; }
-    th { border-bottom: 2px solid #f2f2f7; padding: 10px 2px; color: #8e8e93; font-weight: 600; text-transform: uppercase; }
-    td { border-bottom: 1px solid #f2f2f7; padding: 8px 2px; text-align: center; word-wrap: break-word; line-height: 1.3; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+    th { border-bottom: 2px solid #f2f2f7; padding: 12px 2px; color: #8e8e93; font-weight: 700; }
+    td { border-bottom: 1px solid #f2f2f7; padding: 10px 2px; text-align: center; line-height: 1.4; vertical-align: middle; }
     
     .ug-sim-label { 
         font-size: 9px; color: var(--ug-purple); display: inline-flex; align-items: center; 
-        white-space: nowrap; border: 1.5px solid var(--ug-purple); padding: 2px 6px;
-        border-radius: 6px; background: #fff; cursor: pointer; font-weight: bold;
+        white-space: nowrap; border: 1.5px solid var(--ug-purple); padding: 4px 8px;
+        border-radius: 8px; background: #fff; cursor: pointer; font-weight: 800;
+        margin-top: 4px;
     }
-    .ug-sim-checkbox { width: 14px !important; height: 14px !important; margin: 0 4px 0 0 !important; }
+    .ug-sim-checkbox { width: 16px !important; height: 16px !important; margin: 0 4px 0 0 !important; }
     
-    .row-simulating { background-color: #fcf7ff !important; border-left: 4px solid var(--ug-purple); }
-    .row-done { background-color: #fafafa; color: #aeaeb2; }
-    .memo-icon { display: inline-block; font-size: 14px; cursor: pointer; padding: 5px; background: #f2f2f7; border-radius: 6px; margin-left: 4px; }
-    .memo-icon.active { background: var(--warning); color: white; }
+    .row-simulating { background-color: #fdf8ff !important; border-left: 5px solid var(--ug-purple); }
+    .row-done { background-color: #f9f9f9; color: #aeaeb2; opacity: 0.8; }
+    .memo-icon { display: inline-block; font-size: 16px; cursor: pointer; padding: 6px; background: #f2f2f7; border-radius: 8px; margin-left: 4px; }
+    .memo-icon.active { background: var(--warning); color: white; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     
-    .progress { background: #e5e5ea; height: 28px; border-radius: 14px; margin: 15px 0; overflow: hidden; position: relative; }
+    .progress { background: #e5e5ea; height: 32px; border-radius: 16px; margin: 20px 0; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
     .progress-inner { background: linear-gradient(90deg, #003f88, #2a6df4); height: 100%; width: 0%; transition: width 1s cubic-bezier(0.23, 1, 0.32, 1); position: absolute; z-index: 2; }
-    .progress-pending { background: rgba(42, 109, 244, 0.3); height: 100%; width: 0%; transition: width 1s cubic-bezier(0.23, 1, 0.32, 1); position: absolute; z-index: 1; }
+    .progress-pending { background: rgba(0, 122, 255, 0.25); height: 100%; width: 0%; transition: width 1s cubic-bezier(0.23, 1, 0.32, 1); position: absolute; z-index: 1; }
     
-    .ai-box { background: #f0f7ff; padding: 16px; border-radius: 14px; font-size: 13px; line-height: 1.6; border: 1px solid #d0e3ff; color: #003f88; }
-    .action-container { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; min-width: 85px; align-items: center; }
-    .ug-action-btn { background: var(--ug-purple); color: white; font-size: 10px; padding: 5px 0; border-radius: 6px; width: 100%; font-weight: bold; }
-    .delete-btn { color: #ff3b30; font-size: 20px; cursor: pointer; font-weight: bold; padding: 5px; }
+    .ai-box { background: #f0f7ff; padding: 18px; border-radius: 16px; font-size: 13.5px; line-height: 1.6; border: 1.5px solid #d0e3ff; color: #003f88; position: relative; }
+    .action-container { display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; }
+    .ug-action-btn { background: var(--ug-purple); color: white; font-size: 10px; padding: 6px 0; border-radius: 8px; width: 44px; font-weight: 800; }
+    .notif-btn { background: #8e8e93; color: white; font-size: 10px; padding: 6px 0; border-radius: 8px; width: 44px; font-weight: 800; }
+    .delete-btn { color: #ff3b30; font-size: 22px; cursor: pointer; font-weight: bold; padding: 8px; }
 
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: flex-end; }
-    .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 24px 24px 0 0; padding: 25px; animation: slideUp 0.3s ease-out; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 2000; justify-content: center; align-items: flex-end; }
+    .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 28px 28px 0 0; padding: 30px; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     
-    .memo-area { background: #fffbe6; border: 1px solid #ffe58f; min-height: 80px; white-space: pre-wrap; font-size: 13px; padding: 12px; border-radius: 12px; margin-top: 12px; color: #444; }
-    .graph-container { width: 100%; height: 140px; display: flex; align-items: flex-end; justify-content: space-around; padding: 20px 0 30px 0; position: relative; }
-    .graph-bar { width: calc(100% / 12 - 6px); background: var(--accent-blue); border-radius: 4px 4px 2px 2px; position: relative; min-height: 2px; transition: height 0.5s; }
-    .graph-val { position: absolute; top: -16px; width: 100%; text-align: center; font-size: 9px; color: #333; font-weight: bold;}
-    .graph-val-pending { position: absolute; top: -28px; width: 100%; text-align: center; font-size: 9px; color: var(--accent-blue); font-weight: bold;}
-    .graph-label { position: absolute; bottom: -22px; width: 100%; text-align: center; font-size: 10px; color: #8e8e93; font-weight: 500;}
+    .memo-area { background: #fffbe6; border: 1.5px solid #ffe58f; min-height: 100px; white-space: pre-wrap; font-size: 14px; padding: 15px; border-radius: 16px; margin-top: 15px; color: #444; }
+    .graph-container { width: 100%; height: 160px; display: flex; align-items: flex-end; justify-content: space-around; padding: 25px 0 35px 0; position: relative; }
+    .graph-bar { width: calc(100% / 12 - 8px); background: var(--accent-blue); border-radius: 5px 5px 2px 2px; position: relative; min-height: 2px; transition: height 0.6s ease; }
+    .graph-val { position: absolute; top: -18px; width: 100%; text-align: center; font-size: 9px; color: #333; font-weight: 800;}
+    .graph-val-pending { position: absolute; top: -30px; width: 100%; text-align: center; font-size: 9px; color: var(--accent-blue); font-weight: 800;}
+    .graph-label { position: absolute; bottom: -24px; width: 100%; text-align: center; font-size: 11px; color: #8e8e93; font-weight: 600;}
     
-    .unit-price { font-size: 12px; background: #fffbe6; padding: 8px; border-radius: 10px; border: 1px solid #ffe58f; margin-top: 12px; text-align: center; font-weight: 600; }
-    .benefit-tag { display: inline-block; font-size: 11px; padding: 8px 12px; background: #fff; color: var(--gold); border: 1px solid #e5e5ea; border-radius: 20px; margin: 4px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .cheer-msg { font-style: italic; border-top: 1px solid #d0e3ff; margin-top: 12px; padding-top: 12px; font-weight: 800; color: var(--money); font-size: 14px; }
+    .unit-price { font-size: 13px; background: #fffbe6; padding: 10px; border-radius: 12px; border: 1.5px solid #ffe58f; margin-top: 15px; text-align: center; font-weight: 700; color: #856404; }
+    .benefit-tag { display: inline-block; font-size: 12px; padding: 10px 15px; background: #fff; color: var(--gold); border: 1.5px solid #e5e5ea; border-radius: 22px; margin: 5px; cursor: pointer; font-weight: 800; box-shadow: 0 3px 6px rgba(0,0,0,0.04); }
+    .cheer-msg { font-style: normal; border-top: 2px solid #d0e3ff; margin-top: 15px; padding-top: 15px; font-weight: 900; color: var(--money); font-size: 15px; }
     
-    .sfc-badge { background: var(--gold); color: white; font-size: 10px; padding: 2px 6px; border-radius: 6px; font-weight: 800; display: inline-block; margin-top: 4px; }
-    .pre-sfc-badge { background: #8e8e93; color: white; font-size: 10px; padding: 2px 6px; border-radius: 6px; display: inline-block; margin-top: 4px; }
-    .mile-badge { background: rgba(243, 156, 18, 0.1); color: var(--mile-orange); border: 1px solid var(--mile-orange); padding: 2px 6px; border-radius: 6px; font-size: 10px; font-weight: bold; margin-top: 4px; display: inline-block; }
+    .sfc-badge { background: var(--gold); color: white; font-size: 10px; padding: 3px 8px; border-radius: 8px; font-weight: 900; display: inline-block; margin-top: 6px; box-shadow: 0 2px 5px rgba(178,148,62,0.3); }
+    .pre-sfc-badge { background: #8e8e93; color: white; font-size: 10px; padding: 3px 8px; border-radius: 8px; display: inline-block; margin-top: 6px; font-weight: 700; }
+    .mile-badge { background: rgba(243, 156, 18, 0.08); color: var(--mile-orange); border: 1.5px solid var(--mile-orange); padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: 800; margin-top: 6px; display: inline-block; }
     
-    .mileage-input-group { background: #fff9f0; padding: 12px; border-radius: 14px; border: 1.5px solid var(--mile-orange); margin-bottom: 15px; }
-    .mileage-input-group input { margin: 0; background: transparent; border: none; font-size: 18px; font-weight: 800; color: var(--mile-orange); text-align: right; }
+    .mileage-input-group { background: linear-gradient(135deg, #fffcf5 0%, #fff4e5 100%); padding: 15px; border-radius: 18px; border: 2px solid var(--mile-orange); margin-bottom: 20px; box-shadow: 0 4px 10px rgba(243,156,18,0.1); }
+    .mileage-input-group input { margin: 0; background: transparent; border: none; font-size: 20px; font-weight: 900; color: var(--mile-orange); text-align: right; width: 120px; box-shadow: none; padding: 0; }
+    
+    .status-mini { font-size: 10px; color: #8e8e93; font-weight: 700; margin-bottom: 4px; }
+    .day-badge { font-size: 9px; font-weight: 800; display: block; color: #8e8e93; }
+
+    /* 修行僧専用の祝祭アニメーション */
+    .gedatsu-flash { animation: gold-glow 2s infinite; }
+    @keyframes gold-glow { 0% { box-shadow: 0 0 5px var(--gold); } 50% { box-shadow: 0 0 20px var(--gold); } 100% { box-shadow: 0 0 5px var(--gold); } }
 </style>
 </head>
 <body>
 
-<header>SFC Manager v74.0</header>
+<header>SFC Manager v75.0</header>
 
 <div class="container">
-    <div class="card">
+    <div class="card" id="mainStatusCard">
         <h3>保有マイル & PP資産</h3>
         <div class="mileage-input-group">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 13px; color: var(--mile-orange); font-weight: 800;">現在の保有マイル</span>
-                <input type="number" id="currentMiles" placeholder="0" onchange="saveMiles()">
+                <span style="font-size: 14px; color: var(--mile-orange); font-weight: 900;">✈️ 現在の保有マイル</span>
+                <input type="number" id="currentMiles" placeholder="0" inputmode="numeric" onchange="saveMiles()">
             </div>
         </div>
         
         <div style="text-align:center; margin-top:10px;">
-            <div style="font-size: 12px; color: #8e8e93; font-weight: 600;">現在のステータス</div>
-            <div style="font-weight:900; font-size:2.2em; color:var(--main-blue); line-height: 1;" id="ppText">0 / 50,000</div>
-            <div style="font-size: 12px; color: var(--main-blue); font-weight: 700; margin-bottom: 10px;">PLATINUM PP</div>
+            <div class="status-mini">PREMIUM POINT STATUS</div>
+            <div style="font-weight:900; font-size:2.4em; color:var(--main-blue); line-height: 1; letter-spacing: -1px;" id="ppText">0 / 50,000</div>
+            <div style="font-size: 11px; color: var(--main-blue); font-weight: 800; margin-top: 8px; letter-spacing: 1px;">PLATINUM REACH</div>
         </div>
 
-        <div style="text-align:center; font-size:12px; color:var(--accent-blue); font-weight: 700;" id="pendingTotalText">(予約込合計: 0 PP)</div>
+        <div style="text-align:center; font-size:12px; color:var(--accent-blue); font-weight: 800; margin-top: 8px;" id="pendingTotalText">(予約込合計: 0 PP)</div>
         
         <div class="progress">
             <div id="progressBar" class="progress-inner"></div>
             <div id="progressPending" class="progress-pending"></div>
         </div>
         
-        <div style="display:flex; justify-content:space-between; font-size:13px; text-align:center; margin-top:10px; background: #f8f9fa; padding: 10px; border-radius: 12px;">
-            <div style="flex:1">予定総額<br><b id="totalBudget" style="font-size: 1.1em;">¥0</b></div>
-            <div style="flex:1; border-left: 1px solid #ddd; border-right: 1px solid #ddd;">実績(済)<br><b id="paidBudget" style="color:var(--money); font-size: 1.1em;">¥0</b></div>
-            <div style="flex:1">残り必要<br><b id="remainPP" style="color:var(--main-blue); font-size: 1.1em;">50,000</b></div>
+        <div style="display:flex; justify-content:space-between; font-size:13px; text-align:center; margin-top:10px; background: #f8f9fa; padding: 12px; border-radius: 16px; border: 1px solid #eee;">
+            <div style="flex:1">総予算<br><b id="totalBudget" style="font-size: 1.2em;">¥0</b></div>
+            <div style="flex:1; border-left: 1.5px solid #ddd; border-right: 1.5px solid #ddd;">決済済<br><b id="paidBudget" style="color:var(--money); font-size: 1.2em;">¥0</b></div>
+            <div style="flex:1">解脱まで<br><b id="remainPP" style="color:var(--main-blue); font-size: 1.2em;">50,000</b></div>
         </div>
-        <div id="avgUnitPrice" class="unit-price">PP単価: 分析中...</div>
+        <div id="avgUnitPrice" class="unit-price">PP単価を分析しています...</div>
     </div>
 
     <div class="card">
         <h3>フライト追加</h3>
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom: 10px;">
-            <input id="from" placeholder="出発地" style="flex:1; font-weight: bold; text-align: center;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom: 12px;">
+            <input id="from" placeholder="出発地" style="flex:1; font-weight: 800; text-align: center; font-size: 18px;">
             <button class="swap-btn" onclick="swapRoute()">⇄</button>
-            <input id="to" placeholder="到着地" style="flex:1; font-weight: bold; text-align: center;">
+            <input id="to" placeholder="到着地" style="flex:1; font-weight: 800; text-align: center; font-size: 18px;">
         </div>
         
-        <div style="margin-bottom:15px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
+        <div style="margin-bottom:18px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
             <button class="routeBtn" onclick="setRoute('羽田','那覇')">羽田-那覇</button>
             <button class="routeBtn" onclick="setRoute('羽田','石垣')">羽田-石垣</button>
             <button class="routeBtn" onclick="setRoute('那覇','石垣')">那覇-石垣</button>
@@ -219,7 +233,7 @@
             <button class="routeBtn" onclick="setRoute('羽田','バンコク')">BKK</button>
         </div>
         
-        <label style="font-size: 11px; font-weight: 800; color: #8e8e93; margin-left: 4px;">運賃種別 / 積算率</label>
+        <label style="font-size: 12px; font-weight: 800; color: #8e8e93; margin-left: 4px;">運賃種別 / 積算率</label>
         <select id="rate">
             <optgroup label="【〜2026/5/18 現行国内線】">
                 <option value="1.25">国内:プレミアム(125%) +400</option>
@@ -243,56 +257,56 @@
             </optgroup>
         </select>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <div>
-                <label style="font-size: 11px; font-weight: 800; color: #8e8e93; margin-left: 4px;">航空券代金</label>
-                <input id="price" type="number" placeholder="金額を入力">
+                <label style="font-size: 12px; font-weight: 800; color: #8e8e93; margin-left: 4px;">航空券代金 (往復は総額)</label>
+                <input id="price" type="number" inputmode="numeric" placeholder="¥0">
             </div>
             <div>
-                <label style="font-size: 11px; font-weight: 800; color: #8e8e93; margin-left: 4px;">搭乗日</label>
+                <label style="font-size: 12px; font-weight: 800; color: #8e8e93; margin-left: 4px;">搭乗日</label>
                 <input type="date" id="flightDate">
             </div>
         </div>
 
-        <div style="display:flex; gap:10px;">
-            <div style="flex:1">出発時刻<input type="time" id="departTime"></div>
-            <div style="flex:1">到着時刻<input type="time" id="arriveTime"></div>
+        <div style="display:flex; gap:12px;">
+            <div style="flex:1"><label style="font-size: 11px; font-weight: 700; color:#8e8e93;">出発時刻</label><input type="time" id="departTime"></div>
+            <div style="flex:1"><label style="font-size: 11px; font-weight: 700; color:#8e8e93;">到着時刻</label><input type="time" id="arriveTime"></div>
         </div>
         
         <select id="trip" onchange="document.getElementById('returnArea').style.display = (this.value=='round'?'block':'none')">
-            <option value="oneway">片道</option><option value="round" selected>往復</option>
+            <option value="oneway">片道フライト</option><option value="round" selected>往復フライト</option>
         </select>
         
-        <div id="returnArea" style="background: #f2f2f7; border-radius: 12px; padding: 12px; margin-top: 10px; display: none;">
-            <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: var(--main-blue);">復路スケジュール</div>
-            <div style="display:flex; gap:10px;">
-                <div style="flex:1">出発時刻<input type="time" id="returnDepart"></div>
-                <div style="flex:1">到着時刻<input type="time" id="returnArrive"></div>
+        <div id="returnArea" style="background: #f2f2f7; border-radius: 14px; padding: 15px; margin-top: 10px;">
+            <div style="font-size: 12px; font-weight: 800; margin-bottom: 8px; color: var(--main-blue);">🔁 復路スケジュール</div>
+            <div style="display:flex; gap:12px;">
+                <div style="flex:1">出発<input type="time" id="returnDepart"></div>
+                <div style="flex:1">到着<input type="time" id="returnArrive"></div>
             </div>
         </div>
         
-        <button onclick="addFlight()" style="margin-top:15px; background: var(--accent-blue); height: 56px; font-size: 1.1em; border-radius: 16px;">プランに追加する</button>
+        <button onclick="addFlight()" style="margin-top:15px; background: var(--accent-blue); height: 60px; font-size: 1.15em; border-radius: 18px;">プランに追加する</button>
     </div>
 
     <div class="card">
-        <h3>AI修行診断 & 管理</h3>
+        <h3>AI修行診断 & 戦略管理</h3>
         <div id="aiAdvice" class="ai-box"></div>
-        <div id="ugImpactSection" class="ai-box" style="margin-top:8px; border-color:var(--ug-purple); background:#f9f0ff; color:#6c3483; display:none;"></div>
-        <div id="mileImpactSection" class="ai-box" style="margin-top:8px; border-color:var(--mile-orange); background:#fff9f0; color:#d68910; display:none;"></div>
-        <div id="cheerMessage" class="ai-box cheer-msg" style="margin-top:12px; display:none;"></div>
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button style="flex:1; background:#636366; font-size:12px; box-shadow: none;" onclick="showBackup()">バックアップ</button>
-            <button style="flex:1; background:#636366; font-size:12px; box-shadow: none;" onclick="importData()">復元</button>
+        <div id="ugImpactSection" class="ai-box" style="margin-top:10px; border-color:var(--ug-purple); background:#faf5ff; color:#6c3483; display:none;"></div>
+        <div id="mileImpactSection" class="ai-box" style="margin-top:10px; border-color:var(--mile-orange); background:#fffaf5; color:#d68910; display:none;"></div>
+        <div id="cheerMessage" class="ai-box cheer-msg" style="margin-top:15px; display:none;"></div>
+        <div style="display:flex; gap:12px; margin-top:20px;">
+            <button style="flex:1; background:#636366; font-size:12px; box-shadow: none; border-radius: 12px;" onclick="showBackup()">バックアップ</button>
+            <button style="flex:1; background:#636366; font-size:12px; box-shadow: none; border-radius: 12px;" onclick="importData()">復元(Import)</button>
         </div>
-        <div id="backupArea" style="display:none; margin-top:10px;">
-            <textarea id="backupText" readonly style="width:100%; height:100px; font-size:10px; font-family:monospace;"></textarea>
+        <div id="backupArea" style="display:none; margin-top:12px;">
+            <textarea id="backupText" readonly style="width:100%; height:120px; font-size:11px; font-family:monospace; background:#eee;"></textarea>
             <button onclick="document.getElementById('backupArea').style.display='none'">閉じる</button>
         </div>
     </div>
 
     <div class="card">
-        <h3>SFC解脱後の世界</h3>
-        <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+        <h3>SFC解脱後の世界線</h3>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 4px;">
             <span class="benefit-tag" onclick="showBenefit('LAX-Polaris')">🇺🇸 LAX: ポラリス</span>
             <span class="benefit-tag" onclick="showBenefit('SFO-Polaris')">🇺🇸 SFO: ポラリス</span>
             <span class="benefit-tag" onclick="showBenefit('SAN')">🇺🇸 SAN: UAクラブ</span> 
@@ -309,9 +323,9 @@
     <div class="card" style="padding: 12px;">
         <h3>フライトスケジュール</h3>
         <div style="overflow-x:auto;">
-            <table>
+            <table id="flightTable">
                 <thead>
-                    <tr><th style="width:14%">日付</th><th style="width:34%">区間</th><th style="width:12%">時刻</th><th style="width:10%">PP</th><th style="width:8%">済</th><th style="width:22%">操作</th></tr>
+                    <tr><th style="width:15%">日付</th><th style="width:38%">区間 / メモ</th><th style="width:12%">時刻</th><th style="width:10%">PP</th><th style="width:8%">済</th><th style="width:17%">操作</th></tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
@@ -331,34 +345,34 @@
 
 <div id="memoModal" class="modal">
     <div class="modal-content">
-        <h3 id="modalTitle" style="margin-top: 0;">修行しおり</h3>
-        <textarea id="modalMemoInput" placeholder="プランやメモを貼り付け..." style="height: 180px; background: #fffbe6;"></textarea>
-        <div style="display:flex; gap:12px; margin-top: 10px;">
-            <button onclick="saveMemo()" style="flex:2; background:var(--success); height: 50px;">保存する</button>
-            <button onclick="closeModal()" style="flex:1; background:#8e8e93; height: 50px; box-shadow: none;">閉じる</button>
+        <h3 id="modalTitle" style="margin-top: 0; color: var(--main-blue);">修行しおり</h3>
+        <textarea id="modalMemoInput" placeholder="宿泊先、Tabiori共有URL、やりたいことリストなど..." style="height: 180px; background: #fffbe6;"></textarea>
+        <div style="display:flex; gap:12px; margin-top: 15px;">
+            <button onclick="saveMemo()" style="flex:2; background:var(--success); height: 54px; font-weight: 800;">保存する</button>
+            <button onclick="closeModal()" style="flex:1; background:#8e8e93; height: 54px; box-shadow: none;">閉じる</button>
         </div>
         <div id="memoDisplay" class="memo-area"></div>
     </div>
 </div>
 
 <script>
-const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","サンディエゴ":"SAN","ロサンゼルス":"LAX","サンフランシスコ":"SFO"};
+const airportMap = {"羽田":"HND","成田":"NRT","那覇":"OKA","石垣":"ISG","宮古":"MMY","千歳":"CTS","福岡":"FUK","伊丹":"ITM","関空":"KIX","中部":"NGO","シンガポール":"SIN","バンコク":"BKK","台北":"TSA","サンディエゴ":"SAN","ロサンゼルス":"LAX","サンフランシスコ":"SFO","クアラルンプール":"KUL","シドニー":"SYD","マニラ":"MNL","ホーチミン":"SGN","ハノイ":"HAN","ジャカルタ":"CGK"};
 const distDB = {
     "HND-OKA":984, "HND-CTS":510, "HND-FUK":567, "HND-ISG":1221, "HND-ITM":280, "OKA-ISG":247, 
     "HND-SIN":3312, "HND-BKK":2889, "HND-TSA":1330, "HND-SAN":5458, "HND-LAX":5477, "HND-SFO":5130,
-    "NRT-LAX":5458, "LAX-SAN":109, "SAN-SFO":447, "SFO-HND":5130
+    "NRT-LAX":5458, "LAX-SAN":109, "SAN-SFO":447, "SFO-HND":5130, "HND-KUL":3338, "HND-SYD":4863
 };
 const benefits = {
     'LAX-Polaris': '【LAXポラリス】T7に位置。NH006(ビジネス)搭乗時に利用可能。オーダー式のダイニング「Polaris Grill」で、名物のポラリス・バーガーを。',
-    'SFO-Polaris': '【SFOポラリス】国際線ターミナルG、エスカレーターを上がった先にあります。NH107出発前に利用可能。広大な空間とシャワー完備で、深夜便前のリセットに最適。',
-    'SAN': '【サンディエゴ】SFC(スタアラゴールド)があれば、ターミナル2のUnited Clubが利用可能。こぢんまりしていますが、大きな窓から飛行機を眺められ、開放感があります。',
-    'BKK': '【バンコク】スワンナプームはSFCの真骨頂。タイ航空の複数のラウンジに加え、エバー航空、シンガポール航空、トルコ航空など、スタアラ加盟各社の豪華ラウンジをハシゴ(ラウンジホッピング)可能です。',
+    'SFO-Polaris': '【SFOポラリス】国際線ターミナルG。NH107出発前に利用可能。広大な空間とシャワー完備で、深夜便前のリセットに最適。',
+    'SAN': '【サンディエゴ】SFCがあればターミナル2のUnited Clubが利用可能。こぢんまりしていますが、大きな窓から飛行機を眺められ開放感があります。',
+    'BKK': '【バンコク】スワンナプームはSFCの真骨頂。タイ航空の複数ラウンジに加え、エバー航空、シンガポール航空、トルコ航空など豪華ラウンジをハシゴ可能です。',
     '専用保安検査場': 'ANA PREMIUM CHECK-INが利用可能。羽田などの混雑期でも、専用の入口からスムーズに保安検査を通過できます。',
-    'ラウンジ利用': 'ANA LOUNGEが本人＋同行者1名まで無料。国内線ならプレミアムモルツ等のビール、国際線ならカレーやヌードルバーを楽しめます。',
-    '優先搭乗': '一般搭乗に先駆け、Group 2(スターアライアンス・ゴールド)のタイミングで優先的に機内へ案内されます。',
-    '手荷物優先受取': '「PRIORITY」タグにより、到着地のターンテーブルで荷物が優先的に出てきます。海外の空港でも非常に重宝する特典です。',
-    '特典枠拡大': '一般会員には開放されない「SFC専用の特典航空券枠」が開放されます。人気のハワイや欧米路線のビジネスクラスなども、格段に予約しやすくなります。',
-    'スタアラゴールド': '世界26社のスターアライアンス加盟航空会社で、ラウンジ利用、優先チェックイン、優先搭乗、手荷物許容量の優待など、世界中どこへ行ってもVIP待遇を受けられます。まさに「世界へのパスポート」です。'
+    'ラウンジ利用': 'ANA LOUNGEが本人＋同行者1名まで無料。国内線ならビール、国際線ならカレーやヌードルバーを楽しめます。',
+    '優先搭乗': '一般搭乗に先駆け、Group 2のタイミングで優先的に機内へ案内されます。',
+    '手荷物優先受取': '「PRIORITY」タグにより、到着地のターンテーブルで荷物が優先的に出てきます。海外でも非常に重宝します。',
+    '特典枠拡大': '一般会員には開放されない「SFC専用の特典航空券枠」が開放されます。ビジネスクラスなども格段に予約しやすくなります。',
+    'スタアラゴールド': '世界26社の加盟航空会社でラウンジ、優先チェックイン等のVIP待遇を受けられます。まさに「世界へのパスポート」です。'
 };
 
 let flights = JSON.parse(localStorage.getItem("sfc_v17_data")) || [];
@@ -370,7 +384,7 @@ function saveMiles() {
     render();
 }
 
-function getCode(name) { return airportMap[name] || (name ? name.toUpperCase() : ""); }
+function getCode(name) { return airportMap[name] || (name ? name.toUpperCase().trim() : ""); }
 function getName(code) { for(let n in airportMap) { if(airportMap[n] === code) return n; } return code; }
 function swapRoute() { const f = document.getElementById("from").value, t = document.getElementById("to").value; document.getElementById("from").value = t; document.getElementById("to").value = f; }
 function setRoute(f, t) { document.getElementById("from").value = f; document.getElementById("to").value = t; }
@@ -384,7 +398,9 @@ function calcPP(f, t, rStr, dateStr) {
     
     if(rStr.includes("_intl")) {
         let rate = parseFloat(rStr);
-        let multi = (["SIN","BKK","TSA","KUL","SYD","CGK"].includes(f) || ["SIN","BKK","TSA","KUL","SYD","CGK"].includes(t)) ? 1.5 : 1.0;
+        // 1.5倍路線の拡充
+        const multi15 = ["SIN","BKK","TSA","KUL","SYD","CGK","MNL","SGN","HAN"];
+        let multi = (multi15.includes(f) || multi15.includes(t)) ? 1.5 : 1.0;
         let isNorthAmerica = (f === "LAX" || f === "SAN" || f === "SFO" || t === "LAX" || t === "SAN" || t === "SFO");
         let bonus = (rStr === "1.25_intl" || !isNorthAmerica) ? 400 : 0; 
         return Math.floor(base * rate * multi) + bonus;
@@ -451,40 +467,82 @@ function addFlight() {
     const from = getCode(document.getElementById("from").value), to = getCode(document.getElementById("to").value);
     const date = document.getElementById("flightDate").value, trip = document.getElementById("trip").value;
     const rStr = document.getElementById("rate").value, price = parseInt(document.getElementById("price").value) || 0;
-    if(!from || !to || !date) return alert("入力不足");
+    
+    if(!from || !to || !date) return alert("出発地、到着地、搭乗日は必須です。");
+    
     const pp = calcPP(from, to, rStr, date);
-    const fData = { id: Date.now()+Math.random(), from, to, date, depart: document.getElementById("departTime").value, arrive: document.getElementById("arriveTime").value, price: (trip==="round"?price/2:price), rateStr: rStr, pp: pp, done: false, isUG: false, simUG: false, memo: "" };
+    const fData = { 
+        id: Date.now()+Math.random(), 
+        from, to, date, 
+        depart: document.getElementById("departTime").value, 
+        arrive: document.getElementById("arriveTime").value, 
+        price: (trip==="round"?price/2:price), 
+        rateStr: rStr, pp: pp, done: false, isUG: false, simUG: false, memo: "" 
+    };
+    
     flights.push(fData);
-    if(trip === "round") flights.push({ ...fData, id: Date.now()+Math.random(), from: to, to: from, depart: document.getElementById("returnDepart").value, arrive: document.getElementById("returnArrive").value });
+    if(trip === "round") {
+        flights.push({ 
+            ...fData, 
+            id: Date.now()+Math.random(), 
+            from: to, to: from, 
+            depart: document.getElementById("returnDepart").value, 
+            arrive: document.getElementById("returnArrive").value 
+        });
+    }
     save();
 }
 
 function scheduleUG(e, dateStr, route) {
     if(e) e.stopPropagation();
-    const ugDate = new Date(dateStr + "T00:00:00"); ugDate.setDate(ugDate.getDate() - 2); 
+    const ugDate = new Date(dateStr + "T00:00:00"); 
+    ugDate.setDate(ugDate.getDate() - 2); // 2日前の争奪戦
     const startStr = ugDate.toISOString().replace(/-|:|\.\d+/g, "").split(".")[0];
-    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦 (${route})\nEND:VCALENDAR\nEND:VCALENDAR`;
-    if(confirm(`${ugDate.toLocaleDateString()}の通知を保存しますか？`)) {
+    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nDTEND:${startStr}\nSUMMARY:UG争奪戦開始 (${route})\nDESCRIPTION:2日前のアップグレード枠確保に挑戦しましょう。\nEND:VEVENT\nEND:VCALENDAR`;
+    if(confirm(`${ugDate.toLocaleDateString()} の通知用カレンダーファイルをダウンロードしますか？`)) {
         const blob = new Blob([icsContent], {type: "text/calendar"});
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ug_alert.ics"; a.click();
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "sfc_ug_alert.ics"; a.click();
     }
 }
 
-function save() { localStorage.setItem("sfc_v17_data", JSON.stringify(flights)); render(); }
-function del(e, id) { e.stopPropagation(); if(confirm("削除?")) { flights=flights.filter(f=>f.id!==id); save(); } }
-function toggleDone(e, id) { e.stopPropagation(); let f=flights.find(x=>x.id===id); if(f) f.done=!f.done; save(); }
+function save() { 
+    localStorage.setItem("sfc_v17_data", JSON.stringify(flights)); 
+    render(); 
+}
 
-function showBackup() { document.getElementById("backupArea").style.display="block"; document.getElementById("backupText").value = JSON.stringify(flights); }
+function del(e, id) { 
+    e.stopPropagation(); 
+    if(confirm("このフライトを削除してよろしいですか？")) { 
+        flights=flights.filter(f=>f.id!==id); save(); 
+    } 
+}
+
+function toggleDone(e, id) { 
+    e.stopPropagation(); 
+    let f=flights.find(x=>x.id===id); 
+    if(f) f.done=!f.done; 
+    save(); 
+}
+
+function showBackup() { 
+    document.getElementById("backupArea").style.display="block"; 
+    document.getElementById("backupText").value = JSON.stringify(flights); 
+}
+
 function importData() { 
-    let s = prompt("JSONデータを貼り付けてください:"); if(!s) return; 
-    try { let d = JSON.parse(s); if(Array.isArray(d)) { flights = d; save(); location.reload(); } } catch(e) { alert("ERROR"); } 
+    let s = prompt("バックアップしたJSONデータを貼り付けてください:"); 
+    if(!s) return; 
+    try { 
+        let d = JSON.parse(s); 
+        if(Array.isArray(d)) { flights = d; save(); location.reload(); } 
+    } catch(e) { alert("データの形式が正しくありません。"); } 
 }
 
 function openMemo(e, id) {
     e.stopPropagation(); currentEditingId = id; const f = flights.find(x => x.id === id);
     document.getElementById("modalTitle").innerText = `${getName(f.from)} → ${getName(f.to)} (${f.date})`;
     document.getElementById("modalMemoInput").value = f.memo || "";
-    document.getElementById("memoDisplay").innerText = f.memo || "メモなし";
+    document.getElementById("memoDisplay").innerText = f.memo || "（メモを入力して保存してください）";
     document.getElementById("memoModal").style.display = "flex";
 }
 function saveMemo() {
@@ -538,10 +596,12 @@ function render() {
         }
 
         let m = parseInt(f.date.slice(5, 7));
+        const dayOfWeek = ["日","月","火","水","木","金","土"][new Date(f.date).getDay()];
+
         if(f.done) {
             actualP += f.pp; paidC += (f.price || 0);
             if (m >= 1 && m <= 12) monthlyPP[m - 1] += f.pp;
-            history.innerHTML += `<div class="history-item" onclick="reuseFlight(${f.id})"><span>${f.date.slice(5)} ${getName(f.from)}→${getName(f.to)}</span><b>+${f.pp.toLocaleString()} PP</b></div>`;
+            history.innerHTML += `<div class="history-item" onclick="reuseFlight(${f.id})" style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; font-size:12px;"><span>${f.date.slice(5)} (${dayOfWeek}) ${getName(f.from)}→${getName(f.to)}</span><b>+${f.pp.toLocaleString()} PP</b></div>`;
         } else {
             if (m >= 1 && m <= 12) monthlyPendingPP[m - 1] += f.pp;
         }
@@ -552,7 +612,7 @@ function render() {
                 let diff = (new Date(f.date + "T" + next.depart) - new Date(f.date + "T" + f.arrive)) / 60000;
                 if(diff > 0 && diff < 1440) {
                     let color = diff < 60 ? "var(--money)" : "var(--success)";
-                    waitHtml = `<br><span style="background:${color}; color:white; font-size:9px; padding:2px 5px; border-radius:4px; display:inline-block; margin-top:4px;">⏱ ${Math.floor(diff/60)}h${diff%60}m</span>`;
+                    waitHtml = `<br><span style="background:${color}; color:white; font-size:9px; padding:2px 6px; border-radius:6px; display:inline-block; margin-top:4px; font-weight:800;">⏱ 待機 ${Math.floor(diff/60)}h${diff%60}m</span>`;
                 }
             }
         }
@@ -560,8 +620,8 @@ function render() {
         let ugArea = "";
         let mileTag = "";
         if (f.isUG) {
-            const methodLabel = f.ugMethod === "mile" ? "マイルUG" : "現金UG";
-            ugArea = `<div class="action-container"><span style="grid-column: span 1; font-size:10px; font-weight:bold;">${methodLabel}</span><span onclick="del(event, ${f.id})" class="delete-btn">×</span></div>`;
+            const methodLabel = f.ugMethod === "mile" ? "マイルUG済" : "現金UG済";
+            ugArea = `<div class="action-container"><span style="font-size:9px; font-weight:bold; color:var(--ug-purple);">${methodLabel}</span><span onclick="del(event, ${f.id})" class="delete-btn">×</span></div>`;
         } else if (!f.done) {
             let ugSimulateBtn = "";
             if(!f.rateStr.includes("_intl") && !f.rateStr.includes("1.25") && !f.rateStr.includes("1.2_new")) {
@@ -570,35 +630,37 @@ function render() {
             }
             ugArea = `<div class="action-container">
                         <button class="ug-action-btn" onclick="tryUG(${f.id})">＋UG</button>
-                        <button class="ug-action-btn" style="background:#8e8e93;" onclick="scheduleUG(event,'${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>
+                        <button class="notif-btn" onclick="scheduleUG(event,'${f.date}','${getName(f.from)}→${getName(f.to)}')">通知</button>
                         ${ugSimulateBtn}
                         <span onclick="del(event, ${f.id})" class="delete-btn">×</span>
                       </div>`;
         } else {
-            ugArea = `<div class="action-container"><span></span><span onclick="del(event, ${f.id})" class="delete-btn">×</span></div>`;
+            ugArea = `<div class="action-container"><span onclick="del(event, ${f.id})" class="delete-btn">×</span></div>`;
         }
         
         let row = document.createElement("tr");
         if(f.done) row.className = "row-done";
         if(f.simUG) row.className = (row.className || "") + " row-simulating";
         
-        row.innerHTML = `<td onclick="reuseFlight(${f.id})">${f.date.slice(5).replace('-','/')}</td>
-            <td style="color:var(--accent-blue); font-weight:bold; text-align:left;" onclick="reuseFlight(${f.id})">
+        row.innerHTML = `<td onclick="reuseFlight(${f.id})">${f.date.slice(5).replace('-','/')} <span class="day-badge">${dayOfWeek}</span></td>
+            <td style="color:var(--accent-blue); font-weight:800; text-align:left; padding-left:5px;" onclick="reuseFlight(${f.id})">
                 ${getName(f.from)}→${getName(f.to)}${sfcBadge}<span class="memo-icon ${f.memo?'active':''}" onclick="openMemo(event, ${f.id})">📝</span>${waitHtml}${mileTag}
             </td>
-            <td onclick="reuseFlight(${f.id})">${f.depart||""}<br>↓<br>${f.arrive||""}</td>
-            <td onclick="reuseFlight(${f.id})">${f.pp.toLocaleString()}</td>
-            <td><input type="checkbox" ${f.done?'checked':''} onclick="toggleDone(event, ${f.id})"></td>
+            <td onclick="reuseFlight(${f.id})" style="font-size:10px;">${f.depart||"--:--"}<br>↓<br>${f.arrive||"--:--"}</td>
+            <td onclick="reuseFlight(${f.id})" style="font-weight:700;">${f.pp.toLocaleString()}</td>
+            <td><input type="checkbox" style="width:24px; height:24px;" ${f.done?'checked':''} onclick="toggleDone(event, ${f.id})"></td>
             <td>${ugArea}</td>`;
         table.appendChild(row);
     });
 
     const remainAfterPending = Math.max(0, 50000 - totalP);
     document.getElementById("ppText").innerText = actualP.toLocaleString() + " / 50,000";
+    if (actualP >= 50000) document.getElementById("mainStatusCard").classList.add("gedatsu-flash");
+    
     document.getElementById("pendingTotalText").innerText = "(予約込合計: " + totalP.toLocaleString() + " PP)";
     document.getElementById("progressBar").style.width = Math.min(100, (actualP/50000)*100) + "%";
     document.getElementById("progressPending").style.width = Math.min(100, (totalP/50000)*100) + "%";
-    document.getElementById("remainPP").innerText = remainAfterPending.toLocaleString();
+    document.getElementById("remainPP").innerText = remainAfterPending.toLocaleString() + " PP";
     document.getElementById("totalBudget").innerText = "¥" + totalC.toLocaleString();
     document.getElementById("paidBudget").innerText = "¥" + paidC.toLocaleString();
     document.getElementById("avgUnitPrice").innerText = `PP単価: 実績 ¥${actualP > 0 ? (paidC / actualP).toFixed(2) : "0.00"} / 全体 ¥${totalP > 0 ? (totalC / totalP).toFixed(2) : "0.00"}`;
@@ -607,42 +669,40 @@ function render() {
     if(potentialUG_PP > 0 && totalP < 50000) {
         ugSection.style.display = "block";
         let maxWithUG = totalP + potentialUG_PP;
-        ugSection.innerHTML = `🚀 <b>UG影響分析 (PP上乗せ)</b><br>当日UG想定: <b>+${potentialUG_PP.toLocaleString()} PP</b><br>合計予測: <b>${maxWithUG.toLocaleString()} PP</b>${maxWithUG >= 50000 ? '<br>✨ このUGプランなら、サンディエゴ前に解脱可能です！' : ''}`;
+        ugSection.innerHTML = `🚀 <b>UG影響分析 (PP上乗せ)</b><br>当日UG想定: <b>+${potentialUG_PP.toLocaleString()} PP</b><br>合計予測: <b>${maxWithUG.toLocaleString()} PP</b>${maxWithUG >= 50000 ? '<br>✨ このUGプランなら、解脱確定です！' : ''}`;
     } else { ugSection.style.display = "none"; }
 
     const mileSection = document.getElementById("mileImpactSection");
     if(potentialMilesNeeded > 0) {
         mileSection.style.display = "block";
-        const selectedFlights = flights.filter(f => !f.done && f.simUG);
-        const formattedMiles = potentialMilesNeeded.toLocaleString();
-        mileSection.innerHTML = `🧡 <b>マイルUG試算状況</b><br>選択便の合計: <b>${formattedMiles} マイル</b><br><small>※5/19新制度を含む最新レートで試算中</small>`;
-    } else {
-        mileSection.style.display = "none";
-    }
+        mileSection.innerHTML = `🧡 <b>マイルUG必要量</b><br>シミュレーション合計: <b>${potentialMilesNeeded.toLocaleString()} マイル</b><br><small>※最新の制度に基づき計算</small>`;
+    } else { mileSection.style.display = "none"; }
 
     let simpleNaha = 2954, simpleIshigaki = 3618, cheer = "";
     const hasSAN = flights.some(f => (f.from === "SAN" || f.to === "SAN"));
     const hasBKK = flights.some(f => (f.from === "BKK" || f.to === "BKK") && f.date.includes("-11-"));
 
-    if (actualP >= 50000) cheer = hasBKK ? "【祝・解脱】11月のバンコクはSFCとして、最高のラウンジホッピングを楽しめますね！" : "【祝・解脱】おめでとうございます！これからは全ての旅が特別になります。";
-    else if (hasSAN && totalP >= 50000) cheer = "【解脱確定】10月のサンディエゴ出張(Zクラス想定)で解脱予定です。LAX・SFOのポラリスラウンジを心ゆくまで堪能してください！";
-    else if (actualP > 0) cheer = "【修行中】一歩ずつ着実に。Tabioriで彼女さんとも予定を共有しつつ、完璧な計画を完遂しましょう。";
-    else cheer = "【準備万端】理想のスケジュールを組む今の時間が、解脱への第一歩です。";
+    if (actualP >= 50000) cheer = hasBKK ? "【祝・解脱】11月のバンコクはSFCとして、最高のラウンジホッピングを楽しめますね！" : "【祝・解脱】おめでとうございます！ダイヤモンド修行へ進みますか？";
+    else if (hasSAN && totalP >= 50000) cheer = "【解脱確定】サンディエゴ出張でついに解脱ですね！ポラリスラウンジの体験記を楽しみにしています。";
+    else if (actualP > 0) cheer = "【修行中】Tabioriの予定も更新しましたか？無理のない範囲で、空の旅を楽しんでください。";
+    else cheer = "【準備万端】計画を練る時間が一番楽しい時期かもしれません。完璧なルートですね！";
 
     document.getElementById("aiAdvice").innerHTML = `残り <b>${remainAfterPending.toLocaleString()} PP</b> (予約分除く)<br>【解脱戦略 (5/19〜新運賃)】<br>・石垣往復なら あと <b>${Math.ceil(remainAfterPending/simpleIshigaki)}回</b><br>・那覇往復なら あと <b>${Math.ceil(remainAfterPending/simpleNaha)}回</b>`;
     const cheerEl = document.getElementById("cheerMessage");
     cheerEl.innerText = cheer; cheerEl.style.display = "block";
 
-    const maxPP = Math.max(...monthlyPP.map((val, idx) => val + monthlyPendingPP[idx]), 5000);
+    // グラフのゼロ除算/描画不備修正
+    const maxPP = Math.max(...monthlyPP.map((val, i) => val + monthlyPendingPP[i]), 5000);
     monthlyPP.forEach((pp, i) => { 
         const pending = monthlyPendingPP[i];
         const hActual = (pp / maxPP) * 100;
-        const hPending = (pending / maxPP) * 100;
+        const hPending = (pending / maxPP) * 100; // 累積ではなく、実績の上に乗る分
+        
         graph.innerHTML += `
             <div class="graph-bar" style="height:${hActual}%">
-                ${pp>0?`<span class="graph-val">${pp}</span>`:''}
-                <div style="position:absolute; bottom:100%; left:0; width:100%; height:${pending > 0 ? (pending/pp)*100 : 0}%; background:rgba(0,122,255,0.3); border-radius:4px 4px 0 0; min-height:${pending>0?2:0}px;">
-                    ${pending>0?`<span class="graph-val-pending">${pending}</span>`:''}
+                ${pp > 0 ? `<span class="graph-val">${pp}</span>` : ''}
+                <div style="position:absolute; bottom:100%; left:0; width:100%; height:${hPending}%; background:rgba(0,122,255,0.2); border-radius:4px 4px 0 0; min-height:${pending>0?2:0}px;">
+                    ${pending > 0 ? `<span class="graph-val-pending">${pending}</span>` : ''}
                 </div>
                 <span class="graph-label">${i+1}月</span>
             </div>`; 
