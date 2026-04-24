@@ -360,12 +360,13 @@ function calcPP(f, t, rStr, dateStr) {
         return Math.floor(base * rate * multi) + bonus;
     }
     
-        if(isNew) {
-        if(rStr === "1.2_new") return Math.round(Math.floor(base * 2) * 1.2) + 400;
-        if(rStr === "0.7_new") return Math.round(Math.floor(base * 2) * 0.7) + 100;
-        if(rStr === "0.8_new") return Math.round(Math.floor(base * 2) * 0.8) + 100;
-        if(rStr === "1.0_new") return Math.round(Math.floor(base * 2) * 1.0) + 400;
-        return Math.round(Math.floor(base * 2) * parseFloat(rStr));
+    if(isNew) {
+        const doubleBase = Math.floor(base * 2);
+        if(rStr === "1.2_new") return Math.floor(doubleBase * 1.2) + 400;
+        if(rStr === "0.7_new") return Math.floor(doubleBase * 0.7) + 100;
+        if(rStr === "0.8_new") return Math.floor(doubleBase * 0.8) + 100;
+        if(rStr === "1.0_new") return Math.floor(doubleBase * 1.0) + 400;
+        return Math.floor(doubleBase * parseFloat(rStr));
     }
     let rate = parseFloat(rStr);
     let bonus = (rStr.includes("plus") || ["1.0","1.25"].includes(rStr)) ? 400 : 0;
@@ -489,7 +490,7 @@ function render() {
         if(f.done) { actualP += f.pp; paidC += (f.price || 0); monthlyPP[m] += f.pp; }
         else { monthlyPend[m] += f.pp; }
 
-                let waitHtml = ""; if(idx < flights.length - 1) {
+        let waitHtml = ""; if(idx < flights.length - 1) {
             let next = flights[idx+1];
             let d1 = new Date(f.date + "T" + (f.arrive || "00:00") + ":00");
             let d2 = new Date(next.date + "T" + (next.depart || "00:00") + ":00");
@@ -557,8 +558,8 @@ function render() {
     } else { miS.style.display="none"; }
 
     const rem = Math.max(0, 50000 - totalP);
-    const nahaRem = Math.ceil(rem/2952); // SV75%
-    const ishigakiRem = Math.ceil(rem/3662); // SV75%
+    const nahaRem = Math.ceil(rem / 2954); // 新シンプル往復(1477*2)
+    const ishigakiRem = Math.ceil(rem / 3618); // 新シンプル往復(1809*2)
     
     document.getElementById("aiAdvice").innerHTML = `残り <b>${rem.toLocaleString()} PP</b> で解脱。<br>
         那覇往復なら あと <b>${nahaRem}回</b>、<br>
@@ -575,7 +576,7 @@ function render() {
     
     const cheerEl = document.getElementById("cheerMessage"); cheerEl.innerText = cheer; cheerEl.style.display="block";
 
-        const activeMonthlyTotals = monthlyPP.map((v, i) => v + monthlyPend[i]);
+    const activeMonthlyTotals = monthlyPP.map((v, i) => v + monthlyPend[i]);
     const maxPP = Math.max(...activeMonthlyTotals, 1000); 
 
     monthlyPP.forEach((pp, i) => { 
