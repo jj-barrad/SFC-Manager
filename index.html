@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
 
-<title>SFC Manager v78.0 - Definitive Edition</title>
+<title>SFC Manager v79.0 - Definitive Edition</title>
 <style>
     :root { 
         --main-blue: #003f88; 
@@ -102,7 +102,6 @@
     
     .ai-box { background: #f0f7ff; padding: 12px; border-radius: 12px; font-size: 13px; line-height: 1.5; border: 1px solid #d0e3ff; color: #003f88; }
     
-    /* 操作欄を2列グリッド化してコンパクトに */
     .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; align-items: center; justify-items: center; }
     .action-sub-grid { display: flex; flex-direction: column; gap: 2px; }
     .ug-action-btn { background: var(--ug-purple); color: white; font-size: 9px; padding: 2px 0; border-radius: 4px; width: 38px; font-weight: 800; }
@@ -112,7 +111,6 @@
     .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 24px 24px 0 0; padding: 25px; padding-bottom: calc(25px + env(safe-area-inset-bottom)); animation: slideUp 0.3s ease-out; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     
-    /* 月別グラフの余白を削減 */
     .graph-container { width: 100%; height: 100px; display: flex; align-items: flex-end; justify-content: space-around; padding: 10px 0 20px 0; position: relative; }
     .graph-bar { width: calc(100% / 12 - 4px); background: var(--accent-blue); border-radius: 3px 3px 1px 1px; position: relative; min-height: 1px; }
     .graph-val { position: absolute; top: -12px; width: 100%; text-align: center; font-size: 8px; font-weight: 700;}
@@ -120,7 +118,6 @@
     
     .unit-price { font-size: 12px; background: #fffbe6; padding: 10px; border-radius: 12px; border: 1px solid #ffe58f; margin-top: 10px; text-align: center; font-weight: 700; }
     
-    /* 解脱後の世界の余白削減 */
     .benefit-container { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 6px; }
     .benefit-tag { display: inline-block; font-size: 10px; padding: 6px 10px; background: #fff; color: var(--gold); border: 1px solid #e5e5ea; border-radius: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     
@@ -136,7 +133,7 @@
 </head>
 <body>
 
-<header>SFC Manager v78.0</header>
+<header>SFC Manager v79.0</header>
 
 <div class="container">
     <div class="card" id="mainStatusCard">
@@ -373,7 +370,6 @@ function calcPP(f, t, rStr, dateStr) {
     return (Math.floor(base * 2) * rate) + bonus;
 }
 
-// マイル積算計算（簡略版：基本マイル×積算率）
 function calcAccruedMile(f, t, rStr) {
     let key = f+"-"+t, rev = t+"-"+f;
     let base = distDB[key] || distDB[rev] || 0;
@@ -492,17 +488,25 @@ function render() {
 
         let waitHtml = ""; if(idx < flights.length - 1) {
             let next = flights[idx+1];
-            let d1 = new Date(f.date + "T" + (f.arrive || "00:00") + ":00");
+            // 時刻が未入力の場合は00:00と23:59で暫定計算
+            let d1 = new Date(f.date + "T" + (f.arrive || "23:59") + ":00");
             let d2 = new Date(next.date + "T" + (next.depart || "00:00") + ":00");
-            let diff = (d2 - d1) / 60000;
-            if(diff > 0 && diff < 1440) {
-                let color = diff < 60 ? "var(--money)" : "var(--success)";
-                waitHtml = `<br><span style="background:${color}; color:white; font-size:8px; padding:1px 3px; border-radius:3px; display:inline-block; margin-top:2px;">⏱${Math.floor(diff/60)}h${Math.round(diff%60)}m</span>`;
-                if (f.date !== next.date) {
-                    waitHtml += `<span style="background:var(--main-blue); color:white; font-size:8px; padding:1px 3px; border-radius:3px; display:inline-block; margin-left:2px;">🏨翌日</span>`;
+            let diff = (d2 - d1) / 60000; // 分単位
+            
+            if(diff >= 0) {
+                if (diff >= 1440) {
+                    // 24時間以上
+                    waitHtml = `<br><span style="background:var(--main-blue); color:white; font-size:8px; padding:1px 3px; border-radius:3px; display:inline-block; margin-top:2px;">🏨翌日以降</span>`;
+                } else if (f.date !== next.date) {
+                    // 24時間未満だが日付が違う
+                    waitHtml = `<br><span style="background:var(--main-blue); color:white; font-size:8px; padding:1px 3px; border-radius:3px; display:inline-block; margin-top:2px;">🏨翌日</span>`;
+                    let color = diff < 60 ? "var(--money)" : "var(--success)";
+                    waitHtml += `<span style="background:${color}; color:white; font-size:8px; padding:1px 3px; border-radius:3px; display:inline-block; margin-left:2px;">⏱${Math.floor(diff/60)}h${Math.round(diff%60)}m</span>`;
+                } else {
+                    // 同日乗り継ぎ
+                    let color = diff < 60 ? "var(--money)" : "var(--success)";
+                    waitHtml = `<br><span style="background:${color}; color:white; font-size:8px; padding:1px 3px; border-radius:3px; display:inline-block; margin-top:2px;">⏱${Math.floor(diff/60)}h${Math.round(diff%60)}m</span>`;
                 }
-            } else if (diff >= 1440) {
-                waitHtml = `<br><span style="background:var(--main-blue); color:white; font-size:8px; padding:1px 3px; border-radius:3px; display:inline-block; margin-top:2px;">🏨翌日以降</span>`;
             }
         }
         
@@ -532,7 +536,6 @@ function render() {
         table.appendChild(row);
     });
 
-    // マイル表示の更新
     let baseMiles = parseInt(localStorage.getItem("sfc_miles") || 0);
     document.getElementById("currentMiles").value = baseMiles;
 
@@ -549,7 +552,6 @@ function render() {
     const ugS = document.getElementById("ugImpactSection"), miS = document.getElementById("mileImpactSection");
     if(potUG_PP > 0) { ugS.style.display="block"; ugS.innerHTML = `🚀 <b>UG上乗せ: +${potUG_PP.toLocaleString()} PP</b> (計 ${(totalP+potUG_PP).toLocaleString()})`; } else { ugS.style.display="none"; }
     
-    // マイルインパクトセクションの強化
     if(estAccruedMile > 0 || potMileUse > 0) {
         miS.style.display="block";
         miS.innerHTML = `🧡 <b>獲得予定: +${estAccruedMile.toLocaleString()} m</b><br>
@@ -558,14 +560,13 @@ function render() {
     } else { miS.style.display="none"; }
 
     const rem = Math.max(0, 50000 - totalP);
-    const nahaRem = Math.ceil(rem / 2954); // 新シンプル往復(1477*2)
-    const ishigakiRem = Math.ceil(rem / 3618); // 新シンプル往復(1809*2)
+    const nahaRem = Math.ceil(rem / 2954); 
+    const ishigakiRem = Math.ceil(rem / 3618); 
     
     document.getElementById("aiAdvice").innerHTML = `残り <b>${rem.toLocaleString()} PP</b> で解脱。<br>
         那覇往復なら あと <b>${nahaRem}回</b>、<br>
         石垣往復なら あと <b>${ishigakiRem}回</b> です。`;
 
-    // 応援コメントの強化
     let cheer = "【準備万端】これからの修行、楽しんでいきましょう！";
     if (actualP >= 50000) cheer = "【祝・解脱】ANAラウンジ、専用保安検査場…全ての扉が開かれました。おめでとうございます！";
     else if (totalP >= 50000) cheer = "【解脱確定】プランは完璧です。あとは体調を整えて搭乗の日を待つのみですね！";
