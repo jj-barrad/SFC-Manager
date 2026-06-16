@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SFC Manager">
 <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2708.png">
-<title>SFC Manager v81.0</title>
+<title>SFC Manager v80.0</title>
 <style>
 /* ===== デザイントークン ===== */
 :root {
@@ -26,7 +26,6 @@
 
 /* ===== ベース ===== */
 * { box-sizing: border-box; }
-html, body { max-width: 100%; overflow-x: hidden; }
 body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
     background: var(--bg-gray);
@@ -52,19 +51,18 @@ header {
     box-shadow: 0 1px 10px rgba(0,0,0,0.15);
 }
 header small { display: block; font-size: 10px; font-weight: 400; opacity: 0.7; margin-top: 2px; }
-.container { padding: 12px; max-width: 720px; margin: auto; }
+.container { padding: 16px; max-width: 720px; margin: auto; }
 .card {
     background: white;
     border-radius: var(--radius);
-    padding: 14px;
+    padding: 15px;
     margin-bottom: 12px;
     box-shadow: var(--card-shadow);
     border: 1px solid rgba(0,0,0,0.02);
-    overflow: hidden;
 }
 h3 {
     margin: 0 0 10px 0;
-    font-size: 1.0em;
+    font-size: 1.05em;
     color: var(--main-blue);
     display: flex;
     align-items: center;
@@ -77,33 +75,31 @@ h3::before {
     background: var(--main-blue);
     margin-right: 10px;
     border-radius: 2px;
-    flex-shrink: 0;
 }
-.toggle-section { font-size: 10px; color: var(--accent-blue); text-decoration: underline; cursor: pointer; font-weight: normal; margin-left: auto; }
+.toggle-section { font-size: 10px; color: var(--accent-blue); text-decoration: underline; cursor: pointer; float: right; font-weight: normal; margin-left: auto; }
 
 /* ===== フォーム ===== */
 input, select, button, textarea {
     width: 100%; padding: 12px; margin: 6px 0;
     border-radius: 12px; border: 1px solid #e5e5ea;
-    font-size: 15px; -webkit-appearance: none;
+    font-size: 16px; -webkit-appearance: none;
     background: #fdfdfd; transition: all 0.2s;
 }
 input:focus, select:focus { border-color: var(--accent-blue); outline: none; background: white; box-shadow: 0 0 0 3px rgba(0,122,255,0.12); }
 button { background: var(--main-blue); color: white; font-weight: 700; border: none; cursor: pointer; }
 button:active { transform: scale(0.97); opacity: 0.9; }
-.small-label { font-size: 11px; font-weight: 800; color: #8e8e93; display:block; }
 
 .routeBtn {
-    width: auto; padding: 7px 10px; margin: 2px;
-    font-size: 11.5px; background: #fff; color: var(--main-blue);
+    width: auto; padding: 7px 12px; margin: 2px;
+    font-size: 12px; background: #fff; color: var(--main-blue);
     border: 1px solid #e0e0e5; font-weight: 700; border-radius: 8px;
 }
 .swap-btn {
-    width: 42px; height: 42px; margin: 0;
+    width: 44px; height: 44px; margin: 0;
     background: #fff; color: var(--main-blue);
     border: 1px solid #e5e5ea; border-radius: 50%;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    font-size: 17px;
+    font-size: 18px;
 }
 .add-btn {
     margin-top: 10px; background: var(--accent-blue);
@@ -112,52 +108,27 @@ button:active { transform: scale(0.97); opacity: 0.9; }
 }
 .add-btn.success { background: var(--success); }
 
-/* ===== 翌日着チェック ===== */
-.nextday-check {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 12px; font-weight: 700; color: var(--main-blue);
-    background: #f0f7ff; border: 1px solid #d0e3ff; border-radius: 10px;
-    padding: 9px 10px; margin: 4px 0 6px; cursor: pointer;
-}
-.nextday-check input { width: 18px; height: 18px; margin: 0; flex-shrink: 0; }
-
-/* ===== フライトカードリスト ===== */
-.flight-list { display: flex; flex-direction: column; gap: 8px; }
-.flight-card {
-    background: #fafbfc; border: 1px solid #ececf0; border-radius: 14px;
-    padding: 10px 12px; position: relative;
-}
-.flight-card.row-done { opacity: 0.55; }
-.flight-card.row-simulating { background: #fdf8ff; border-color: var(--ug-purple); border-left: 4px solid var(--ug-purple); }
-.fc-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.fc-date { font-size: 10.5px; font-weight: 800; color: #fff; background: var(--main-blue); padding: 2px 7px; border-radius: 6px; flex-shrink: 0; white-space: nowrap; }
-.fc-route { font-weight: 800; color: var(--accent-blue); font-size: 14px; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
-.fc-badges { display: flex; gap: 3px; flex-wrap: wrap; }
-.fc-mid { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
-.fc-time { font-size: 12px; color: #555; line-height: 1.5; }
-.fc-time .nextday-badge { display:inline-block; background: var(--main-blue); color:#fff; font-size:8px; padding:1px 4px; border-radius:4px; font-weight:800; margin-left:3px; vertical-align: middle; }
-.fc-pp { text-align: right; flex-shrink: 0; }
-.fc-pp .ppval { font-size: 19px; font-weight: 900; color: var(--main-blue); line-height: 1.1; }
-.fc-pp .unitval { font-size: 9.5px; color: #8e8e93; }
-.fc-ughint { font-size: 10px; color: var(--mile-orange); margin-top: 2px; }
-.fc-conn { font-size: 10.5px; font-weight: 700; margin-top: 4px; }
-.fc-bottom { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e5e5ea; flex-wrap: wrap; }
-.fc-bottom-left, .fc-bottom-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.fc-done-label { display: flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; color: #555; }
-.fc-done-label input { width: 18px; height: 18px; margin: 0; cursor: pointer; }
-.fc-tag { font-size: 10px; color: #8e8e93; font-weight: 700; }
-.memo-icon { display: inline-block; font-size: 13px; cursor: pointer; padding: 3px 5px; background: #f2f2f7; border-radius: 6px; }
-.memo-icon.active { background: var(--warning); color: white; }
+/* ===== テーブル ===== */
+table { width: 100%; border-collapse: collapse; font-size: 10.5px; table-layout: fixed; }
+th { border-bottom: 2px solid #f2f2f7; padding: 6px 2px; color: #8e8e93; font-weight: 700; }
+td { border-bottom: 1px solid #f2f2f7; padding: 6px 1px; text-align: center; vertical-align: middle; overflow-wrap: anywhere; word-break: break-word; }
 
 .ug-sim-label {
-    font-size: 10px; color: var(--ug-purple); display: inline-flex; align-items: center; gap: 2px;
-    border: 1px solid var(--ug-purple); padding: 2px 5px; border-radius: 6px;
+    font-size: 8px; color: var(--ug-purple); display: inline-flex; align-items: center;
+    border: 1px solid var(--ug-purple); padding: 1px 3px; border-radius: 4px;
     background: #fff; cursor: pointer; font-weight: 800;
 }
-.ug-sim-checkbox { width: 12px !important; height: 12px !important; margin: 0 !important; }
-.ug-action-btn { background: var(--ug-purple); color: white; font-size: 10px; padding: 5px 8px; border-radius: 6px; font-weight: 800; width: auto; margin: 0; }
-.ug-undo-btn { background: #8e8e93; color: white; font-size: 10px; padding: 5px 8px; border-radius: 6px; font-weight: 700; width: auto; margin: 0; }
-.delete-btn { color: #ff3b30; font-size: 20px; cursor: pointer; line-height: 1; background: none; border: none; width: auto; padding: 2px 6px; margin: 0; }
+.ug-sim-checkbox { width: 10px !important; height: 10px !important; margin: 0 2px 0 0 !important; }
+.row-simulating { background-color: #fdf8ff !important; border-left: 4px solid var(--ug-purple); }
+.row-done { background-color: #fafafa; color: #aeaeb2; }
+.memo-icon { display: inline-block; font-size: 12px; cursor: pointer; padding: 3px; background: #f2f2f7; border-radius: 4px; margin-left: 2px; }
+.memo-icon.active { background: var(--warning); color: white; }
+
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; align-items: center; justify-items: center; }
+.action-sub-grid { display: flex; flex-direction: column; gap: 2px; align-items: center; }
+.ug-action-btn { background: var(--ug-purple); color: white; font-size: 9px; padding: 3px 0; border-radius: 4px; width: 40px; font-weight: 800; }
+.ug-undo-btn { background: #8e8e93; color: white; font-size: 8px; padding: 2px 0; border-radius: 4px; width: 40px; font-weight: 700; }
+.delete-btn { color: #ff3b30; font-size: 20px; cursor: pointer; display: block; line-height: 1; background: none; border: none; width: auto; padding: 2px; margin: 0; }
 
 /* ===== プログレス ===== */
 .progress { background: #e5e5ea; height: 28px; border-radius: 14px; margin: 15px 0; overflow: hidden; position: relative; }
@@ -170,7 +141,7 @@ button:active { transform: scale(0.97); opacity: 0.9; }
 }
 
 /* ===== AI / インフォボックス ===== */
-.ai-box { background: #f0f7ff; padding: 12px; border-radius: 12px; font-size: 13px; line-height: 1.6; border: 1px solid #d0e3ff; color: #003f88; overflow-wrap: anywhere; }
+.ai-box { background: #f0f7ff; padding: 12px; border-radius: 12px; font-size: 13px; line-height: 1.6; border: 1px solid #d0e3ff; color: #003f88; }
 .unit-price { font-size: 12px; background: #fffbe6; padding: 10px; border-radius: 12px; border: 1px solid #ffe58f; margin-top: 10px; text-align: center; font-weight: 700; }
 
 /* ===== SFCベネフィット ===== */
@@ -180,18 +151,17 @@ button:active { transform: scale(0.97); opacity: 0.9; }
 
 /* ===== マイル入力 ===== */
 .mileage-input-group { background: #fffaf0; padding: 12px; border-radius: 14px; border: 1.5px solid var(--mile-orange); margin-bottom: 10px; }
-.mileage-input-group input { margin: 0; background: transparent; border: none; font-size: 18px; font-weight: 900; color: var(--mile-orange); text-align: right; width: 120px; padding: 0; box-shadow: none; }
+.mileage-input-group input { margin: 0; background: transparent; border: none; font-size: 18px; font-weight: 900; color: var(--mile-orange); text-align: right; width: 130px; padding: 0; box-shadow: none; }
 
 /* ===== グラフ ===== */
 .graph-container { width: 100%; height: 100px; display: flex; align-items: flex-end; justify-content: space-around; padding: 10px 0 24px 0; position: relative; }
-.graph-bar { width: calc(100% / 12 - 3px); border-radius: 3px 3px 1px 1px; position: relative; min-height: 1px; }
+.graph-bar { width: calc(100% / 12 - 4px); border-radius: 3px 3px 1px 1px; position: relative; min-height: 1px; }
 .graph-val { position: absolute; top: -14px; width: 100%; text-align: center; font-size: 7px; font-weight: 700; color: #3c3c3e; }
-.graph-label { position: absolute; bottom: -18px; width: 100%; text-align: center; font-size: 8.5px; color: #8e8e93; }
+.graph-label { position: absolute; bottom: -18px; width: 100%; text-align: center; font-size: 9px; color: #8e8e93; }
 
 /* ===== バッジ ===== */
-.sfc-badge { background: var(--gold); color: white; font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: 900; display: inline-block; }
-.bronze-badge { background: #cd7f32; color: white; font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: 900; display: inline-block; }
-.fare-old-badge { background: #8e8e93; color: white; font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: 800; display: inline-block; }
+.sfc-badge { background: var(--gold); color: white; font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: 900; display: inline-block; margin-top: 2px; }
+.bronze-badge { background: #cd7f32; color: white; font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: 900; display: inline-block; margin-top: 2px; }
 .gedatsu-flash { animation: gold-glow 2s infinite; }
 @keyframes gold-glow {
     0% { box-shadow: 0 0 5px var(--gold); }
@@ -207,7 +177,6 @@ button:active { transform: scale(0.97); opacity: 0.9; }
     border-radius: 24px 24px 0 0; padding: 24px;
     padding-bottom: calc(24px + env(safe-area-inset-bottom));
     animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-    max-height: 85vh; overflow-y: auto;
 }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .modal-handle { width: 36px; height: 4px; background: #d1d1d6; border-radius: 2px; margin: 0 auto 16px; }
@@ -216,12 +185,12 @@ button:active { transform: scale(0.97); opacity: 0.9; }
 .toast {
     position: fixed; bottom: 110px; left: 50%;
     transform: translateX(-50%) translateY(10px);
-    background: rgba(30,30,30,0.92); color: white;
+    background: rgba(30,30,30,0.9); color: white;
     padding: 12px 22px; border-radius: 24px;
-    font-size: 13.5px; font-weight: 700;
+    font-size: 14px; font-weight: 700;
     z-index: 3000; opacity: 0;
     transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-    max-width: 90vw; text-align: center; pointer-events: none;
+    white-space: nowrap; pointer-events: none;
     box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -239,15 +208,15 @@ button:active { transform: scale(0.97); opacity: 0.9; }
     font-size: 10px; padding: 1px 6px; border-radius: 8px; margin-left: 6px;
 }
 
-/* ===== 新/旧運賃バッジ ===== */
-.fare-new-badge { display: inline-block; background: var(--accent-blue); color: white; font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: 800; }
+/* ===== 新運賃バッジ ===== */
+.fare-new-badge { display: inline-block; background: var(--accent-blue); color: white; font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: 800; margin-left: 4px; }
 </style>
 </head>
 <body>
 
 <header>
-    ✈ SFC Manager v81.0
-    <small>2026/5/19〜新運賃対応・iPhone表示最適化</small>
+    ✈ SFC Manager v80.0
+    <small>2026年新運賃対応 | ANA SFC修行サポートアプリ</small>
 </header>
 
 <div class="container">
@@ -257,10 +226,10 @@ button:active { transform: scale(0.97); opacity: 0.9; }
         <h3>保有マイル &amp; PP資産</h3>
         <div class="mileage-input-group" style="display:flex; justify-content:space-between; align-items:center;">
             <span style="font-size:13px; color:var(--mile-orange); font-weight:800;">✈ 保有マイル</span>
-            <input type="number" id="currentMiles" placeholder="0" onchange="saveMiles()" style="width:120px;">
+            <input type="number" id="currentMiles" placeholder="0" onchange="saveMiles()" style="width:130px;">
         </div>
         <div style="text-align:center; margin: 8px 0;">
-            <div style="font-weight:900; font-size:2.1em; color:var(--main-blue); letter-spacing:-1px;" id="ppText">0 / 50,000</div>
+            <div style="font-weight:900; font-size:2.2em; color:var(--main-blue); letter-spacing:-1px;" id="ppText">0 / 50,000</div>
             <div style="font-size:11px; color:#8e8e93;" id="pendingTotalText">（予約込合計: 0 PP）</div>
         </div>
         <div class="progress">
@@ -268,7 +237,7 @@ button:active { transform: scale(0.97); opacity: 0.9; }
             <div id="progressBar" class="progress-inner"></div>
             <div id="progressPending" class="progress-pending"></div>
         </div>
-        <div style="display:flex; justify-content:space-between; font-size:11.5px; text-align:center; background:#f8f9fa; padding:10px; border-radius:12px; gap:4px;">
+        <div style="display:flex; justify-content:space-between; font-size:12px; text-align:center; background:#f8f9fa; padding:10px; border-radius:12px; gap:4px;">
             <div style="flex:1">予定総額<br><b id="totalBudget">¥0</b></div>
             <div style="flex:1; border-left:1px solid #ddd; border-right:1px solid #ddd;">実績(搭乗済)<br><b id="paidBudget" style="color:var(--money);">¥0</b></div>
             <div style="flex:1">残り必要<br><b id="remainPP" style="color:var(--main-blue);">50,000</b></div>
@@ -302,54 +271,44 @@ button:active { transform: scale(0.97); opacity: 0.9; }
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                 <div>
-                    <label class="small-label">航空券代金（往復合計）</label>
+                    <label style="font-size:11px; font-weight:800; color:#8e8e93;">航空券代金（往復合計）</label>
                     <input id="price" type="number" placeholder="¥" min="0">
                 </div>
                 <div>
-                    <label class="small-label">往路搭乗日</label>
+                    <label style="font-size:11px; font-weight:800; color:#8e8e93;">往路搭乗日</label>
                     <input type="date" id="flightDate" onchange="onDateChange()">
                 </div>
             </div>
             <div style="display:flex; gap:10px;">
-                <div style="flex:1"><label class="small-label">出発</label><input type="time" id="departTime"></div>
-                <div style="flex:1"><label class="small-label">到着</label><input type="time" id="arriveTime"></div>
+                <div style="flex:1"><label style="font-size:11px; font-weight:800; color:#8e8e93;">出発</label><input type="time" id="departTime"></div>
+                <div style="flex:1"><label style="font-size:11px; font-weight:800; color:#8e8e93;">到着</label><input type="time" id="arriveTime"></div>
             </div>
-            <label class="nextday-check">
-                <input type="checkbox" id="arriveNextDay"> 🌙 到着は翌日（日付をまたぐフライト）
-            </label>
 
-            <div id="fareNotice" style="display:none; background:#fff7e6; border-radius:8px; padding:8px; font-size:11px; color:#996600; font-weight:700; margin:4px 0; border:1px solid #ffe0a0;">
-                📅 2026/5/18以前の搭乗日です → 一番下の「〜2026/5/18 搭乗済み分」の運賃区分を選択してください
+            <div id="fareNotice" style="display:none; background:#e8f4ff; border-radius:8px; padding:8px; font-size:11px; color:var(--main-blue); font-weight:700; margin:4px 0;">
+                📅 2026/5/19以降の搭乗 → 新運賃区分が適用されます
             </div>
 
             <select id="rate">
-                <optgroup label="【2026/5/19〜 現行運賃｜エコノミークラス】">
-                    <option value="newD">フレックス/Biz/カード優待(100%) +400PP</option>
-                    <option value="newG">株主優待(80%) +400PP</option>
-                    <option value="newH" selected>スタンダード(80%) +200PP</option>
-                    <option value="newI">シンプル(70%) +100PP【UG不可】</option>
-                    <option value="newJ">セール/ユース/シニア(50%) +0PP【UG不可】</option>
+                <optgroup label="【〜2026/5/18 現行国内線】">
+                    <option value="1.25">国内:プレミアム(125%) +400PP</option>
+                    <option value="0.75" selected>国内:スーパーバリュー等(75%) +0PP</option>
+                    <option value="0.75_plus">国内:バリュートランジット等(75%) +400PP</option>
+                    <option value="1.0">国内:フレックス等(100%) +400PP</option>
                 </optgroup>
-                <optgroup label="【2026/5/19〜 現行運賃｜ファーストクラス】">
-                    <option value="newA">フレックス/Biz/カード優待(150%) +400PP</option>
-                    <option value="newB">スタンダード/株主優待(130%) +400PP</option>
-                    <option value="newC">シンプル(120%) +400PP</option>
-                    <option value="newE">セール(100%) +0PP</option>
+                <optgroup label="【2026/5/19〜 新国内線運賃】">
+                    <option value="1.2_new">国内:ファーストクラス(120%) +400PP ★</option>
+                    <option value="0.7_new">国内:シンプル(70%) +100PP</option>
+                    <option value="0.8_new">国内:スタンダード(80%) +100PP</option>
+                    <option value="1.0_new">国内:フレックス(100%) +400PP</option>
                 </optgroup>
                 <optgroup label="【国際線】">
-                    <option value="1.25_intl">ビジネス上位(125%) +400PP</option>
-                    <option value="1.0_intl">ビジネス/プレエコ(100%) +400PP</option>
-                    <option value="0.7_intl">エコノミー(70%) +400PP</option>
-                    <option value="0.5_intl">格安エコノミー(50%) +0PP【UG不可】</option>
+                    <option value="1.25_intl">国際:ビジネス上位(125%) +400PP ★</option>
+                    <option value="1.0_intl">国際:ビジネス/プレエコ(100%) +400PP</option>
+                    <option value="0.7_intl">国際:エコノミー(70%) +400PP</option>
+                    <option value="0.5_intl">国際:格安エコノミー(50%) +0PP</option>
                 </optgroup>
                 <optgroup label="【国際線乗継 国内区間】">
-                    <option value="1.0_intl_dom">国内区間:乗継フレックス相当(100%) +400PP【UG不可】</option>
-                </optgroup>
-                <optgroup label="【〜2026/5/18 搭乗済み分のみ】">
-                    <option value="1.25">旧・プレミアム(125%) +400PP</option>
-                    <option value="0.75">旧・スーパーバリュー等(75%) +0PP</option>
-                    <option value="0.75_plus">旧・バリュートランジット等(75%) +400PP</option>
-                    <option value="1.0">旧・フレックス等(100%) +400PP</option>
+                    <option value="1.0_intl_dom">国内区間:乗継(100%) +400PP ★お得</option>
                 </optgroup>
             </select>
 
@@ -362,12 +321,9 @@ button:active { transform: scale(0.97); opacity: 0.9; }
                 <div style="font-size:11px; font-weight:800; margin-bottom:4px; color:var(--main-blue);">🔄 復路スケジュール</div>
                 <input type="date" id="returnDate">
                 <div style="display:flex; gap:10px;">
-                    <div style="flex:1"><label class="small-label">出発</label><input type="time" id="returnDepart"></div>
-                    <div style="flex:1"><label class="small-label">到着</label><input type="time" id="returnArrive"></div>
+                    <div style="flex:1"><label style="font-size:11px; color:#8e8e93; font-weight:700;">出発</label><input type="time" id="returnDepart"></div>
+                    <div style="flex:1"><label style="font-size:11px; color:#8e8e93; font-weight:700;">到着</label><input type="time" id="returnArrive"></div>
                 </div>
-                <label class="nextday-check">
-                    <input type="checkbox" id="returnArriveNextDay"> 🌙 到着は翌日（日付をまたぐフライト）
-                </label>
             </div>
 
             <!-- PP プレビュー -->
@@ -396,20 +352,33 @@ button:active { transform: scale(0.97); opacity: 0.9; }
             <span class="benefit-tag" onclick="showBenefit('SFO-Polaris')">🇺🇸 SFOポラリス</span>
             <span class="benefit-tag" onclick="showBenefit('SAN')">🇺🇸 SANクラブ</span>
             <span class="benefit-tag" onclick="showBenefit('BKK')">🇹🇭 BKKラウンジ</span>
-            <span class="benefit-tag" onclick="showBenefit('専用保安検査場')">🛃 専用チェックイン</span>
+            <span class="benefit-tag" onclick="showBenefit('専用保安検査場')">🛃 専用保安検査</span>
             <span class="benefit-tag" onclick="showBenefit('ラウンジ利用')">🍺 ANAラウンジ</span>
             <span class="benefit-tag" onclick="showBenefit('特典枠拡大')">🎫 特典枠拡大</span>
             <span class="benefit-tag" onclick="showBenefit('スタアラゴールド')">⭐ スタアラGOLD</span>
             <span class="benefit-tag" onclick="showBenefit('優先搭乗')">🏃 優先搭乗</span>
-            <span class="benefit-tag" onclick="showBenefit('マイル積算率')">💰 ボーナスマイル</span>
+            <span class="benefit-tag" onclick="showBenefit('マイル積算率')">💰 マイル+35%〜</span>
         </div>
-        <p style="font-size:10px; color:#aeaeb2; margin:8px 0 0;">※特典内容は2026/6時点の一般的な情報です。最新条件は必ずANA公式サイトでご確認ください。</p>
     </div>
 
     <!-- ===== フライト一覧 ===== -->
-    <div class="card">
+    <div class="card" style="padding:10px;">
         <h3>フライトスケジュール</h3>
-        <div id="flightList" class="flight-list"></div>
+        <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:13%">日付</th>
+                        <th style="width:35%">区間</th>
+                        <th style="width:15%">時刻</th>
+                        <th style="width:10%">PP</th>
+                        <th style="width:10%">単価</th>
+                        <th style="width:17%">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
         <div id="tableEmpty" style="text-align:center; padding:24px; color:#8e8e93; font-size:13px; display:none;">
             ✈ フライトを追加してください
         </div>
@@ -494,20 +463,11 @@ button:active { transform: scale(0.97); opacity: 0.9; }
 
 <script>
 /* =====================================================================
-   SFC Manager v81.0 — Script
-   v81 修正点:
-   - 2026/5/19〜新運賃（フレックス/スタンダード/シンプル/セール 他）の
-     PP・マイル積算を ANA公式の運賃区分表(A〜J)に基づき修正
-     （特にスタンダード・エコノミーの搭乗ポイントを 100pt→200pt に修正）
-   - 日付をまたぐ（翌日着）フライトに対応する「翌日着」チェックボックスを追加し、
-     乗継時間の計算ロジックを修正（到着日を正しく扱う）
-   - 当日アップグレード対象外の運賃（シンプル/セール/国際線等）では
-     ＋UGボタン・試算チェックボックスを非表示にし「UG対象外」と表示
-   - スケジュール表をテーブルからカードリスト表示に変更し、
-     iPhone等の縦長スマホ画面でも横スクロールなしで見やすく改善
-   - 「SFC解脱後の世界」の特典説明を、SFC会員が実際に得られる
-     スターアライアンス・ゴールド資格／フライトボーナスマイル等を
-     基準とした内容に修正
+   SFC Manager v80.0 — Script
+   修正点: フロートID→文字列ID, ストレージキー統一, 動的AI診断,
+           待ち時間の条件付き表示, フォームリセット, ファイルDL,
+           カスタムモーダル, トースト通知, 拡張distDB, 定数化
+   2026年5月19日以降の新運賃（シンプル/スタンダード/フレックス）対応
    ===================================================================== */
 
 // ===== 定数 =====
@@ -515,7 +475,7 @@ const SFC_TARGET      = 50000;   // SFC解脱PP
 const BRONZE_TARGET   = 30000;   // ブロンズPP
 const UG_BONUS_RATE   = 0.5;     // UGで追加される積算率
 const MILE_YEN_VALUE  = 2;       // マイル円換算レート
-const STORAGE_KEY     = "sfc_v81_data";
+const STORAGE_KEY     = "sfc_v80_data";
 const MILES_KEY       = "sfc_miles";
 const NEW_FARE_DATE   = new Date("2026-05-19"); // 新運賃開始日
 
@@ -593,73 +553,36 @@ const distDB = {
     "GMP-HND":1156, "ICN-HND":1156,
 };
 
-/* =====================================================================
-   ANA国内線 新運賃区分テーブル（2026年5月19日搭乗分〜）
-   PP = floor(区間基本マイル × 路線倍率2 × 積算率) + 搭乗ポイント
-   ug: 当日（直前）アップグレードの対象になりうるか
-       ※公式: シンプルからの直接アップグレードは不可。
-              ファーストクラス運賃はそれ以上のクラスがないため対象外。
-   ===================================================================== */
-const NEW_FARES = {
-    // ファーストクラス
-    newA: { rate:1.5, bonus:400, ug:false }, // フレックス/Biz/ANAカード優待割引(150%)
-    newB: { rate:1.3, bonus:400, ug:false }, // スタンダード/株主優待割引(130%)
-    newC: { rate:1.2, bonus:400, ug:false }, // シンプル(120%)
-    newE: { rate:1.0, bonus:0,   ug:false }, // セール(100%)
-    // エコノミークラス
-    newD: { rate:1.0, bonus:400, ug:true  }, // フレックス/Biz/ANAカード優待割引(100%)
-    newG: { rate:0.8, bonus:400, ug:true  }, // 株主優待割引(80%)
-    newH: { rate:0.8, bonus:200, ug:true  }, // スタンダード(80%)
-    newI: { rate:0.7, bonus:100, ug:false }, // シンプル(70%) ※UG不可
-    newJ: { rate:0.5, bonus:0,   ug:false }, // セール/ユース/シニア等(50%) ※UG不可
-};
-
-// 〜2026/5/18搭乗分（過去の搭乗実績記録用）
-const OLD_FARES = {
-    "1.25":      { rate:1.25, bonus:400, ug:false }, // 旧プレミアム(125%) ※既にファースト
-    "0.75":      { rate:0.75, bonus:0,   ug:true  }, // 旧スーパーバリュー等(75%)
-    "0.75_plus": { rate:0.75, bonus:400, ug:true  }, // 旧バリュートランジット等(75%)
-    "1.0":       { rate:1.0,  bonus:400, ug:true  }, // 旧フレックス等(100%)
-};
-
-// 国際線（路線倍率: アジア/オセアニア/ウラジオストク×1.5、その他×1.0）
-const INTL_FARES = {
-    "1.25_intl": { rate:1.25, bonus:400, ug:false },
-    "1.0_intl":  { rate:1.0,  bonus:400, ug:false },
-    "0.7_intl":  { rate:0.7,  bonus:400, ug:false },
-    "0.5_intl":  { rate:0.5,  bonus:0,   ug:false },
-};
-
-// ===== SFC解脱後特典テキスト（2026/6時点の一般的な情報） =====
+// ===== SFC解脱後特典テキスト =====
 const benefits = {
-    'LAX-Polaris': '🇺🇸【LAX ユナイテッド・ポラリスラウンジ】\nロサンゼルス国際空港のスターアライアンス系施設。ANA国際線ビジネスクラス搭乗時、またはスタアラ・ゴールド資格（SFC会員は自動付与）でユナイテッド運航便のビジネスクラスに搭乗する際などに利用できます。シャワーや軽食ダイニングを備え、長距離移動前のひと休みに最適です。',
-    'SFO-Polaris': '🇺🇸【SFO ユナイテッド・ポラリスラウンジ】\n国際線ターミナルにあるユナイテッドのラウンジ。ビジネスクラス搭乗者向けにシャワーやデイベッド、軽食を提供しています。スタアラ・ゴールド資格でも、搭乗クラス等の条件を満たせば利用できる場合があります。',
-    'SAN': '🇺🇸【サンディエゴ ユナイテッド・クラブ】\nスタアラ・ゴールド資格（SFC会員は自動的にこの資格が付与されます）があれば、ユナイテッド運航便ご利用時にユナイテッド・クラブを利用できます。大きな窓から離着陸を眺めながら静かに過ごせます。',
-    'BKK': '🇹🇭【バンコク・スワンナプーム】\nスタアラ・ゴールド資格を持つSFC会員は、タイ国際航空をはじめとするスターアライアンス加盟各社のラウンジを利用できます（実際の利用可否は搭乗航空会社・クラスにより異なります）。',
-    '専用保安検査場': '🛃【プレミアムメンバー専用チェックイン】\n羽田・成田などの主要空港では、ANAのプレミアムメンバー（SFC会員含む）向けに専用のチェックインカウンターが用意されています。空港・時間帯によっては保安検査の専用レーンを利用できる場合もあり、混雑時のストレスを軽減できます。',
-    'ラウンジ利用': '🍺【ANAラウンジ / ANA SUITE LOUNGE】\nANAグループ運航便・スターアライアンス便にご搭乗の際、本人＋同行者1名まで無料で利用できます。軽食やドリンクで、出発前のひとときをゆったりと。',
-    '特典枠拡大': '🎫【国際線特典航空券の上級会員専用枠】\nANAのプレミアムメンバー（SFC会員含む）は、一般会員には開放されない上級会員専用の特典航空券枠を利用できます。これにより、人気路線やビジネスクラスの特典予約が取りやすくなります。',
-    'スタアラゴールド': '⭐【スターアライアンス・ゴールド】\nANAのプレミアムメンバー（SFC会員含む）には、スターアライアンス加盟各社共通のゴールド資格が付与されます。海外の現地空港でも、優先チェックイン・ラウンジ利用・優先手荷物受け取りなどの待遇を受けられます。',
-    '優先搭乗': '🏃【優先搭乗】\nプレミアムメンバーは優先搭乗の対象となるグループでご搭乗いただけます。機内の収納スペースを確保しやすく、余裕を持って機内へ。',
-    'マイル積算率': '💰【フライトボーナスマイル】\nSFC会員は搭乗の都度、通常のフライトマイルに加えてフライトボーナスマイルが加算されます（保有するSFCの種類により、一般カード+35%、ゴールドカード+40%、プレミアムカード+50%など率が異なります）。対象はANAグループ運航便およびユナイテッド航空運航便のご搭乗分です。',
+    'LAX-Polaris': '🇺🇸【LAX ポラリスラウンジ】\nT7（ユナイテッド国際線ターミナル）。ANA国際線ビジネスクラス利用時に入室可能。オーダー制ダイニング「The Dining Room」でポラリス・バーガーや季節のメニューを堪能できます。シャワールームも完備。',
+    'SFO-Polaris': '🇺🇸【SFO ポラリスラウンジ】\n国際線ターミナルG。広大な吹き抜け空間に高級ホテル顔負けのシャワー＆デイベッド。長距離便前に完璧なリフレッシュが可能です。',
+    'SAN': '🇺🇸【サンディエゴ United Club】\nT2。大きな窓から離着陸する機体を眺めながら、静かで快適なひとときを。SFCのスタアラゴールドで入室できます。',
+    'BKK': '🇹🇭【バンコク スワンナプーム】\nスタアラゴールド（SFC）でタイ航空・シンガポール航空・エバー等のラウンジをホッピング可能。ホムーンカレーやタイスイーツを食べ比べるのが修行者の楽しみ。',
+    '専用保安検査場': '🛃【ANA PREMIUM CHECK-IN】\n羽田・成田の大混雑を横目に、専用カウンター直結の保安検査場を通過。ストレスゼロで出発前の時間を使えます。同行者1名まで利用可。',
+    'ラウンジ利用': '🍺【ANA LOUNGE & ANA SUITE LOUNGE】\n国内線・国際線ともに本人＋同行者1名まで無料。名物のANAカレー、生ビール、季節限定メニューが充実。出発前のルーティーンに。',
+    '特典枠拡大': '🎫【特典航空券の優先予約＆枠拡大】\n一般会員には開放されないSFC専用枠が利用可能。ホノルル便やビジネスクラスの特典予約が格段に取りやすくなります。',
+    'スタアラゴールド': '⭐【世界中でVIP待遇】\nスタアライアンス加盟26社で共通のゴールド特典。海外空港でも優先チェックイン・ラウンジ・優先手荷物取扱が約束されます。バンコク→シンガポール→クアラルンプールのラウンジ巡りも！',
+    '優先搭乗': '🏃【グループ2優先搭乗】\n頭上の収納スペース争いに悩む必要なし。余裕を持って自分のペースで搭乗できます。機内持ち込みの荷物も安心。',
+    'マイル積算率': '💰【フライトマイル積算率アップ】\nSFCカード保有でマイル積算率が35%〜50%アップ。次の特典航空券（無料旅行）へのスピードが加速。解脱後も旅コストを抑えられます。',
 };
 
 // ===== データ管理 =====
 // 旧バージョンからのマイグレーション
 (function migrate() {
-    const oldKeys = ["sfc_v80_data", "sfc_v17_data", "sfc_data", "flights_data"];
+    const oldKeys = ["sfc_v17_data", "sfc_data", "flights_data"];
     if (!localStorage.getItem(STORAGE_KEY)) {
         for (const k of oldKeys) {
             const d = localStorage.getItem(k);
             if (d) { localStorage.setItem(STORAGE_KEY, d); break; }
         }
     }
+    // IDをすべて文字列化（旧データがfloatIDの場合の修正）
     try {
         const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
         let changed = false;
         data.forEach(f => {
             if (typeof f.id !== "string") { f.id = String(f.id); changed = true; }
-            if (typeof f.arriveNextDay !== "boolean") { f.arriveNextDay = false; changed = true; }
         });
         if (changed) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch(e) {}
@@ -692,73 +615,60 @@ function isAsiaOceania(code) {
     return ["SIN","BKK","TPE","TSA","HKG","MFM","GMP","ICN","KUL",
             "SYD","MEL","CGK","MNL","SGN","HAN","VVO"].includes(code);
 }
-function addDays(dateStr, n) {
-    const d = new Date(dateStr + "T00:00:00");
-    d.setDate(d.getDate() + n);
-    return d.toISOString().slice(0, 10);
-}
-function getArriveDate(f) {
-    return f.arriveNextDay ? addDays(f.date, 1) : f.date;
-}
 
 // ===== PP計算 (ANA公式: 区間基本マイル × 積算率 × 路線倍率 + 搭乗ポイント) =====
 function calcPP(f, t, rStr, dateStr) {
     const base = getDist(f, t);
     if (!base) return 0;
-    const double = base * 2; // 国内線路線倍率2
 
-    // ── 国際線乗継国内区間（フレックス相当 100% + 400pt） ──
+    const newFare  = isNewFareDate(dateStr);
+    const double   = base * 2; // 国内線路線倍率2
+
+    // ── 国際線乗継国内区間 ──
     if (rStr === "1.0_intl_dom") {
-        return Math.floor(double * 1.0) + 400;
+        return Math.floor(double * 1.0) + 400; // 100%積算 + 搭乗ポイント400
     }
 
-    // ── 国際線 (路線倍率: アジア/オセアニア/ウラジオストク×1.5, それ以外×1.0) ──
-    if (INTL_FARES[rStr]) {
-        const e = INTL_FARES[rStr];
-        const multi = (isAsiaOceania(f) || isAsiaOceania(t)) ? 1.5 : 1.0;
-        return Math.floor(base * e.rate * multi) + e.bonus;
+    // ── 国際線 (路線倍率: アジア/オセアニア×1.5, それ以外×1.0) ──
+    if (rStr.includes("_intl")) {
+        const rate   = parseFloat(rStr);
+        const multi  = (isAsiaOceania(f) || isAsiaOceania(t)) ? 1.5 : 1.0;
+        const bonus  = (rStr !== "0.5_intl") ? 400 : 0;
+        return Math.floor(base * rate * multi) + bonus;
     }
 
     // ── 国内線: 2026/5/19以降 新運賃 ──
-    if (NEW_FARES[rStr]) {
-        const e = NEW_FARES[rStr];
-        return Math.floor(double * e.rate) + e.bonus;
+    if (newFare) {
+        const d = Math.floor(double); // 路線倍率2
+        if (rStr === "1.2_new") return Math.floor(d * 1.2) + 400;
+        if (rStr === "0.7_new") return Math.floor(d * 0.7) + 100;
+        if (rStr === "0.8_new") return Math.floor(d * 0.8) + 100;
+        if (rStr === "1.0_new") return Math.floor(d * 1.0) + 400;
+        // 旧運賃が選択されていても新規則で近似計算
+        const rate = parseFloat(rStr);
+        return Math.floor(d * (rate || 0.75)) + (rate >= 1.0 ? 400 : 100);
     }
 
-    // ── 国内線: 〜2026/5/18 旧運賃 ──
-    if (OLD_FARES[rStr]) {
-        const e = OLD_FARES[rStr];
-        return Math.floor(double * e.rate) + e.bonus;
-    }
-
-    return 0;
+    // ── 国内線: 旧運賃 ──
+    const rate  = parseFloat(rStr);
+    const bonus = (rStr.includes("plus") || rStr === "1.0" || rStr === "1.25") ? 400 : 0;
+    return Math.floor(double * rate) + bonus;
 }
 
-// ===== マイル積算計算（区間基本マイル × 積算率。路線倍率・搭乗ポイントは対象外） =====
+// ===== マイル積算計算 =====
 function calcAccruedMile(f, t, rStr) {
     const base = getDist(f, t);
-    let rate = 0.75;
-    if (rStr === "1.0_intl_dom")      rate = 1.0;
-    else if (NEW_FARES[rStr])          rate = NEW_FARES[rStr].rate;
-    else if (OLD_FARES[rStr])          rate = OLD_FARES[rStr].rate;
-    else if (INTL_FARES[rStr])         rate = INTL_FARES[rStr].rate;
-    return Math.floor(base * rate);
+    const rate = parseFloat(rStr) || 0.75;
+    return Math.floor(base * Math.max(rate, 0.5)); // 最低50%
 }
 
-// ===== UG対象運賃かどうか =====
-function isUgEligible(rStr) {
-    if (NEW_FARES[rStr]) return NEW_FARES[rStr].ug;
-    if (OLD_FARES[rStr]) return OLD_FARES[rStr].ug;
-    return false; // 国際線・乗継国内区間はUG対象外（本アプリの当日UG試算の対象外）
-}
-
-// ===== UGリソース計算（当日アップグレードの参考値） =====
+// ===== UGリソース計算 =====
 function getUGResources(f) {
     const base = getDist(f.from, f.to);
     const isNew = isNewFareDate(f.date);
     let cash = 14000, mile = 9000;
     if (isNew) {
-        // 2026/5/19以降: 区間距離ベースの参考値（実際の金額は予約時にご確認ください）
+        // 2026/5/19以降: 区間距離ベースで試算（公式未確定のため参考値）
         if (base <= 200)       { cash = 6000;  mile = 5000; }
         else if (base <= 700)  { cash = 13000; mile = 8000; }
         else                   { cash = 19000; mile = 10000; }
@@ -813,7 +723,7 @@ function updatePPPreview() {
 function onDateChange() {
     const date = document.getElementById("flightDate").value;
     const notice = document.getElementById("fareNotice");
-    notice.style.display = (date && !isNewFareDate(date)) ? "block" : "none";
+    notice.style.display = date && isNewFareDate(date) ? "block" : "none";
     if (!document.getElementById("returnDate").value) {
         document.getElementById("returnDate").value = date;
     }
@@ -830,7 +740,6 @@ function addFlight() {
     const trip    = document.getElementById("trip").value;
     const rStr    = document.getElementById("rate").value;
     const price   = parseInt(document.getElementById("price").value) || 0;
-    const arriveNextDay = document.getElementById("arriveNextDay").checked;
 
     if (!from || !to || !date) {
         showAlert("出発地・到着地・搭乗日を入力してください。");
@@ -846,46 +755,41 @@ function addFlight() {
     const unitPrice   = (price > 0 && pp > 0) ? (trip === "round" ? (price/2) / pp : price / pp) : 0;
 
     const fData = {
-        id:            genId(),
+        id:           genId(),
         from, to, date,
-        depart:        document.getElementById("departTime").value,
-        arrive:        document.getElementById("arriveTime").value,
-        arriveNextDay: arriveNextDay,
-        price:         trip === "round" ? Math.round(price / 2) : price,
-        rateStr:       rStr,
+        depart:       document.getElementById("departTime").value,
+        arrive:       document.getElementById("arriveTime").value,
+        price:        trip === "round" ? Math.round(price / 2) : price,
+        rateStr:      rStr,
         pp,
         accruedMile,
         unitPrice,
-        done:          false,
-        isUG:          false,
-        ugMethod:      null,
-        ugPPAdded:     0,
-        ugCostAdded:   0,
-        simUG:         false,
-        memo:          "",
+        done:         false,
+        isUG:         false,
+        ugMethod:     null,
+        ugPPAdded:    0,
+        ugCostAdded:  0,
+        simUG:        false,
+        memo:         "",
     };
     flights.push(fData);
 
     if (trip === "round") {
         const retDate = document.getElementById("returnDate").value || date;
-        const retArriveNextDay = document.getElementById("returnArriveNextDay").checked;
         flights.push({
             ...fData,
-            id:            genId(),
-            from:          to,
-            to:            from,
-            date:          retDate,
-            depart:        document.getElementById("returnDepart").value,
-            arrive:        document.getElementById("returnArrive").value,
-            arriveNextDay: retArriveNextDay,
+            id:     genId(),
+            from:   to,
+            to:     from,
+            date:   retDate,
+            depart: document.getElementById("returnDepart").value,
+            arrive: document.getElementById("returnArrive").value,
         });
     }
 
     // フォームリセット
     ["from","to","price","flightDate","departTime","arriveTime","returnDate","returnDepart","returnArrive"]
         .forEach(id => document.getElementById(id).value = "");
-    document.getElementById("arriveNextDay").checked = false;
-    document.getElementById("returnArriveNextDay").checked = false;
     document.getElementById("ppPreview").style.display = "none";
     document.getElementById("fareNotice").style.display = "none";
 
@@ -932,11 +836,10 @@ function toggleUGSim(id) {
 function tryUG(id) {
     const f = flights.find(x => x.id === id);
     if (!f) return;
-
     if (f.isUG) {
         // UG解除
-        f.pp    -= f.ugPPAdded || 0;
-        f.price -= f.ugCostAdded || 0;
+        f.pp          -= f.ugPPAdded || 0;
+        f.price       -= f.ugCostAdded || 0;
         if (f.ugMethod === "mile") {
             const res    = getUGResources(f);
             const cur    = parseInt(localStorage.getItem(MILES_KEY) || 0);
@@ -947,11 +850,6 @@ function tryUG(id) {
         f.isUG = false; f.ugMethod = null; f.ugPPAdded = 0; f.ugCostAdded = 0;
         showToast("UGを解除しました");
         save();
-        return;
-    }
-
-    if (!isUgEligible(f.rateStr)) {
-        showAlert("この運賃区分は当日アップグレードの対象外です。");
         return;
     }
 
@@ -970,8 +868,7 @@ function tryUG(id) {
         <div style="background:#f0f7ff; border-radius:10px; padding:12px; font-size:13px; line-height:1.9;">
             <b>アップグレードで +${addPP.toLocaleString()} PP 追加獲得！</b><br>
             <small style="color:#8e8e93;">(積算率 +${UG_BONUS_RATE*100}% 分)</small>
-            ${isNew ? '<br><span style="font-size:10px; background:var(--accent-blue); color:white; padding:1px 5px; border-radius:4px;">2026新運賃：スタンダード以上が対象</span>' : ''}
-            <br><small style="color:#8e8e93;">※費用は参考値です。実際の金額は予約時にご確認ください。</small>
+            ${isNew ? '<br><span style="font-size:10px; background:var(--accent-blue); color:white; padding:1px 5px; border-radius:4px;">2026新運賃：申込27日前から可</span>' : ''}
         </div>
     `;
 
@@ -992,11 +889,11 @@ function doUGCash() {
     const base   = getDist(f.from, f.to);
     const res    = getUGResources(f);
     const addPP  = Math.floor(base * 2 * UG_BONUS_RATE);
-    f.pp          += addPP;
-    f.price       += res.cash;
-    f.isUG        = true;
-    f.ugMethod    = "cash";
-    f.ugPPAdded   = addPP;
+    f.pp         += addPP;
+    f.price      += res.cash;
+    f.isUG       = true;
+    f.ugMethod   = "cash";
+    f.ugPPAdded  = addPP;
     f.ugCostAdded = res.cash;
     closeModal("ugModal");
     showToast(`✅ 現金UG完了！ +${addPP.toLocaleString()} PP`);
@@ -1015,10 +912,10 @@ function doUGMile() {
     }
     const base  = getDist(f.from, f.to);
     const addPP = Math.floor(base * 2 * UG_BONUS_RATE);
-    f.pp          += addPP;
-    f.isUG        = true;
-    f.ugMethod    = "mile";
-    f.ugPPAdded   = addPP;
+    f.pp        += addPP;
+    f.isUG      = true;
+    f.ugMethod  = "mile";
+    f.ugPPAdded = addPP;
     f.ugCostAdded = 0;
 
     const newMiles = cur - res.mile;
@@ -1122,10 +1019,8 @@ function importData() {
             try {
                 const d = JSON.parse(ev.target.result);
                 if (!Array.isArray(d)) throw new Error("配列ではありません");
-                d.forEach(f => {
-                    if (typeof f.id !== "string") f.id = String(f.id);
-                    if (typeof f.arriveNextDay !== "boolean") f.arriveNextDay = false;
-                });
+                // IDを文字列化
+                d.forEach(f => { if (typeof f.id !== "string") f.id = String(f.id); });
                 flights = d;
                 save();
                 showToast("✅ データを復元しました！");
@@ -1158,29 +1053,48 @@ function setupDatalist() {
     });
 }
 
-// ===== AI診断: 動的残り回数計算（2026/5/19〜新運賃ベース） =====
+// ===== AI診断: 動的残り回数計算 =====
 function calcRemainingRounds(rem) {
-    if (rem <= 0) return [];
     const today = new Date().toISOString().slice(0, 10);
-    const routes = [
-        { label: "羽田⇄那覇 シンプル",     from:"HND", to:"OKA", r:"newI" },
-        { label: "羽田⇄那覇 スタンダード", from:"HND", to:"OKA", r:"newH" },
-        { label: "羽田⇄石垣 スタンダード", from:"HND", to:"ISG", r:"newH" },
-        { label: "千歳⇄那覇 スタンダード", from:"CTS", to:"OKA", r:"newH" },
-    ];
-    return routes
-        .map(rt => {
+    const isNew = today >= "2026-05-19";
+
+    const results = [];
+    if (rem <= 0) return results;
+
+    if (isNew) {
+        const routes = [
+            { label: "羽田⇄那覇 シンプル",    from:"HND", to:"OKA", r:"0.7_new" },
+            { label: "羽田⇄那覇 スタンダード", from:"HND", to:"OKA", r:"0.8_new" },
+            { label: "羽田⇄石垣 スタンダード", from:"HND", to:"ISG", r:"0.8_new" },
+            { label: "千歳⇄那覇 スタンダード", from:"CTS", to:"OKA", r:"0.8_new" },
+        ];
+        routes.forEach(rt => {
             const oneway = calcPP(rt.from, rt.to, rt.r, today);
-            return { label: rt.label, trips: Math.ceil(rem / (oneway * 2)), ppPerRound: oneway * 2 };
-        })
-        .filter(r => r.ppPerRound > 0);
+            if (oneway > 0) {
+                results.push({ label: rt.label, trips: Math.ceil(rem / (oneway * 2)), ppPerRound: oneway * 2 });
+            }
+        });
+    } else {
+        const routes = [
+            { label: "羽田⇄那覇 バリュー",    from:"HND", to:"OKA", r:"0.75" },
+            { label: "羽田⇄石垣 バリュー",    from:"HND", to:"ISG", r:"0.75" },
+            { label: "羽田⇄那覇 フレックス",  from:"HND", to:"OKA", r:"1.0" },
+        ];
+        routes.forEach(rt => {
+            const oneway = calcPP(rt.from, rt.to, rt.r, today);
+            if (oneway > 0) {
+                results.push({ label: rt.label, trips: Math.ceil(rem / (oneway * 2)), ppPerRound: oneway * 2 });
+            }
+        });
+    }
+    return results;
 }
 
 // ===== メインレンダリング =====
 function render() {
-    const list  = document.getElementById("flightList");
+    const tbody = document.getElementById("tableBody");
     const graph = document.getElementById("ppGraph");
-    list.innerHTML  = "";
+    tbody.innerHTML = "";
     graph.innerHTML = "";
 
     let actualP  = 0, totalP  = 0;
@@ -1197,10 +1111,6 @@ function render() {
     let cumPP = 0;
 
     flights.forEach((f, idx) => {
-        // 古いデータ互換
-        if (typeof f.arriveNextDay !== "boolean") f.arriveNextDay = false;
-        if (!isUgEligible(f.rateStr)) f.simUG = false;
-
         // PP・積算マイルを常に最新で再計算（UG済み以外）
         if (!f.isUG) {
             f.pp = calcPP(f.from, f.to, f.rateStr, f.date);
@@ -1215,22 +1125,18 @@ function render() {
 
         // 解脱ライン検出
         const prevCum = cumPP - f.pp;
-        let badges = "";
+        let badge = "";
         if (!f.done && prevCum < SFC_TARGET && cumPP >= SFC_TARGET) {
-            badges += `<span class="sfc-badge">🏁 解脱フライト</span>`;
+            badge += `<br><span class="sfc-badge">🏁 解脱フライト</span>`;
         } else if (!f.done && prevCum < BRONZE_TARGET && cumPP >= BRONZE_TARGET) {
-            badges += `<span class="bronze-badge">🥉 ブロンズ達成</span>`;
-        }
-        if (new Date(f.date) < NEW_FARE_DATE) {
-            badges += `<span class="fare-old-badge">旧運賃</span>`;
+            badge += `<br><span class="bronze-badge">🥉 ブロンズ達成</span>`;
         }
 
-        // UG試算（対象運賃のみ）
+        // UG試算
         const res = getUGResources(f);
-        const ugOK = isUgEligible(f.rateStr);
-        if (!f.done && f.simUG && ugOK) {
+        if (!f.done && f.simUG) {
             const base = getDist(f.from, f.to);
-            potUG_PP   += Math.floor(base * 2 * UG_BONUS_RATE);
+            potUG_PP  += Math.floor(base * 2 * UG_BONUS_RATE);
             potMileUse += res.mile;
         }
 
@@ -1238,93 +1144,69 @@ function render() {
         if (f.done) { actualP += f.pp; paidC += (f.price || 0); monthlyDone[m] += f.pp; }
         else        { monthlyPend[m] += f.pp; }
 
-        // ── 翌日着バッジ ──
-        const arriveDate = getArriveDate(f);
-        const nextDayBadge = f.arriveNextDay ? '<span class="nextday-badge">翌日着</span>' : '';
-
-        // ── 乗り継ぎ時間（到着日を正しく考慮） ──
-        let connHtml = "";
+        // 乗り継ぎ待ち時間 (両方の時刻が入力されているときのみ表示)
+        let waitHtml = "";
         if (idx < flights.length - 1 && f.arrive) {
             const next = flights[idx + 1];
             if (next.depart) {
-                const d1 = new Date(arriveDate + "T" + f.arrive    + ":00");
-                const d2 = new Date(next.date  + "T" + next.depart + ":00");
+                const d1   = new Date(f.date    + "T" + f.arrive    + ":00");
+                const d2   = new Date(next.date + "T" + next.depart + ":00");
                 const diff = (d2 - d1) / 60000; // 分
-                if (diff < 0) {
-                    connHtml = `<div class="fc-conn" style="color:var(--money);">⚠ 時刻の前後関係が逆転しています（翌日着設定をご確認ください）</div>`;
-                } else {
-                    const h  = Math.floor(diff / 60);
-                    const mn = Math.round(diff % 60);
-                    const col = diff < 45 ? "var(--money)" : diff < 90 ? "var(--warning)" : "var(--success)";
-                    const dayDiff = Math.round((new Date(next.date) - new Date(arriveDate)) / 86400000);
-                    const dayLabel = dayDiff >= 1 ? `🏨 ${dayDiff}日後 / ` : "";
-                    connHtml = `<div class="fc-conn" style="color:${col};">⏱ 乗継: ${dayLabel}${h}h${mn}m</div>`;
+                if (diff >= 0) {
+                    if (diff >= 1440) {
+                        waitHtml = `<br><span style="background:var(--main-blue); color:white; font-size:7px; padding:1px 3px; border-radius:3px; display:inline-block; margin-top:2px;">🏨 翌日以降</span>`;
+                    } else {
+                        const h = Math.floor(diff / 60);
+                        const mn = Math.round(diff % 60);
+                        const col = diff < 45 ? "var(--money)" : diff < 90 ? "var(--warning)" : "var(--success)";
+                        const icon = f.date !== next.date ? "🏨 " : "⏱";
+                        waitHtml = `<br><span style="background:${col}; color:white; font-size:7px; padding:1px 3px; border-radius:3px; display:inline-block; margin-top:2px;">${icon}${h}h${mn}m</span>`;
+                    }
                 }
             }
         }
 
-        // ── UG操作部 ──
-        let ugControls;
-        if (f.done) {
-            ugControls = `<span class="fc-tag">${f.isUG ? "UG済" : "搭乗済"}</span>`;
-        } else if (f.isUG) {
-            ugControls = `<button class="ug-undo-btn" onclick="tryUG('${f.id}')">UG解除</button>`;
-        } else if (ugOK) {
-            ugControls = `
-                <button class="ug-action-btn" onclick="tryUG('${f.id}')">＋UG</button>
-                <label class="ug-sim-label">
-                    <input type="checkbox" class="ug-sim-checkbox" onchange="toggleUGSim('${f.id}')" ${f.simUG ? "checked" : ""}>試算
-                </label>`;
-        } else {
-            ugControls = `<span class="fc-tag" style="color:#c7c7cc;">UG対象外</span>`;
-        }
+        const newBadge = isNewFareDate(f.date)
+            ? '<span class="fare-new-badge">新</span>' : '';
 
-        const ugHint = (!f.done && ugOK)
-            ? `<div class="fc-ughint">UG目安: ${res.mile.toLocaleString()}m / ¥${Math.round(res.cash/1000)}k</div>`
-            : "";
+        const row = document.createElement("tr");
+        if (f.done)   row.classList.add("row-done");
+        if (f.simUG)  row.classList.add("row-simulating");
 
-        const upText = f.unitPrice > 0 ? `¥${f.unitPrice.toFixed(1)}/PP` : "";
+        const ugLabel = f.isUG
+            ? `<button class="ug-undo-btn" onclick="tryUG('${f.id}')">UG解除</button>`
+            : `<button class="ug-action-btn" onclick="tryUG('${f.id}')">＋UG</button>
+               <label class="ug-sim-label">
+                 <input type="checkbox" class="ug-sim-checkbox" onchange="toggleUGSim('${f.id}')" ${f.simUG ? "checked" : ""}>試算
+               </label>`;
 
-        // ── カード生成 ──
-        const card = document.createElement("div");
-        card.className = "flight-card";
-        if (f.done)  card.classList.add("row-done");
-        if (f.simUG) card.classList.add("row-simulating");
+        const upText = f.unitPrice > 0 ? `¥${f.unitPrice.toFixed(1)}` : "-";
 
-        card.innerHTML = `
-            <div class="fc-top">
-                <span class="fc-date">${f.date.slice(5).replace("-", "/")}</span>
-                <span class="fc-route">${getName(f.from)} → ${getName(f.to)}</span>
-                <span class="fc-badges">${badges}</span>
+        row.innerHTML = `
+            <td>${f.date.slice(5).replace("-", "/")}</td>
+            <td style="color:var(--accent-blue); font-weight:800; text-align:left; padding-left:4px;">
+                ${newBadge}${getName(f.from)}→${getName(f.to)}${badge}
                 <span class="memo-icon ${f.memo ? "active" : ""}" onclick="openMemo(event,'${f.id}')">📝</span>
-            </div>
-            <div class="fc-mid">
-                <div class="fc-time">
-                    🛫${f.depart || "--:--"} → 🛬${f.arrive || "--:--"}${nextDayBadge}
-                    ${ugHint}
+                ${!f.done ? `<br><span style="font-size:7.5px; color:var(--mile-orange);">UG目安:${res.mile.toLocaleString()}m/¥${Math.round(res.cash/1000)}k</span>` : ""}
+            </td>
+            <td style="font-size:9.5px;">${f.depart || ""}${f.depart && f.arrive ? "<br>" : ""}${f.arrive || ""}${waitHtml}</td>
+            <td style="font-weight:800;">${f.pp.toLocaleString()}</td>
+            <td style="font-size:9px; color:#8e8e93;">${upText}<br><small style="font-size:8px;">円/PP</small></td>
+            <td>
+                <div class="action-grid">
+                    <div class="action-sub-grid">
+                        <input type="checkbox" ${f.done ? "checked" : ""} onclick="toggleDone(event,'${f.id}')" style="width:18px; height:18px; margin:0; cursor:pointer;">
+                        <button class="delete-btn" onclick="del(event,'${f.id}')">×</button>
+                    </div>
+                    <div class="action-sub-grid">
+                        ${!f.done ? ugLabel : `<span style="font-size:8px; color:#8e8e93;">${f.isUG ? "UG済" : "-"}</span>`}
+                    </div>
                 </div>
-                <div class="fc-pp">
-                    <div class="ppval">${f.pp.toLocaleString()} PP</div>
-                    <div class="unitval">${upText}</div>
-                </div>
-            </div>
-            ${connHtml}
-            <div class="fc-bottom">
-                <div class="fc-bottom-left">
-                    <label class="fc-done-label">
-                        <input type="checkbox" ${f.done ? "checked" : ""} onclick="toggleDone(event,'${f.id}')">
-                        搭乗済み
-                    </label>
-                </div>
-                <div class="fc-bottom-right">
-                    ${ugControls}
-                    <button class="delete-btn" onclick="del(event,'${f.id}')">×</button>
-                </div>
-            </div>`;
-        list.appendChild(card);
+            </td>`;
+        tbody.appendChild(row);
     });
 
-    // 空表示
+    // テーブル空表示
     document.getElementById("tableEmpty").style.display = flights.length === 0 ? "block" : "none";
 
     // ===== ステータス更新 =====
@@ -1392,7 +1274,7 @@ function render() {
     } else {
         aiHtml = `残り <b>${rem.toLocaleString()} PP</b> で解脱。<br>`;
         if (rounds.length > 0) {
-            aiHtml += "<br>📊 <b>必要往復数の目安（新運賃ベース）:</b><br>";
+            aiHtml += "<br>📊 <b>必要往復数の目安:</b><br>";
             rounds.forEach(r => {
                 aiHtml += `・${r.label}: あと <b>${r.trips}往復</b> (${r.ppPerRound.toLocaleString()}PP/往復)<br>`;
             });
@@ -1407,7 +1289,7 @@ function render() {
     // ===== 応援メッセージ =====
     const cheerEl = document.getElementById("cheerMessage");
     let cheer = "";
-    if      (actualP >= SFC_TARGET) cheer = "🏆【祝・解脱】ANAラウンジ、専用チェックイン、スタアラゴールド…全ての扉が開かれました！";
+    if      (actualP >= SFC_TARGET) cheer = "🏆【祝・解脱】ANAラウンジ、専用保安検査場、スタアラゴールド…全ての扉が開かれました！";
     else if (totalP  >= SFC_TARGET) cheer = "✈【解脱確定】あとは体調を整えて搭乗の日を迎えるだけ！";
     else if (totalP  >= 40000)      cheer = "🔥【ラストスパート】残り10,000PPを切りました。ゴールは目前！";
     else if (totalP  >= 30000)      cheer = "🥉【ブロンズ突破】後半戦に突入。プラチナカードが現実味を帯びてきました！";
